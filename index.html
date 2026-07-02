@@ -649,9 +649,10 @@
 
     </div>
   </main>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const STORAGE_KEY = "toulouse-2h-cities-v8";
+    const supabaseUrl = 'https://teeuganjefwegazhoubj.supabase.co'; 
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlZXVnYW5qZWZ3ZWdhemhvdWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMjA4MjEsImV4cCI6MjA5ODU5NjgyMX0.bLlpaeGA39NA3FWpQrsCSo1xHjxQG1Yv_5gbEgVdWZU';
     const todayIso = () => new Date().toISOString().slice(0, 10);
     
     const initialCities = [
@@ -730,16 +731,52 @@
   { name: "Cahors", department: "46", population: 20000, minutes: 78, lastVisit: "", visitedPlaces: [], noGo: [] },
   { name: "Tarbes", department: "65", population: 43000, minutes: 95, lastVisit: "2026-06-12", visitedPlaces: [], noGo: [] }
 ];
-    const state = {
-      cities: loadCities(),
-      search: "",
-      department: "all",
-      sortMode: "score",
-      dateWeight: 65,
-      populationWeight: 35,
-      currentSelectedCityId: null
-    };
+supabase
+  .channel("cities")
+  .on(
+    "postgres_changes",
+    { event: "*", schema: "public", table: "cities" },
+    async () => {
+      const { data } = await supabase.from("cities").select("*");
+      state.cities = data;
+      render();
+    }
+  )
+  .subscribe();
+    <script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+const supabase = createClient(
+  "https://teeuganjefwegazhoubj.supabase.co",
+  "TON_ANON_KEY_ICI"
+);
+
+const todayIso = () => new Date().toISOString().slice(0, 10);
+
+const state = {
+  cities: [],
+  search: "",
+  department: "all",
+  sortMode: "score",
+  dateWeight: 65,
+  populationWeight: 35,
+  currentSelectedCityId: null
+};
+async function init() {
+  const { data, error } = await supabase
+    .from("cities")
+    .select("*");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  state.cities = data;
+  render();
+}
+
+init();
     const els = {
       mainScreen: document.querySelector("#mainScreen"),
       detailScreen: document.querySelector("#detailScreen"),
@@ -767,29 +804,9 @@
       backToMainBtn: document.querySelector("#backToMainBtn")
     };
 
-    function loadCities() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          return parsed.map(c => ({
-            ...c,
-            visitedPlaces: Array.isArray(c.visitedPlaces) ? c.visitedPlaces : (c.visitedPlaces ? [c.visitedPlaces] : []),
-            noGo: Array.isArray(c.noGo) ? c.noGo : (c.noGo ? [c.noGo] : [])
-          }));
-        }
-      } catch (error) {
-        console.warn(error);
-      }
-      return initialCities.map((city, index) => ({ 
-        id: crypto.randomUUID ? crypto.randomUUID() : String(index), 
-        ...city 
-      }));
-    }
+   
 
-    function saveCities() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.cities));
-    }
+ 
 
     function daysSince(dateString) {
       if (!dateString) return 9999;
