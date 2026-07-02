@@ -495,6 +495,7 @@
   <main class="app">
     <div class="shell">
       
+      <!-- ÉCRAN PRINCIPAL (TABLEAU) -->
       <div id="mainScreen" class="screen active">
         <header class="topbar">
           <div>
@@ -586,7 +587,7 @@
                 <span><i class="dot p-hot"></i>Jamais / > 1 an</span>
                 <span><i class="dot p-warm"></i>6 mois - 1 an</span>
                 <span><i class="dot p-mid"></i>2 - 6 mois</span>
-                <span><i class="dot p-cool"></i>&lt; 2 mois</span>
+                <span><i class="dot p-cool"></i>< 2 mois</span>
               </div>
             </div>
             <div class="table-wrap">
@@ -613,6 +614,7 @@
         </section>
       </div>
 
+      <!-- ÉCRAN DE DÉTAIL D'UNE VILLE -->
       <div id="detailScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
@@ -624,6 +626,7 @@
           </header>
 
           <div class="detail-grid">
+            <!-- Liste Fait / Visités -->
             <div class="list-box">
               <h3>✓ Lieux visités (Fait)</h3>
               <ul class="list-items" id="visitedList"></ul>
@@ -632,6 +635,7 @@
               </div>
             </div>
 
+            <!-- Liste No Go -->
             <div class="list-box nogo-box">
               <h3>⚠ Zones ou Établissements No Go</h3>
               <ul class="list-items" id="nogoList"></ul>
@@ -647,48 +651,48 @@
   </main>
 
   <script>
-    const STORAGE_KEY = "toulouse-2h-cities-v5";
+    const STORAGE_KEY = "toulouse-2h-cities-v4";
     const todayIso = () => new Date().toISOString().slice(0, 10);
     
     const initialCities = [
-      { name: "Albi", department: "81", population: 49000, minutes: 62, lastVisit: "2026-05-16", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
-      { name: "Auch", department: "32", population: 22600, minutes: 72, lastVisit: "2026-02-07", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
-      { name: "Auterive", department: "31", population: 10000, minutes: 35, lastVisit: "2026-06-05", visitedPlaces: [], noGo: [] },
+      { name: "Albi", department: "81", population: 49000, minutes: 62, lastVisit: "", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
+      { name: "Auch", department: "32", population: 22600, minutes: 72, lastVisit: "", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
+      { name: "Auterive", department: "31", population: 10000, minutes: 35, lastVisit: "2024-06-05", visitedPlaces: [], noGo: [] },
       { name: "Auvillar", department: "82", population: 900, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Balma", department: "31", population: 17100, minutes: 18, lastVisit: "2026-05-27", visitedPlaces: [], noGo: [] },
-      { name: "Blagnac", department: "31", population: 26500, minutes: 18, lastVisit: "2026-04-30", visitedPlaces: [], noGo: [] },
-      { name: "Carbonne", department: "31", population: 5800, minutes: 42, lastVisit: "2026-05-27", visitedPlaces: [], noGo: [] },
-      { name: "Carcassonne", department: "11", population: 46700, minutes: 62, lastVisit: "2026-03-06", visitedPlaces: [], noGo: [] },
-      { name: "Castanet-Tolosan", department: "31", population: 14000, minutes: 22, lastVisit: "2026-05-26", visitedPlaces: [], noGo: [] },
-      { name: "Castelnaudary", department: "11", population: 12200, minutes: 42, lastVisit: "2026-01-10", visitedPlaces: [], noGo: [] },
+      { name: "Balma", department: "31", population: 17100, minutes: 18, lastVisit: "2024-05-27", visitedPlaces: [], noGo: [] },
+      { name: "Blagnac", department: "31", population: 26500, minutes: 18, lastVisit: "2024-04-30", visitedPlaces: [], noGo: [] },
+      { name: "Carbonne", department: "31", population: 5800, minutes: 42, lastVisit: "2024-05-27", visitedPlaces: [], noGo: [] },
+      { name: "Carcassonne", department: "11", population: 46700, minutes: 62, lastVisit: "2024-03-06", visitedPlaces: [], noGo: [] },
+      { name: "Castanet-Tolosan", department: "31", population: 14000, minutes: 22, lastVisit: "2024-05-26", visitedPlaces: [], noGo: [] },
+      { name: "Castelnaudary", department: "11", population: 12200, minutes: 42, lastVisit: "2024-01-10", visitedPlaces: [], noGo: [] },
       { name: "Castelsarrasin", department: "82", population: 14300, minutes: 55, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Castelnau-de-Montmiral", department: "81", population: 1000, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Castres", department: "81", population: 41600, minutes: 78, lastVisit: "2026-06-08", visitedPlaces: [], noGo: [] },
+      { name: "Castres", department: "81", population: 41600, minutes: 78, lastVisit: "2024-06-08", visitedPlaces: [], noGo: [] },
       { name: "Caussade", department: "82", population: 6900, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Cazères", department: "31", population: 5000, minutes: 48, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Cologne", department: "32", population: 1000, minutes: 52, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Colomiers", department: "31", population: 40000, minutes: 20, lastVisit: "2026-06-01", visitedPlaces: [], noGo: ["Décathlon NO GO"] },
+      { name: "Colomiers", department: "31", population: 40000, minutes: 20, lastVisit: "2024-06-01", visitedPlaces: [], noGo: ["Décathlon NO GO"] },
       { name: "Cordes-sur-Ciel", department: "81", population: 900, minutes: 78, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Foix", department: "09", population: 9500, minutes: 74, lastVisit: "2026-02-09", visitedPlaces: ["CROSSFIT", "CENTRE VILLE"], noGo: [] },
-      { name: "Fronton", department: "31", population: 6600, minutes: 36, lastVisit: "2025-10-25", visitedPlaces: [], noGo: [] },
-      { name: "Gaillac", department: "81", population: 15700, minutes: 50, lastVisit: "2026-02-28", visitedPlaces: [], noGo: [] },
+      { name: "Foix", department: "09", population: 9500, minutes: 74, lastVisit: "2024-02-09", visitedPlaces: ["CROSSFIT", "CENTRE VILLE"], noGo: [] },
+      { name: "Fronton", department: "31", population: 6600, minutes: 36, lastVisit: "2023-10-25", visitedPlaces: [], noGo: [] },
+      { name: "Gaillac", department: "81", population: 15700, minutes: 50, lastVisit: "2024-02-28", visitedPlaces: [], noGo: [] },
       { name: "Gimont", department: "32", population: 3100, minutes: 50, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Graulhet", department: "81", population: 12900, minutes: 58, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Grenade", department: "31", population: 8900, minutes: 36, lastVisit: "2026-05-20", visitedPlaces: [], noGo: [] },
+      { name: "Grenade", department: "31", population: 8900, minutes: 36, lastVisit: "2024-05-20", visitedPlaces: [], noGo: [] },
       { name: "L'Union", department: "31", population: 12400, minutes: 18, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "L'Isle-Jourdain", department: "32", population: 9600, minutes: 38, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Lavaur", department: "81", population: 11000, minutes: 42, lastVisit: "2026-06-04", visitedPlaces: [], noGo: [] },
+      { name: "Lavaur", department: "81", population: 11000, minutes: 42, lastVisit: "2024-06-04", visitedPlaces: [], noGo: [] },
       { name: "Lauzerte", department: "82", population: 1500, minutes: 78, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Mazamet", department: "81", population: 10000, minutes: 95, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Mirepoix", department: "09", population: 3100, minutes: 68, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Moissac", department: "82", population: 13600, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Montech", department: "82", population: 6900, minutes: 45, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Montauban", department: "82", population: 62000, minutes: 50, lastVisit: "2026-06-08", visitedPlaces: ["CENTRE VILLE", "QUAI", "CENTRE CO"], noGo: [] },
+      { name: "Montauban", department: "82", population: 62000, minutes: 50, lastVisit: "2024-08-06", visitedPlaces: ["CENTRE VILLE", "QUAI", "CENTRE CO"], noGo: [] },
       { name: "Mauvezin", department: "32", population: 2200, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Muret", department: "31", population: 25300, minutes: 28, lastVisit: "2026-05-27", visitedPlaces: ["ZONE CO", "FP"], noGo: [] },
-      { name: "Pamiers", department: "09", population: 16000, minutes: 55, lastVisit: "2026-02-09", visitedPlaces: [], noGo: [] },
+      { name: "Muret", department: "31", population: 25300, minutes: 28, lastVisit: "2024-05-27", visitedPlaces: ["ZONE CO", "FP"], noGo: [] },
+      { name: "Pamiers", department: "09", population: 16000, minutes: 55, lastVisit: "2024-02-09", visitedPlaces: [], noGo: [] },
       { name: "Rabastens", department: "81", population: 5700, minutes: 42, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Ramonville-Saint-Agne", department: "31", population: 14800, minutes: 18, lastVisit: "2026-05-19", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
+      { name: "Ramonville-Saint-Agne", department: "31", population: 14800, minutes: 18, lastVisit: "2024-05-19", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
       { name: "Revel", department: "31", population: 9900, minutes: 58, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Rieux-Volvestre", department: "31", population: 2600, minutes: 50, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Bram", department: "11", population: 3300, minutes: 50, lastVisit: "", visitedPlaces: [], noGo: [] },
@@ -701,21 +705,21 @@
       { name: "Escalquens", department: "31", population: 7000, minutes: 25, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Labège", department: "31", population: 4300, minutes: 22, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Saint-Lys", department: "31", population: 10000, minutes: 35, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Bessières", department: "31", population: 4300, minutes: 38, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Bessières", document: "31", population: 4300, minutes: 38, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Baziège", department: "31", population: 3600, minutes: 32, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Villemur-sur-Tarn", department: "31", population: 6000, minutes: 45, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Buzet-sur-Tarn", department: "31", population: 2900, minutes: 35, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Nailloux", department: "31", population: 4100, minutes: 35, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Saint-Félix-Lauragais", department: "31", population: 1300, minutes: 45, lastVisit: "2026-01-15", visitedPlaces: [], noGo: [] },
+      { name: "Saint-Félix-Lauragais", department: "31", population: 1300, minutes: 45, lastVisit: "2024-01-15", visitedPlaces: [], noGo: [] },
       { name: "Saint-Gaudens", department: "31", population: 11700, minutes: 75, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Saint-Bertrand-de-Comminges", department: "31", population: 250, minutes: 82, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Saint-Orens-de-Gameville", department: "31", population: 12000, minutes: 22, lastVisit: "2026-05-19", visitedPlaces: ["FP", "CENTRE CO"], noGo: [] },
+      { name: "Saint-Orens-de-Gameville", department: "31", population: 12000, minutes: 22, lastVisit: "2024-05-19", visitedPlaces: ["FP", "CENTRE CO"], noGo: [] },
       { name: "Saint-Sulpice-la-Pointe", department: "81", population: 9500, minutes: 35, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Sorèze", department: "81", population: 2900, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Tarascon-sur-Ariège", department: "09", population: 3000, minutes: 88, lastVisit: "2026-02-09", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
+      { name: "Tarascon-sur-Ariège", department: "09", population: 3000, minutes: 88, lastVisit: "2024-02-09", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
       { name: "Tournefeuille", department: "31", population: 28700, minutes: 22, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Toulouse", department: "31", population: 504000, minutes: 0, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Villefranche-de-Lauragais", department: "31", population: 5000, minutes: 35, lastVisit: "2026-01-10", visitedPlaces: [], noGo: [] },
+      { name: "Villefranche-de-Lauragais", department: "31", population: 5000, minutes: 35, lastVisit: "2024-01-10", visitedPlaces: [], noGo: [] },
       { name: "Fonsorbes", department: "31", population: 12800, minutes: 32, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Plaisance-du-Touch", department: "31", population: 19500, minutes: 25, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Saint-Jean", department: "31", population: 11000, minutes: 20, lastVisit: "", visitedPlaces: [], noGo: [] },
@@ -724,7 +728,7 @@
       { name: "Lisle-sur-Tarn", department: "81", population: 4700, minutes: 48, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Lafrançaise", department: "82", population: 2900, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Cahors", department: "46", population: 20000, minutes: 78, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Tarbes", department: "65", population: 43000, minutes: 95, lastVisit: "2026-01-12", visitedPlaces: [], noGo: [] }
+      { name: "Tarbes", department: "65", population: 43000, minutes: 95, lastVisit: "2024-06-12", visitedPlaces: [], noGo: [] }
     ];
 
     const state = {
@@ -786,3 +790,356 @@
 
     function saveCities() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.cities));
+    }
+
+    function daysSince(dateString) {
+      if (!dateString) return 9999;
+      const date = new Date(dateString + "T00:00:00");
+      const now = new Date(todayIso() + "T00:00:00");
+      return Math.max(0, Math.round((now - date) / 86400000));
+    }
+
+    function formatMinutes(minutes) {
+      if (minutes < 60) return `${minutes} min`;
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+    }
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat("fr-FR").format(value);
+    }
+
+    function enrichedCities() {
+      const maxAge = Math.max(...state.cities.map(city => daysSince(city.lastVisit)), 1);
+      const maxPop = Math.max(...state.cities.map(city => Number(city.population)), 1);
+      return state.cities.map(city => {
+        const age = daysSince(city.lastVisit);
+        const dateScore = age / maxAge;
+        const populationScore = Number(city.population) / maxPop;
+        const score = Math.round(((dateScore * state.dateWeight) + (populationScore * state.populationWeight)) * 100 / (state.dateWeight + state.populationWeight));
+        return { ...city, age, score };
+      });
+    }
+
+    function filteredCities() {
+      const query = state.search.trim().toLowerCase();
+      let list = enrichedCities().filter(city => {
+        const matchesDepartment = state.department === "all" || city.department === state.department;
+        const visitedStr = city.visitedPlaces.join(" ");
+        const nogoStr = city.noGo.join(" ");
+        const haystack = `${city.name} ${city.department} ${visitedStr} ${nogoStr}`.toLowerCase();
+        return matchesDepartment && (!query || haystack.includes(query));
+      });
+
+      const byName = (a, b) => a.name.localeCompare(b.name, "fr");
+      const sorters = {
+        score: (a, b) => b.score - a.score || b.age - a.age || b.population - a.population,
+        date: (a, b) => b.age - a.age || byName(a, b),
+        population: (a, b) => b.population - a.population || byName(a, b),
+        time: (a, b) => a.minutes - b.minutes || byName(a, b),
+        name: byName
+      };
+      return list.sort(sorters[state.sortMode]);
+    }
+
+    /* Attribution des classes couleurs selon tes critères temporels exacts */
+    function priorityClassByAge(age) {
+      if (age === 9999 || age > 365) return "p-hot";   // Jamais visité OU plus d'un an (Rouge)
+      if (age >= 183) return "p-warm";                 // Entre 6 mois et 1 an (Orange)
+      if (age >= 61) return "p-mid";                   // Entre 2 mois et 6 mois (Jaune)
+      return "p-cool";                                 // Moins de 2 mois (Vert)
+    }
+
+    function renderDepartmentFilter() {
+      const selected = state.department;
+      const departments = [...new Set(state.cities.map(city => city.department))].sort((a, b) => a.localeCompare(b, "fr", { numeric: true }));
+      els.departmentFilter.innerHTML = `<option value="all">Tous</option>` + departments.map(dep => `<option value="${dep}">${dep}</option>`).join("");
+      els.departmentFilter.value = departments.includes(selected) ? selected : "all";
+      state.department = els.departmentFilter.value;
+    }
+
+    function render() {
+      renderDepartmentFilter();
+      const list = filteredCities();
+      const avg = list.length ? Math.round(list.reduce((sum, city) => sum + city.age, 0) / list.length) : 0;
+      els.cityCount.textContent = list.length;
+      els.avgAge.textContent = `${avg} j`;
+      els.resultTitle.textContent = `${list.length} commune${list.length > 1 ? "s" : ""}`;
+      els.dateWeightValue.textContent = `${state.dateWeight}%`;
+      els.populationWeightValue.textContent = `${state.populationWeight}%`;
+      els.emptyState.hidden = list.length !== 0;
+      
+      els.rows.innerHTML = list.map((city, index) => {
+        const countVisited = city.visitedPlaces.length;
+        const countNogo = city.noGo.length;
+        const labelContent = (countVisited || countNogo) 
+          ? `${countVisited} Fait / ${countNogo} No Go` 
+          : "Vide";
+
+        return `
+          <tr>
+            <td class="priority"><div class="${priorityClassByAge(city.age)}"></div></td>
+            <td class="rank">${index + 1}</td>
+            <td>
+              <span class="city">${city.name}</span>
+              <span class="sub">Département ${city.department}</span>
+            </td>
+            <td>${formatMinutes(Number(city.minutes))}</td>
+            <td>${formatNumber(Number(city.population))}</td>
+            <td>
+              <div class="date-cell">
+                <input type="date" value="${city.lastVisit || ""}" data-action="date" data-id="${city.id}">
+                <button class="mini" title="Marquer aujourd'hui" data-action="today" data-id="${city.id}">✓</button>
+              </div>
+            </td>
+            <td>${city.age === 9999 ? "Jamais" : formatNumber(city.age)}</td>
+            <td>
+              <button class="btn-link" data-action="open-details" data-id="${city.id}">
+                Détails (${labelContent}) →
+              </button>
+            </td>
+            <td><span class="score">${city.score}</span></td>
+            <td><button class="mini remove" title="Supprimer" data-action="remove" data-id="${city.id}">×</button></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function openCityDetails(cityId) {
+      const city = state.cities.find(c => c.id === cityId);
+      if (!city) return;
+      
+      state.currentSelectedCityId = cityId;
+      els.detailCityName.textContent = city.name;
+      els.detailDept.textContent = `Département ${city.department}`;
+      
+      renderDetailLists(city);
+      
+      els.mainScreen.classList.remove("active");
+      els.detailScreen.classList.add("active");
+    }
+
+    function renderDetailLists(city) {
+      els.visitedList.innerHTML = city.visitedPlaces.length 
+        ? city.visitedPlaces.map((place, i) => `
+            <li>
+              <span>${place}</span>
+              <button class="delete-item" data-list="visited" data-index="${i}">×</button>
+            </li>`).join("")
+        : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucun lieu enregistré</li>`;
+
+      els.nogoList.innerHTML = city.noGo.length 
+        ? city.noGo.map((item, i) => `
+            <li>
+              <span>${item}</span>
+              <button class="delete-item" data-list="nogo" data-index="${i}">×</button>
+            </li>`).join("")
+        : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucune zone No Go</li>`;
+    }
+
+    function closeDetails() {
+      state.currentSelectedCityId = null;
+      els.detailScreen.classList.remove("active");
+      els.mainScreen.classList.add("active");
+      render();
+    }
+
+    function syncWeights(changed) {
+      if (changed === "date") {
+        state.dateWeight = Number(els.dateWeight.value);
+        state.populationWeight = 100 - state.dateWeight;
+        els.populationWeight.value = state.populationWeight;
+      } else {
+        state.populationWeight = Number(els.populationWeight.value);
+        state.dateWeight = 100 - state.populationWeight;
+        els.dateWeight.value = state.dateWeight;
+      }
+      render();
+    }
+
+    function download(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    els.search.addEventListener("input", event => {
+      state.search = event.target.value;
+      render();
+    });
+
+    els.departmentFilter.addEventListener("change", event => {
+      state.department = event.target.value;
+      render();
+    });
+
+    els.sortMode.addEventListener("change", event => {
+      state.sortMode = event.target.value;
+      render();
+    });
+
+    els.dateWeight.addEventListener("input", () => syncWeights("date"));
+    els.populationWeight.addEventListener("input", () => syncWeights("population"));
+
+    els.rows.addEventListener("click", event => {
+      const target = event.target.closest("[data-action]");
+      if (!target) return;
+      const cityId = target.dataset.id;
+      const city = state.cities.find(item => item.id === cityId);
+      if (!city) return;
+
+      if (target.dataset.action === "open-details") {
+        openCityDetails(cityId);
+      }
+      if (target.dataset.action === "today") {
+        city.lastVisit = todayIso();
+        saveCities();
+        render();
+      }
+      if (target.dataset.action === "remove") {
+        if(confirm(`Supprimer la commune ${city.name} ?`)) {
+          state.cities = state.cities.filter(item => item.id !== city.id);
+          saveCities();
+          render();
+        }
+      }
+    });
+
+    els.rows.addEventListener("change", event => {
+      const action = event.target.dataset.action;
+      if (action !== "date") return;
+      const city = state.cities.find(item => item.id === event.target.dataset.id);
+      if (!city) return;
+      
+      city.lastVisit = event.target.value;
+      saveCities();
+      render();
+    });
+
+    els.backToMainBtn.addEventListener("click", closeDetails);
+
+    els.addVisitedInput.addEventListener("keydown", event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+      if (city) {
+        city.visitedPlaces.push(event.target.value.trim());
+        event.target.value = "";
+        saveCities();
+        renderDetailLists(city);
+      }
+    });
+
+    els.addNogoInput.addEventListener("keydown", event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+      if (city) {
+        city.noGo.push(event.target.value.trim());
+        event.target.value = "";
+        saveCities();
+        renderDetailLists(city);
+      }
+    });
+
+    document.querySelectorAll("#visitedList, #nogoList").forEach(ul => {
+      ul.addEventListener("click", event => {
+        const btn = event.target.closest(".delete-item");
+        if (!btn) return;
+        const index = parseInt(btn.dataset.index, 10);
+        const listType = btn.dataset.list;
+        const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+        
+        if (city) {
+          if (listType === "visited") city.visitedPlaces.splice(index, 1);
+          if (listType === "nogo") city.noGo.splice(index, 1);
+          saveCities();
+          renderDetailLists(city);
+        }
+      });
+    });
+
+    els.addForm.addEventListener("submit", event => {
+      event.preventDefault();
+      state.cities.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        name: document.querySelector("#newName").value.trim(),
+        department: document.querySelector("#newDepartment").value.trim(),
+        population: Number(document.querySelector("#newPopulation").value),
+        minutes: Number(document.querySelector("#newTime").value),
+        lastVisit: document.querySelector("#newDate").value,
+        visitedPlaces: [],
+        noGo: []
+      });
+      event.currentTarget.reset();
+      saveCities();
+      render();
+    });
+
+    document.querySelector("#exportJson").addEventListener("click", () => {
+      download("villes-toulouse-2h.json", JSON.stringify(state.cities, null, 2), "application/json");
+    });
+
+    document.querySelector("#exportCsv").addEventListener("click", () => {
+      const header = ["nom", "departement", "population", "minutes_depuis_toulouse", "dernier_passage", "lieux_visites", "no_go"];
+      const rows = state.cities.map(city => [
+        city.name, 
+        city.department, 
+        city.population, 
+        city.minutes, 
+        city.lastVisit, 
+        city.visitedPlaces.join(" | "), 
+        city.noGo.join(" | ")
+      ]);
+      const csv = [header, ...rows].map(row => row.map(value => `"${String(value ?? "").replaceAll('"', '""')}"`).join(",")).join("\n");
+      download("villes-toulouse-2h.csv", csv, "text/csv;charset=utf-8");
+    });
+
+    document.querySelector("#importBtn").addEventListener("click", () => els.importFile.click());
+    els.importFile.addEventListener("change", async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        state.cities = data.map((city, index) => {
+          let vp = [];
+          if (Array.isArray(city.visitedPlaces)) vp = city.visitedPlaces;
+          else if (city.visitedPlaces) vp = [city.visitedPlaces];
+          
+          let ng = [];
+          if (Array.isArray(city.noGo)) ng = city.noGo;
+          else if (city.noGo) ng = [city.noGo];
+
+          return {
+            id: city.id || (crypto.randomUUID ? crypto.randomUUID() : String(index)),
+            name: city.name,
+            department: String(city.department),
+            population: Number(city.population),
+            minutes: Number(city.minutes),
+            lastVisit: city.lastVisit || "",
+            visitedPlaces: vp,
+            noGo: ng
+          };
+        }).filter(city => city.name && city.department && city.population > 0);
+        saveCities();
+        render();
+      } catch (e) {
+        alert("Erreur lors de l'importation du fichier.");
+      }
+      event.target.value = "";
+    });
+
+    document.querySelector("#resetBtn").addEventListener("click", () => {
+      if (!confirm("Réinitialiser les données ?")) return;
+      state.cities = initialCities.map((city, index) => ({ id: crypto.randomUUID ? crypto.randomUUID() : String(index), ...city }));
+      saveCities();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
