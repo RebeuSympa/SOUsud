@@ -495,6 +495,7 @@
   <main class="app">
     <div class="shell">
       
+      <!-- ÉCRAN PRINCIPAL (TABLEAU) -->
       <div id="mainScreen" class="screen active">
         <header class="topbar">
           <div>
@@ -583,10 +584,10 @@
             <div class="table-head">
               <strong id="resultTitle">Classement</strong>
               <div class="legend">
-                <span><i class="dot p-hot"></i>Priorité forte</span>
-                <span><i class="dot p-warm"></i>À planifier</span>
-                <span><i class="dot p-mid"></i>À surveiller</span>
-                <span><i class="dot p-cool"></i>Récent</span>
+                <span><i class="dot p-hot"></i>Jamais / > 1 an</span>
+                <span><i class="dot p-warm"></i>6 mois - 1 an</span>
+                <span><i class="dot p-mid"></i>2 - 6 mois</span>
+                <span><i class="dot p-cool"></i>< 2 mois</span>
               </div>
             </div>
             <div class="table-wrap">
@@ -613,6 +614,7 @@
         </section>
       </div>
 
+      <!-- ÉCRAN DE DÉTAIL D'UNE VILLE -->
       <div id="detailScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
@@ -624,6 +626,7 @@
           </header>
 
           <div class="detail-grid">
+            <!-- Liste Fait / Visités -->
             <div class="list-box">
               <h3>✓ Lieux visités (Fait)</h3>
               <ul class="list-items" id="visitedList"></ul>
@@ -632,6 +635,7 @@
               </div>
             </div>
 
+            <!-- Liste No Go -->
             <div class="list-box nogo-box">
               <h3>⚠ Zones ou Établissements No Go</h3>
               <ul class="list-items" id="nogoList"></ul>
@@ -650,7 +654,6 @@
     const STORAGE_KEY = "toulouse-2h-cities-v4";
     const todayIso = () => new Date().toISOString().slice(0, 10);
     
-    // Données initiales converties pour supporter des tableaux de chaînes (Array) pour les Lieux et NoGo
     const initialCities = [
       { name: "Albi", department: "81", population: 49000, minutes: 62, lastVisit: "", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
       { name: "Auch", department: "32", population: 22600, minutes: 72, lastVisit: "", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
@@ -702,7 +705,7 @@
       { name: "Escalquens", department: "31", population: 7000, minutes: 25, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Labège", department: "31", population: 4300, minutes: 22, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Saint-Lys", department: "31", population: 10000, minutes: 35, lastVisit: "", visitedPlaces: [], noGo: [] },
-      { name: "Bessières", department: "31", population: 4300, minutes: 38, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Bessières", document: "31", population: 4300, minutes: 38, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Baziège", department: "31", population: 3600, minutes: 32, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Villemur-sur-Tarn", department: "31", population: 6000, minutes: 45, lastVisit: "", visitedPlaces: [], noGo: [] },
       { name: "Buzet-sur-Tarn", department: "31", population: 2900, minutes: 35, lastVisit: "", visitedPlaces: [], noGo: [] },
@@ -735,7 +738,7 @@
       sortMode: "score",
       dateWeight: 65,
       populationWeight: 35,
-      currentSelectedCityId: null // Pour suivre la ville ouverte dans la page détail
+      currentSelectedCityId: null
     };
 
     const els = {
@@ -756,7 +759,6 @@
       addForm: document.querySelector("#addForm"),
       importFile: document.querySelector("#importFile"),
       
-      // Éléments du volet détail
       detailCityName: document.querySelector("#detailCityName"),
       detailDept: document.querySelector("#detailDept"),
       visitedList: document.querySelector("#visitedList"),
@@ -841,11 +843,12 @@
       return list.sort(sorters[state.sortMode]);
     }
 
-    function priorityClass(score) {
-      if (score >= 72) return "p-hot";
-      if (score >= 48) return "p-warm";
-      if (score >= 26) return "p-mid";
-      return "p-cool";
+    /* Attribution des classes couleurs selon tes critères temporels exacts */
+    function priorityClassByAge(age) {
+      if (age === 9999 || age > 365) return "p-hot";   // Jamais visité OU plus d'un an (Rouge)
+      if (age >= 183) return "p-warm";                 // Entre 6 mois et 1 an (Orange)
+      if (age >= 61) return "p-mid";                   // Entre 2 mois et 6 mois (Jaune)
+      return "p-cool";                                 // Moins de 2 mois (Vert)
     }
 
     function renderDepartmentFilter() {
@@ -876,7 +879,7 @@
 
         return `
           <tr>
-            <td class="priority"><div class="${priorityClass(city.score)}"></div></td>
+            <td class="priority"><div class="${priorityClassByAge(city.age)}"></div></td>
             <td class="rank">${index + 1}</td>
             <td>
               <span class="city">${city.name}</span>
@@ -903,7 +906,6 @@
       }).join("");
     }
 
-    /* Redirection / Navigation vers l'écran de détail */
     function openCityDetails(cityId) {
       const city = state.cities.find(c => c.id === cityId);
       if (!city) return;
@@ -919,7 +921,6 @@
     }
 
     function renderDetailLists(city) {
-      // Rendu Liste Fait
       els.visitedList.innerHTML = city.visitedPlaces.length 
         ? city.visitedPlaces.map((place, i) => `
             <li>
@@ -928,7 +929,6 @@
             </li>`).join("")
         : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucun lieu enregistré</li>`;
 
-      // Rendu Liste No Go
       els.nogoList.innerHTML = city.noGo.length 
         ? city.noGo.map((item, i) => `
             <li>
@@ -968,7 +968,6 @@
       URL.revokeObjectURL(url);
     }
 
-    // Événements d'interaction du tableau principal
     els.search.addEventListener("input", event => {
       state.search = event.target.value;
       render();
@@ -1022,10 +1021,8 @@
       render();
     });
 
-    // Événements liés à l'écran de détails
     els.backToMainBtn.addEventListener("click", closeDetails);
 
-    // Gérer l'ajout d'éléments dans la page dédiée (Touche Entrée)
     els.addVisitedInput.addEventListener("keydown", event => {
       if (event.key !== "Enter" || !event.target.value.trim()) return;
       const city = state.cities.find(c => c.id === state.currentSelectedCityId);
@@ -1048,7 +1045,6 @@
       }
     });
 
-    // Supprimer un élément des listes Fait / No Go
     document.querySelectorAll("#visitedList, #nogoList").forEach(ul => {
       ul.addEventListener("click", event => {
         const btn = event.target.closest(".delete-item");
@@ -1147,4 +1143,3 @@
   </script>
 </body>
 </html>
- 
