@@ -521,54 +521,118 @@
   </main>
 
   <script>
-    const STORAGE_KEY = "toulouse-2h-cities-v1";
+    const STORAGE_KEY = "toulouse-2h-cities-v3";
     const todayIso = () => new Date().toISOString().slice(0, 10);
     const initialCities = [
-      { name: "Toulouse", department: "31", population: 504078, minutes: 0, lastVisit: "2026-06-28" },
-      { name: "Colomiers", department: "31", population: 39968, minutes: 20, lastVisit: "2026-04-12" },
-      { name: "Tournefeuille", department: "31", population: 28673, minutes: 22, lastVisit: "2026-03-08" },
-      { name: "Blagnac", department: "31", population: 26502, minutes: 18, lastVisit: "2026-05-20" },
-      { name: "Muret", department: "31", population: 25305, minutes: 28, lastVisit: "2026-02-14" },
-      { name: "Ramonville-Saint-Agne", department: "31", population: 14821, minutes: 18, lastVisit: "2026-01-22" },
-      { name: "Balma", department: "31", population: 17133, minutes: 18, lastVisit: "2025-12-10" },
-      { name: "Cugnaux", department: "31", population: 19195, minutes: 24, lastVisit: "2025-11-04" },
-      { name: "Saint-Gaudens", department: "31", population: 11664, minutes: 75, lastVisit: "2025-09-15" },
-      { name: "Villefranche-de-Lauragais", department: "31", population: 5010, minutes: 35, lastVisit: "2025-07-02" },
-      { name: "Revel", department: "31", population: 9861, minutes: 58, lastVisit: "2025-05-12" },
-      { name: "Montauban", department: "82", population: 62000, minutes: 50, lastVisit: "2025-10-24" },
-      { name: "Moissac", department: "82", population: 13600, minutes: 62, lastVisit: "2025-04-09" },
-      { name: "Castelsarrasin", department: "82", population: 14300, minutes: 55, lastVisit: "2025-08-30" },
-      { name: "Albi", department: "81", population: 49094, minutes: 62, lastVisit: "2025-06-18" },
-      { name: "Castres", department: "81", population: 41636, minutes: 78, lastVisit: "2025-03-16" },
-      { name: "Gaillac", department: "81", population: 15700, minutes: 50, lastVisit: "2025-01-11" },
-      { name: "Graulhet", department: "81", population: 12900, minutes: 58, lastVisit: "2024-12-02" },
-      { name: "Mazamet", department: "81", population: 10000, minutes: 95, lastVisit: "2025-02-21" },
-      { name: "Auch", department: "32", population: 22600, minutes: 72, lastVisit: "2025-05-27" },
-      { name: "L'Isle-Jourdain", department: "32", population: 9600, minutes: 38, lastVisit: "2025-09-06" },
-      { name: "Condom", department: "32", population: 6300, minutes: 105, lastVisit: "2024-11-19" },
-      { name: "Fleurance", department: "32", population: 6100, minutes: 82, lastVisit: "2025-08-01" },
-      { name: "Carcassonne", department: "11", population: 46673, minutes: 62, lastVisit: "2025-07-21" },
-      { name: "Castelnaudary", department: "11", population: 12200, minutes: 42, lastVisit: "2025-12-18" },
-      { name: "Limoux", department: "11", population: 10000, minutes: 84, lastVisit: "2024-10-29" },
-      { name: "Narbonne", department: "11", population: 56000, minutes: 105, lastVisit: "2025-01-30" },
-      { name: "Foix", department: "09", population: 9500, minutes: 74, lastVisit: "2025-06-04" },
-      { name: "Pamiers", department: "09", population: 16000, minutes: 55, lastVisit: "2025-10-08" },
-      { name: "Saint-Girons", department: "09", population: 6400, minutes: 90, lastVisit: "2024-09-20" },
-      { name: "Tarbes", department: "65", population: 43000, minutes: 95, lastVisit: "2025-02-06" },
-      { name: "Lourdes", department: "65", population: 13200, minutes: 112, lastVisit: "2024-12-27" },
-      { name: "Bagnères-de-Bigorre", department: "65", population: 7100, minutes: 115, lastVisit: "2025-04-22" },
-      { name: "Agen", department: "47", population: 33000, minutes: 86, lastVisit: "2025-03-03" },
-      { name: "Villeneuve-sur-Lot", department: "47", population: 22000, minutes: 112, lastVisit: "2024-08-12" },
-      { name: "Marmande", department: "47", population: 17500, minutes: 118, lastVisit: "2025-09-27" },
-      { name: "Cahors", department: "46", population: 20000, minutes: 78, lastVisit: "2025-11-15" },
-      { name: "Figeac", department: "46", population: 9800, minutes: 118, lastVisit: "2024-07-06" },
-      { name: "Rodez", department: "12", population: 24300, minutes: 118, lastVisit: "2024-06-18" },
-      { name: "Villefranche-de-Rouergue", department: "12", population: 11600, minutes: 105, lastVisit: "2025-01-04" },
-      { name: "Millau", department: "12", population: 22000, minutes: 120, lastVisit: "2024-05-25" },
-      { name: "Béziers", department: "34", population: 80000, minutes: 120, lastVisit: "2025-02-25" },
-      { name: "Mende", department: "48", population: 12300, minutes: 120, lastVisit: "2024-09-02" }
-    ];
+  const initialCities = [
+  { name: "Albi", department: "81", population: 49000, minutes: 62, lastVisit: "" },
+  { name: "Auch", department: "32", population: 22600, minutes: 72, lastVisit: "" },
 
+  { name: "Auterive", department: "31", population: 10000, minutes: 35, lastVisit: "05/06/2024" },
+  { name: "Auvillar", department: "82", population: 900, minutes: 62, lastVisit: "" },
+
+  { name: "Balma", department: "31", population: 17100, minutes: 18, lastVisit: "27/05/2024" },
+  { name: "Blagnac", department: "31", population: 26500, minutes: 18, lastVisit: "30/04/2024" },
+
+  { name: "Carbonne", department: "31", population: 5800, minutes: 42, lastVisit: "27/05/2024" },
+  { name: "Carcassonne", department: "11", population: 46700, minutes: 62, lastVisit: "06/03/2024" },
+
+  { name: "Castanet-Tolosan", department: "31", population: 14000, minutes: 22, lastVisit: "26/05/2024" },
+  { name: "Castelnaudary", department: "11", population: 12200, minutes: 42, lastVisit: "10/01/2024" },
+  { name: "Castelsarrasin", department: "82", population: 14300, minutes: 55, lastVisit: "" },
+  { name: "Castelnau-de-Montmiral", department: "81", population: 1000, minutes: 62, lastVisit: "" },
+
+  { name: "Castres", department: "81", population: 41600, minutes: 78, lastVisit: "08/06/2024" },
+  { name: "Caussade", department: "82", population: 6900, minutes: 62, lastVisit: "" },
+  { name: "Cazères", department: "31", population: 5000, minutes: 48, lastVisit: "" },
+
+  { name: "Cologne", department: "32", population: 1000, minutes: 52, lastVisit: "" },
+  { name: "Colomiers", department: "31", population: 40000, minutes: 20, lastVisit: "01/06/2024" },
+
+  { name: "Cordes-sur-Ciel", department: "81", population: 900, minutes: 78, lastVisit: "" },
+
+  { name: "Foix", department: "09", population: 9500, minutes: 74, lastVisit: "09/02/2024" },
+  { name: "Fronton", department: "31", population: 6600, minutes: 36, lastVisit: "25/10/2023" },
+
+  { name: "Gaillac", department: "81", population: 15700, minutes: 50, lastVisit: "28/02/2024" },
+  { name: "Gimont", department: "32", population: 3100, minutes: 50, lastVisit: "" },
+
+  { name: "Graulhet", department: "81", population: 12900, minutes: 58, lastVisit: "" },
+  { name: "Grenade", department: "31", population: 8900, minutes: 36, lastVisit: "20/05/2024" },
+
+  { name: "L'Union", department: "31", population: 12400, minutes: 18, lastVisit: "" },
+  { name: "L'Isle-Jourdain", department: "32", population: 9600, minutes: 38, lastVisit: "" },
+
+  { name: "Lavaur", department: "81", population: 11000, minutes: 42, lastVisit: "04/06/2024" },
+  { name: "Lauzerte", department: "82", population: 1500, minutes: 78, lastVisit: "" },
+
+  { name: "Mazamet", department: "81", population: 10000, minutes: 95, lastVisit: "" },
+  { name: "Mirepoix", department: "09", population: 3100, minutes: 68, lastVisit: "" },
+
+  { name: "Moissac", department: "82", population: 13600, minutes: 62, lastVisit: "" },
+  { name: "Montech", department: "82", population: 6900, minutes: 45, lastVisit: "" },
+
+  { name: "Montauban", department: "82", population: 62000, minutes: 50, lastVisit: "06/08/2024" },
+
+  { name: "Mauvezin", department: "32", population: 2200, minutes: 62, lastVisit: "" },
+
+  { name: "Muret", department: "31", population: 25300, minutes: 28, lastVisit: "27/05/2024" },
+  { name: "Pamiers", department: "09", population: 16000, minutes: 55, lastVisit: "09/02/2024" },
+
+  { name: "Rabastens", department: "81", population: 5700, minutes: 42, lastVisit: "" },
+  { name: "Ramonville-Saint-Agne", department: "31", population: 14800, minutes: 18, lastVisit: "19/05/2024" },
+
+  { name: "Revel", department: "31", population: 9900, minutes: 58, lastVisit: "" },
+  { name: "Rieux-Volvestre", department: "31", population: 2600, minutes: 50, lastVisit: "" },
+
+  { name: "Bram", department: "11", population: 3300, minutes: 50, lastVisit: "" },
+  { name: "Limoux", department: "11", population: 10000, minutes: 84, lastVisit: "" },
+
+  { name: "Saverdun", department: "09", population: 4800, minutes: 45, lastVisit: "" },
+  { name: "Varilhes", department: "09", population: 3500, minutes: 62, lastVisit: "" },
+  { name: "Mazères", department: "09", population: 3900, minutes: 45, lastVisit: "" },
+
+  { name: "Samatan", department: "32", population: 2500, minutes: 58, lastVisit: "" },
+  { name: "Lombez", department: "32", population: 2200, minutes: 60, lastVisit: "" },
+
+  { name: "Escalquens", department: "31", population: 7000, minutes: 25, lastVisit: "" },
+  { name: "Labège", department: "31", population: 4300, minutes: 22, lastVisit: "" },
+
+  { name: "Saint-Lys", department: "31", population: 10000, minutes: 35, lastVisit: "" },
+  { name: "Bessières", department: "31", population: 4300, minutes: 38, lastVisit: "" },
+  { name: "Baziège", department: "31", population: 3600, minutes: 32, lastVisit: "" },
+  { name: "Villemur-sur-Tarn", department: "31", population: 6000, minutes: 45, lastVisit: "" },
+  { name: "Buzet-sur-Tarn", department: "31", population: 2900, minutes: 35, lastVisit: "" },
+  { name: "Nailloux", department: "31", population: 4100, minutes: 35, lastVisit: "" },
+
+  { name: "Saint-Félix-Lauragais", department: "31", population: 1300, minutes: 45, lastVisit: "15/01/2024" },
+  { name: "Saint-Gaudens", department: "31", population: 11700, minutes: 75, lastVisit: "" },
+
+  { name: "Saint-Bertrand-de-Comminges", department: "31", population: 250, minutes: 82, lastVisit: "" },
+  { name: "Saint-Orens-de-Gameville", department: "31", population: 12000, minutes: 22, lastVisit: "19/05/2024" },
+
+  { name: "Saint-Sulpice-la-Pointe", department: "81", population: 9500, minutes: 35, lastVisit: "" },
+  { name: "Sorèze", department: "81", population: 2900, minutes: 62, lastVisit: "" },
+
+  { name: "Tarascon-sur-Ariège", department: "09", population: 3000, minutes: 88, lastVisit: "09/02/2024" },
+  { name: "Tournefeuille", department: "31", population: 28700, minutes: 22, lastVisit: "" },
+
+  { name: "Toulouse", department: "31", population: 504000, minutes: 0, lastVisit: "" },
+
+  { name: "Villefranche-de-Lauragais", department: "31", population: 5000, minutes: 35, lastVisit: "10/01/2024" },
+
+  { name: "Fonsorbes", department: "31", population: 12800, minutes: 32, lastVisit: "" },
+  { name: "Plaisance-du-Touch", department: "31", population: 19500, minutes: 25, lastVisit: "" },
+  { name: "Saint-Jean", department: "31", population: 11000, minutes: 20, lastVisit: "" },
+  { name: "Cugnaux", department: "31", population: 19200, minutes: 24, lastVisit: "" },
+  { name: "Saint-Jory", department: "31", population: 6500, minutes: 28, lastVisit: "" },
+
+  { name: "Lisle-sur-Tarn", department: "81", population: 4700, minutes: 48, lastVisit: "" },
+  { name: "Lafrançaise", department: "82", population: 2900, minutes: 62, lastVisit: "" },
+
+  { name: "Cahors", department: "46", population: 20000, minutes: 78, lastVisit: "" },
+  { name: "Tarbes", department: "65", population: 43000, minutes: 95, lastVisit: "12/06/2024" }
+];
     const state = {
       cities: loadCities(),
       search: "",
