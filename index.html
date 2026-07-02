@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Aide pour RM</title>
   
-  <!-- Ajout de Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -479,7 +478,6 @@
   <main class="app">
     <div class="shell">
       
-      <!-- ÉCRAN PRINCIPAL -->
       <div id="mainScreen" class="screen active">
         <header class="topbar">
           <div>
@@ -594,7 +592,6 @@
         </section>
       </div>
 
-      <!-- ÉCRAN DE DÉTAIL D'UNE VILLE -->
       <div id="detailScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
@@ -606,7 +603,6 @@
           </header>
 
           <div class="detail-grid">
-            <!-- Liste Fait -->
             <div class="list-box">
               <h3>✓ Lieux visités (Fait)</h3>
               <ul class="list-items" id="visitedList"></ul>
@@ -615,7 +611,6 @@
               </div>
             </div>
 
-            <!-- Liste No Go -->
             <div class="list-box nogo-box">
               <h3>⚠ Zones ou Établissements No Go</h3>
               <ul class="list-items" id="nogoList"></ul>
@@ -635,7 +630,8 @@
     const supabaseUrl = 'https://teeuganjefwegazhoubj.supabase.co'; 
     const supabaseKey = 'TA_CLE_PUBLIQUE_ICI'; // <-- À REMPLACER PAR TA CLÉ sb_publishable...
     
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    // CORRECTION : On renomme en "db" pour éviter le conflit avec le nom "supabase" importé par le CDN
+    const db = window.supabase.createClient(supabaseUrl, supabaseKey);
     const todayIso = () => new Date().toISOString().slice(0, 10);
     
     // Données par défaut pour peupler la base de données via le bouton "Réinitialiser"
@@ -755,7 +751,7 @@
     // --- FONCTIONS BASE DE DONNÉES ---
 
     async function loadCitiesFromDB() {
-      const { data, error } = await supabase.from('cities').select('*');
+      const { data, error } = await db.from('cities').select('*');
       if (error) {
         console.error("Erreur de chargement:", error);
         return [];
@@ -764,17 +760,17 @@
     }
 
     async function updateCityInDB(cityId, updates) {
-      const { error } = await supabase.from('cities').update(updates).eq('id', cityId);
+      const { error } = await db.from('cities').update(updates).eq('id', cityId);
       if (error) console.error("Erreur de mise à jour:", error);
     }
 
     async function deleteCityFromDB(cityId) {
-      const { error } = await supabase.from('cities').delete().eq('id', cityId);
+      const { error } = await db.from('cities').delete().eq('id', cityId);
       if (error) console.error("Erreur de suppression:", error);
     }
 
     async function addCityToDB(newCity) {
-      const { data, error } = await supabase.from('cities').insert([newCity]).select();
+      const { data, error } = await db.from('cities').insert([newCity]).select();
       if (error) {
         console.error("Erreur d'ajout:", error);
         return null;
@@ -1081,7 +1077,7 @@
       }
       
       // 2. Insertion des nouvelles données
-      const { data, error } = await supabase.from('cities').insert(initialCities).select();
+      const { data, error } = await db.from('cities').insert(initialCities).select();
       
       if (error) {
         alert("Erreur lors de la réinitialisation de la base de données !");
@@ -1097,7 +1093,6 @@
       els.rows.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 20px;">Chargement depuis Supabase...</td></tr>';
       state.cities = await loadCitiesFromDB();
       
-      // Si la base est vide au premier lancement, on l'indique.
       if (state.cities.length === 0) {
           els.rows.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 20px;">La base de données est vide. Clique sur "Réinitialiser" en haut pour injecter les villes.</td></tr>';
       } else {
@@ -1109,4 +1104,3 @@
   </script>
 </body>
 </html>
- 
