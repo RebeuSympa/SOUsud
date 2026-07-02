@@ -1080,18 +1080,8 @@ init();
 
     els.addForm.addEventListener("submit", event => {
       event.preventDefault();
-      state.cities.push({
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-        name: document.querySelector("#newName").value.trim(),
-        department: document.querySelector("#newDepartment").value.trim(),
-        population: Number(document.querySelector("#newPopulation").value),
-        minutes: Number(document.querySelector("#newTime").value),
-        lastVisit: document.querySelector("#newDate").value,
-        visitedPlaces: [],
-        noGo: []
-      });
+      await supabase.from("cities").insert(newCity);
       event.currentTarget.reset();
-      saveCities();
       render();
     });
 
