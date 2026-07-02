@@ -46,8 +46,16 @@
     }
 
     .shell {
-      max-width: 1320px;
+      max-width: 1200px;
       margin: 0 auto;
+    }
+
+    /* Gestion des écrans / pages */
+    .screen {
+      display: none;
+    }
+    .screen.active {
+      display: block;
     }
 
     .topbar {
@@ -104,11 +112,6 @@
 
     .btn.danger {
       background: #8f3326;
-    }
-
-    .btn.icon {
-      width: 40px;
-      padding: 0;
     }
 
     .grid {
@@ -259,7 +262,7 @@
       border-collapse: separate;
       border-spacing: 0;
       width: 100%;
-      min-width: 880px;
+      min-width: 800px;
       background: white;
     }
 
@@ -336,12 +339,11 @@
       display: flex;
       gap: 8px;
       align-items: center;
-      min-width: 220px;
     }
 
     .date-cell input {
       min-height: 36px;
-      max-width: 150px;
+      max-width: 140px;
     }
 
     .mini {
@@ -351,6 +353,19 @@
       background: #edf1ef;
       color: var(--ink);
       font-weight: 900;
+    }
+
+    .btn-link {
+      background: var(--soft);
+      color: var(--accent);
+      border: 1px solid #dce8e2;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 6px;
+    }
+    .btn-link:hover {
+      background: #dbeae2;
     }
 
     .remove {
@@ -369,9 +384,85 @@
       display: none;
     }
 
+    /* Styles pour l'écran de détail de la ville */
+    .detail-container {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-top: 10px;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .list-box {
+      background: #fbfcfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .list-box h3 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .list-box.nogo-box h3 {
+      color: var(--accent-2);
+    }
+
+    .list-items {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 14px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .list-items li {
+      background: white;
+      border: 1px solid var(--line);
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .delete-item {
+      background: transparent;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: bold;
+      padding: 0 4px;
+    }
+    .delete-item:hover {
+      color: var(--accent-2);
+    }
+
     @media (max-width: 980px) {
       .app { padding: 14px; }
-      .topbar, .grid {
+      .topbar, .grid, .detail-grid {
         grid-template-columns: 1fr;
       }
       .toolbar {
@@ -403,245 +494,253 @@
 <body>
   <main class="app">
     <div class="shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">#OneTeam</p>
-          <h1>Aide pour RM</h1>
-        </div>
-        <div class="toolbar">
-          <button class="btn secondary" id="exportJson" title="Exporter les données JSON">Exporter JSON</button>
-          <button class="btn secondary" id="exportCsv" title="Exporter les données CSV">Exporter CSV</button>
-          <button class="btn secondary" id="importBtn" title="Importer un fichier JSON">Importer</button>
-          <button class="btn danger" id="resetBtn" title="Revenir aux données initiales">Réinitialiser</button>
-          <input class="file-input" id="importFile" type="file" accept="application/json,.json">
-        </div>
-      </header>
-
-      <section class="grid">
-        <aside class="panel controls">
-          <div class="metric-grid">
-            <div class="metric"><b id="cityCount">0</b><span>communes</span></div>
-            <div class="metric"><b id="avgAge">0 j</b><span>moy. sans passage</span></div>
+      
+      <div id="mainScreen" class="screen active">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">#OneTeam</p>
+            <h1>Aide pour RM</h1>
           </div>
-
-          <div class="field">
-            <label for="search">Recherche</label>
-            <input id="search" type="search" placeholder="Albi, 31, Tarn...">
+          <div class="toolbar">
+            <button class="btn secondary" id="exportJson" title="Exporter les données JSON">Exporter JSON</button>
+            <button class="btn secondary" id="exportCsv" title="Exporter les données CSV">Exporter CSV</button>
+            <button class="btn secondary" id="importBtn" title="Importer un fichier JSON">Importer</button>
+            <button class="btn danger" id="resetBtn" title="Revenir aux données initiales">Réinitialiser</button>
+            <input class="file-input" id="importFile" type="file" accept="application/json,.json">
           </div>
+        </header>
 
-          <div class="two">
-            <div class="field">
-              <label for="departmentFilter">Département</label>
-              <select id="departmentFilter"></select>
+        <section class="grid">
+          <aside class="panel controls">
+            <div class="metric-grid">
+              <div class="metric"><b id="cityCount">0</b><span>communes</span></div>
+              <div class="metric"><b id="avgAge">0 j</b><span>moy. sans passage</span></div>
             </div>
-            <div class="field">
-              <label for="sortMode">Tri</label>
-              <select id="sortMode">
-                <option value="score">Classement</option>
-                <option value="date">Plus ancien passage</option>
-                <option value="population">Population</option>
-                <option value="time">Temps depuis Toulouse</option>
-                <option value="name">Nom</option>
-              </select>
-            </div>
-          </div>
 
-          <div class="weights">
-            <label for="dateWeight">Poids date</label>
-            <strong id="dateWeightValue">65%</strong>
-            <input id="dateWeight" type="range" min="0" max="100" value="65">
-            <span></span>
-            <label for="populationWeight">Poids population</label>
-            <strong id="populationWeightValue">35%</strong>
-            <input id="populationWeight" type="range" min="0" max="100" value="35">
-            <span></span>
-          </div>
-
-          <form class="add-form" id="addForm">
             <div class="field">
-              <label for="newName">Commune</label>
-              <input id="newName" required placeholder="Nom">
+              <label for="search">Recherche</label>
+              <input id="search" type="search" placeholder="Albi, 31, Tarn...">
             </div>
+
             <div class="two">
               <div class="field">
-                <label for="newDepartment">Dépt.</label>
-                <input id="newDepartment" required placeholder="31">
+                <label for="departmentFilter">Département</label>
+                <select id="departmentFilter"></select>
               </div>
               <div class="field">
-                <label for="newPopulation">Population</label>
-                <input id="newPopulation" required type="number" min="1" step="1" placeholder="12000">
+                <label for="sortMode">Tri</label>
+                <select id="sortMode">
+                  <option value="score">Classement</option>
+                  <option value="date">Plus ancien passage</option>
+                  <option value="population">Population</option>
+                  <option value="time">Temps depuis Toulouse</option>
+                  <option value="name">Nom</option>
+                </select>
               </div>
             </div>
-            <div class="two">
-              <div class="field">
-                <label for="newTime">Minutes</label>
-                <input id="newTime" required type="number" min="1" max="180" step="1" placeholder="75">
-              </div>
-              <div class="field">
-                <label for="newDate">Dernier passage</label>
-                <input id="newDate" type="date">
-              </div>
-            </div>
-            <button class="btn" type="submit">Ajouter</button>
-          </form>
-        </aside>
 
-        <section class="panel table-panel">
-          <div class="table-head">
-            <strong id="resultTitle">Classement</strong>
-            <div class="legend">
-              <span><i class="dot p-hot"></i>Priorité forte</span>
-              <span><i class="dot p-warm"></i>À planifier</span>
-              <span><i class="dot p-mid"></i>À surveiller</span>
-              <span><i class="dot p-cool"></i>Récent</span>
+            <div class="weights">
+              <label for="dateWeight">Poids date</label>
+              <strong id="dateWeightValue">65%</strong>
+              <input id="dateWeight" type="range" min="0" max="100" value="65">
+              <span></span>
+              <label for="populationWeight">Poids population</label>
+              <strong id="populationWeightValue">35%</strong>
+              <input id="populationWeight" type="range" min="0" max="100" value="35">
+              <span></span>
             </div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>#</th>
-                  <th>Commune</th>
-                  <th>Temps</th>
-                  <th>Population</th>
-                  <th>Dernier passage</th>
-                  <th>Jours</th>
-                  <th>Score</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="rows"></tbody>
-            </table>
-            <div class="empty" id="emptyState" hidden>Aucune commune trouvée.</div>
-          </div>
+
+            <form class="add-form" id="addForm">
+              <div class="field">
+                <label for="newName">Commune</label>
+                <input id="newName" required placeholder="Nom">
+              </div>
+              <div class="two">
+                <div class="field">
+                  <label for="newDepartment">Dépt.</label>
+                  <input id="newDepartment" required placeholder="31">
+                </div>
+                <div class="field">
+                  <label for="newPopulation">Population</label>
+                  <input id="newPopulation" required type="number" min="1" step="1" placeholder="12000">
+                </div>
+              </div>
+              <div class="two">
+                <div class="field">
+                  <label for="newTime">Minutes</label>
+                  <input id="newTime" required type="number" min="1" max="180" step="1" placeholder="75">
+                </div>
+                <div class="field">
+                  <label for="newDate">Dernier passage</label>
+                  <input id="newDate" type="date">
+                </div>
+              </div>
+              <button class="btn" type="submit">Ajouter</button>
+            </form>
+          </aside>
+
+          <section class="panel table-panel">
+            <div class="table-head">
+              <strong id="resultTitle">Classement</strong>
+              <div class="legend">
+                <span><i class="dot p-hot"></i>Priorité forte</span>
+                <span><i class="dot p-warm"></i>À planifier</span>
+                <span><i class="dot p-mid"></i>À surveiller</span>
+                <span><i class="dot p-cool"></i>Récent</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>#</th>
+                    <th>Commune</th>
+                    <th>Temps</th>
+                    <th>Population</th>
+                    <th>Dernier passage</th>
+                    <th>Jours</th>
+                    <th>Contenu</th>
+                    <th>Score</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="rows"></tbody>
+              </table>
+              <div class="empty" id="emptyState" hidden>Aucune commune trouvée.</div>
+            </div>
+          </section>
         </section>
-      </section>
+      </div>
+
+      <div id="detailScreen" class="screen">
+        <div class="detail-container">
+          <header class="detail-header">
+            <div>
+              <p class="eyebrow" id="detailDept">Département --</p>
+              <h1 id="detailCityName">Nom de la Ville</h1>
+            </div>
+            <button class="btn secondary" id="backToMainBtn">← Retour au tableau</button>
+          </header>
+
+          <div class="detail-grid">
+            <div class="list-box">
+              <h3>✓ Lieux visités (Fait)</h3>
+              <ul class="list-items" id="visitedList"></ul>
+              <div class="field" style="margin-bottom:0;">
+                <input type="text" id="addVisitedInput" placeholder="Ajouter un lieu visité... (Appuyez sur Entrée)">
+              </div>
+            </div>
+
+            <div class="list-box nogo-box">
+              <h3>⚠ Zones ou Établissements No Go</h3>
+              <ul class="list-items" id="nogoList"></ul>
+              <div class="field" style="margin-bottom:0;">
+                <input type="text" id="addNogoInput" placeholder="Ajouter un élément No Go... (Appuyez sur Entrée)">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 
   <script>
     const STORAGE_KEY = "toulouse-2h-cities-v4";
     const todayIso = () => new Date().toISOString().slice(0, 10);
+    
+    // Données initiales converties pour supporter des tableaux de chaînes (Array) pour les Lieux et NoGo
     const initialCities = [
-  { name: "Albi", department: "81", population: 49000, minutes: 62, lastVisit: "" },
-  { name: "Auch", department: "32", population: 22600, minutes: 72, lastVisit: "" },
+      { name: "Albi", department: "81", population: 49000, minutes: 62, lastVisit: "", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
+      { name: "Auch", department: "32", population: 22600, minutes: 72, lastVisit: "", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
+      { name: "Auterive", department: "31", population: 10000, minutes: 35, lastVisit: "2024-06-05", visitedPlaces: [], noGo: [] },
+      { name: "Auvillar", department: "82", population: 900, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Balma", department: "31", population: 17100, minutes: 18, lastVisit: "2024-05-27", visitedPlaces: [], noGo: [] },
+      { name: "Blagnac", department: "31", population: 26500, minutes: 18, lastVisit: "2024-04-30", visitedPlaces: [], noGo: [] },
+      { name: "Carbonne", department: "31", population: 5800, minutes: 42, lastVisit: "2024-05-27", visitedPlaces: [], noGo: [] },
+      { name: "Carcassonne", department: "11", population: 46700, minutes: 62, lastVisit: "2024-03-06", visitedPlaces: [], noGo: [] },
+      { name: "Castanet-Tolosan", department: "31", population: 14000, minutes: 22, lastVisit: "2024-05-26", visitedPlaces: [], noGo: [] },
+      { name: "Castelnaudary", department: "11", population: 12200, minutes: 42, lastVisit: "2024-01-10", visitedPlaces: [], noGo: [] },
+      { name: "Castelsarrasin", department: "82", population: 14300, minutes: 55, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Castelnau-de-Montmiral", department: "81", population: 1000, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Castres", department: "81", population: 41600, minutes: 78, lastVisit: "2024-06-08", visitedPlaces: [], noGo: [] },
+      { name: "Caussade", department: "82", population: 6900, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Cazères", department: "31", population: 5000, minutes: 48, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Cologne", department: "32", population: 1000, minutes: 52, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Colomiers", department: "31", population: 40000, minutes: 20, lastVisit: "2024-06-01", visitedPlaces: [], noGo: ["Décathlon NO GO"] },
+      { name: "Cordes-sur-Ciel", department: "81", population: 900, minutes: 78, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Foix", department: "09", population: 9500, minutes: 74, lastVisit: "2024-02-09", visitedPlaces: ["CROSSFIT", "CENTRE VILLE"], noGo: [] },
+      { name: "Fronton", department: "31", population: 6600, minutes: 36, lastVisit: "2023-10-25", visitedPlaces: [], noGo: [] },
+      { name: "Gaillac", department: "81", population: 15700, minutes: 50, lastVisit: "2024-02-28", visitedPlaces: [], noGo: [] },
+      { name: "Gimont", department: "32", population: 3100, minutes: 50, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Graulhet", department: "81", population: 12900, minutes: 58, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Grenade", department: "31", population: 8900, minutes: 36, lastVisit: "2024-05-20", visitedPlaces: [], noGo: [] },
+      { name: "L'Union", department: "31", population: 12400, minutes: 18, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "L'Isle-Jourdain", department: "32", population: 9600, minutes: 38, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Lavaur", department: "81", population: 11000, minutes: 42, lastVisit: "2024-06-04", visitedPlaces: [], noGo: [] },
+      { name: "Lauzerte", department: "82", population: 1500, minutes: 78, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Mazamet", department: "81", population: 10000, minutes: 95, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Mirepoix", department: "09", population: 3100, minutes: 68, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Moissac", department: "82", population: 13600, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Montech", department: "82", population: 6900, minutes: 45, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Montauban", department: "82", population: 62000, minutes: 50, lastVisit: "2024-08-06", visitedPlaces: ["CENTRE VILLE", "QUAI", "CENTRE CO"], noGo: [] },
+      { name: "Mauvezin", department: "32", population: 2200, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Muret", department: "31", population: 25300, minutes: 28, lastVisit: "2024-05-27", visitedPlaces: ["ZONE CO", "FP"], noGo: [] },
+      { name: "Pamiers", department: "09", population: 16000, minutes: 55, lastVisit: "2024-02-09", visitedPlaces: [], noGo: [] },
+      { name: "Rabastens", department: "81", population: 5700, minutes: 42, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Ramonville-Saint-Agne", department: "31", population: 14800, minutes: 18, lastVisit: "2024-05-19", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
+      { name: "Revel", department: "31", population: 9900, minutes: 58, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Rieux-Volvestre", department: "31", population: 2600, minutes: 50, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Bram", department: "11", population: 3300, minutes: 50, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Limoux", department: "11", population: 10000, minutes: 84, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Saverdun", department: "09", population: 4800, minutes: 45, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Varilhes", department: "09", population: 3500, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Mazères", department: "09", population: 3900, minutes: 45, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Samatan", department: "32", population: 2500, minutes: 58, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Lombez", department: "32", population: 2200, minutes: 60, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Escalquens", department: "31", population: 7000, minutes: 25, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Labège", department: "31", population: 4300, minutes: 22, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Saint-Lys", department: "31", population: 10000, minutes: 35, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Bessières", department: "31", population: 4300, minutes: 38, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Baziège", department: "31", population: 3600, minutes: 32, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Villemur-sur-Tarn", department: "31", population: 6000, minutes: 45, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Buzet-sur-Tarn", department: "31", population: 2900, minutes: 35, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Nailloux", department: "31", population: 4100, minutes: 35, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Saint-Félix-Lauragais", department: "31", population: 1300, minutes: 45, lastVisit: "2024-01-15", visitedPlaces: [], noGo: [] },
+      { name: "Saint-Gaudens", department: "31", population: 11700, minutes: 75, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Saint-Bertrand-de-Comminges", department: "31", population: 250, minutes: 82, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Saint-Orens-de-Gameville", department: "31", population: 12000, minutes: 22, lastVisit: "2024-05-19", visitedPlaces: ["FP", "CENTRE CO"], noGo: [] },
+      { name: "Saint-Sulpice-la-Pointe", department: "81", population: 9500, minutes: 35, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Sorèze", department: "81", population: 2900, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Tarascon-sur-Ariège", department: "09", population: 3000, minutes: 88, lastVisit: "2024-02-09", visitedPlaces: ["CENTRE VILLE"], noGo: [] },
+      { name: "Tournefeuille", department: "31", population: 28700, minutes: 22, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Toulouse", department: "31", population: 504000, minutes: 0, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Villefranche-de-Lauragais", department: "31", population: 5000, minutes: 35, lastVisit: "2024-01-10", visitedPlaces: [], noGo: [] },
+      { name: "Fonsorbes", department: "31", population: 12800, minutes: 32, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Plaisance-du-Touch", department: "31", population: 19500, minutes: 25, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Saint-Jean", department: "31", population: 11000, minutes: 20, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Cugnaux", department: "31", population: 19200, minutes: 24, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Saint-Jory", department: "31", population: 6500, minutes: 28, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Lisle-sur-Tarn", department: "81", population: 4700, minutes: 48, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Lafrançaise", department: "82", population: 2900, minutes: 62, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Cahors", department: "46", population: 20000, minutes: 78, lastVisit: "", visitedPlaces: [], noGo: [] },
+      { name: "Tarbes", department: "65", population: 43000, minutes: 95, lastVisit: "2024-06-12", visitedPlaces: [], noGo: [] }
+    ];
 
-  { name: "Auterive", department: "31", population: 10000, minutes: 35, lastVisit: "2024-06-05" },
-  { name: "Auvillar", department: "82", population: 900, minutes: 62, lastVisit: "" },
-
-  { name: "Balma", department: "31", population: 17100, minutes: 18, lastVisit: "2024-05-27" },
-  { name: "Blagnac", department: "31", population: 26500, minutes: 18, lastVisit: "2024-04-30" },
-
-  { name: "Carbonne", department: "31", population: 5800, minutes: 42, lastVisit: "2024-05-27" },
-  { name: "Carcassonne", department: "11", population: 46700, minutes: 62, lastVisit: "2024-03-06" },
-
-  { name: "Castanet-Tolosan", department: "31", population: 14000, minutes: 22, lastVisit: "2024-05-26" },
-  { name: "Castelnaudary", department: "11", population: 12200, minutes: 42, lastVisit: "2024-01-10" },
-  { name: "Castelsarrasin", department: "82", population: 14300, minutes: 55, lastVisit: "" },
-  { name: "Castelnau-de-Montmiral", department: "81", population: 1000, minutes: 62, lastVisit: "" },
-
-  { name: "Castres", department: "81", population: 41600, minutes: 78, lastVisit: "2024-06-08" },
-  { name: "Caussade", department: "82", population: 6900, minutes: 62, lastVisit: "" },
-  { name: "Cazères", department: "31", population: 5000, minutes: 48, lastVisit: "" },
-
-  { name: "Cologne", department: "32", population: 1000, minutes: 52, lastVisit: "" },
-  { name: "Colomiers", department: "31", population: 40000, minutes: 20, lastVisit: "2024-06-01" },
-
-  { name: "Cordes-sur-Ciel", department: "81", population: 900, minutes: 78, lastVisit: "" },
-
-  { name: "Foix", department: "09", population: 9500, minutes: 74, lastVisit: "2024-02-09" },
-  { name: "Fronton", department: "31", population: 6600, minutes: 36, lastVisit: "2023-10-25" },
-
-  { name: "Gaillac", department: "81", population: 15700, minutes: 50, lastVisit: "2024-02-28" },
-  { name: "Gimont", department: "32", population: 3100, minutes: 50, lastVisit: "" },
-
-  { name: "Graulhet", department: "81", population: 12900, minutes: 58, lastVisit: "" },
-  { name: "Grenade", department: "31", population: 8900, minutes: 36, lastVisit: "2024-05-20" },
-
-  { name: "L'Union", department: "31", population: 12400, minutes: 18, lastVisit: "" },
-  { name: "L'Isle-Jourdain", department: "32", population: 9600, minutes: 38, lastVisit: "" },
-
-  { name: "Lavaur", department: "81", population: 11000, minutes: 42, lastVisit: "2024-06-04" },
-  { name: "Lauzerte", department: "82", population: 1500, minutes: 78, lastVisit: "" },
-
-  { name: "Mazamet", department: "81", population: 10000, minutes: 95, lastVisit: "" },
-  { name: "Mirepoix", department: "09", population: 3100, minutes: 68, lastVisit: "" },
-
-  { name: "Moissac", department: "82", population: 13600, minutes: 62, lastVisit: "" },
-  { name: "Montech", department: "82", population: 6900, minutes: 45, lastVisit: "" },
-
-  { name: "Montauban", department: "82", population: 62000, minutes: 50, lastVisit: "2024-08-06" },
-
-  { name: "Mauvezin", department: "32", population: 2200, minutes: 62, lastVisit: "" },
-
-  { name: "Muret", department: "31", population: 25300, minutes: 28, lastVisit: "2024-05-27" },
-  { name: "Pamiers", department: "09", population: 16000, minutes: 55, lastVisit: "2024-02-09" },
-
-  { name: "Rabastens", department: "81", population: 5700, minutes: 42, lastVisit: "" },
-  { name: "Ramonville-Saint-Agne", department: "31", population: 14800, minutes: 18, lastVisit: "2024-05-19" },
-
-  { name: "Revel", department: "31", population: 9900, minutes: 58, lastVisit: "" },
-  { name: "Rieux-Volvestre", department: "31", population: 2600, minutes: 50, lastVisit: "" },
-
-  { name: "Bram", department: "11", population: 3300, minutes: 50, lastVisit: "" },
-  { name: "Limoux", department: "11", population: 10000, minutes: 84, lastVisit: "" },
-
-  { name: "Saverdun", department: "09", population: 4800, minutes: 45, lastVisit: "" },
-  { name: "Varilhes", department: "09", population: 3500, minutes: 62, lastVisit: "" },
-  { name: "Mazères", department: "09", population: 3900, minutes: 45, lastVisit: "" },
-
-  { name: "Samatan", department: "32", population: 2500, minutes: 58, lastVisit: "" },
-  { name: "Lombez", department: "32", population: 2200, minutes: 60, lastVisit: "" },
-
-  { name: "Escalquens", department: "31", population: 7000, minutes: 25, lastVisit: "" },
-  { name: "Labège", department: "31", population: 4300, minutes: 22, lastVisit: "" },
-
-  { name: "Saint-Lys", department: "31", population: 10000, minutes: 35, lastVisit: "" },
-  { name: "Bessières", department: "31", population: 4300, minutes: 38, lastVisit: "" },
-  { name: "Baziège", department: "31", population: 3600, minutes: 32, lastVisit: "" },
-  { name: "Villemur-sur-Tarn", department: "31", population: 6000, minutes: 45, lastVisit: "" },
-  { name: "Buzet-sur-Tarn", department: "31", population: 2900, minutes: 35, lastVisit: "" },
-  { name: "Nailloux", department: "31", population: 4100, minutes: 35, lastVisit: "" },
-
-  { name: "Saint-Félix-Lauragais", department: "31", population: 1300, minutes: 45, lastVisit: "2024-01-15" },
-  { name: "Saint-Gaudens", department: "31", population: 11700, minutes: 75, lastVisit: "" },
-
-  { name: "Saint-Bertrand-de-Comminges", department: "31", population: 250, minutes: 82, lastVisit: "" },
-  { name: "Saint-Orens-de-Gameville", department: "31", population: 12000, minutes: 22, lastVisit: "2024-05-19" },
-
-  { name: "Saint-Sulpice-la-Pointe", department: "81", population: 9500, minutes: 35, lastVisit: "" },
-  { name: "Sorèze", department: "81", population: 2900, minutes: 62, lastVisit: "" },
-
-  { name: "Tarascon-sur-Ariège", department: "09", population: 3000, minutes: 88, lastVisit: "2024-02-09" },
-  { name: "Tournefeuille", department: "31", population: 28700, minutes: 22, lastVisit: "" },
-
-  { name: "Toulouse", department: "31", population: 504000, minutes: 0, lastVisit: "" },
-
-  { name: "Villefranche-de-Lauragais", department: "31", population: 5000, minutes: 35, lastVisit: "2024-01-10" },
-
-  { name: "Fonsorbes", department: "31", population: 12800, minutes: 32, lastVisit: "" },
-  { name: "Plaisance-du-Touch", department: "31", population: 19500, minutes: 25, lastVisit: "" },
-  { name: "Saint-Jean", department: "31", population: 11000, minutes: 20, lastVisit: "" },
-  { name: "Cugnaux", department: "31", population: 19200, minutes: 24, lastVisit: "" },
-  { name: "Saint-Jory", department: "31", population: 6500, minutes: 28, lastVisit: "" },
-
-  { name: "Lisle-sur-Tarn", department: "81", population: 4700, minutes: 48, lastVisit: "" },
-  { name: "Lafrançaise", department: "82", population: 2900, minutes: 62, lastVisit: "" },
-
-  { name: "Cahors", department: "46", population: 20000, minutes: 78, lastVisit: "" },
-  { name: "Tarbes", department: "65", population: 43000, minutes: 95, lastVisit: "2024-06-12" }
-]
     const state = {
       cities: loadCities(),
       search: "",
       department: "all",
       sortMode: "score",
       dateWeight: 65,
-      populationWeight: 35
+      populationWeight: 35,
+      currentSelectedCityId: null // Pour suivre la ville ouverte dans la page détail
     };
 
     const els = {
+      mainScreen: document.querySelector("#mainScreen"),
+      detailScreen: document.querySelector("#detailScreen"),
       rows: document.querySelector("#rows"),
       emptyState: document.querySelector("#emptyState"),
       search: document.querySelector("#search"),
@@ -655,17 +754,36 @@
       avgAge: document.querySelector("#avgAge"),
       resultTitle: document.querySelector("#resultTitle"),
       addForm: document.querySelector("#addForm"),
-      importFile: document.querySelector("#importFile")
+      importFile: document.querySelector("#importFile"),
+      
+      // Éléments du volet détail
+      detailCityName: document.querySelector("#detailCityName"),
+      detailDept: document.querySelector("#detailDept"),
+      visitedList: document.querySelector("#visitedList"),
+      nogoList: document.querySelector("#nogoList"),
+      addVisitedInput: document.querySelector("#addVisitedInput"),
+      addNogoInput: document.querySelector("#addNogoInput"),
+      backToMainBtn: document.querySelector("#backToMainBtn")
     };
 
     function loadCities() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          return parsed.map(c => ({
+            ...c,
+            visitedPlaces: Array.isArray(c.visitedPlaces) ? c.visitedPlaces : (c.visitedPlaces ? [c.visitedPlaces] : []),
+            noGo: Array.isArray(c.noGo) ? c.noGo : (c.noGo ? [c.noGo] : [])
+          }));
+        }
       } catch (error) {
         console.warn(error);
       }
-      return initialCities.map((city, index) => ({ id: crypto.randomUUID ? crypto.randomUUID() : String(index), ...city }));
+      return initialCities.map((city, index) => ({ 
+        id: crypto.randomUUID ? crypto.randomUUID() : String(index), 
+        ...city 
+      }));
     }
 
     function saveCities() {
@@ -706,7 +824,9 @@
       const query = state.search.trim().toLowerCase();
       let list = enrichedCities().filter(city => {
         const matchesDepartment = state.department === "all" || city.department === state.department;
-        const haystack = `${city.name} ${city.department}`.toLowerCase();
+        const visitedStr = city.visitedPlaces.join(" ");
+        const nogoStr = city.noGo.join(" ");
+        const haystack = `${city.name} ${city.department} ${visitedStr} ${nogoStr}`.toLowerCase();
         return matchesDepartment && (!query || haystack.includes(query));
       });
 
@@ -746,27 +866,83 @@
       els.dateWeightValue.textContent = `${state.dateWeight}%`;
       els.populationWeightValue.textContent = `${state.populationWeight}%`;
       els.emptyState.hidden = list.length !== 0;
-      els.rows.innerHTML = list.map((city, index) => `
-        <tr>
-          <td class="priority"><div class="${priorityClass(city.score)}"></div></td>
-          <td class="rank">${index + 1}</td>
-          <td>
-            <span class="city">${city.name}</span>
-            <span class="sub">Département ${city.department}</span>
-          </td>
-          <td>${formatMinutes(Number(city.minutes))}</td>
-          <td>${formatNumber(Number(city.population))}</td>
-          <td>
-            <div class="date-cell">
-              <input type="date" value="${city.lastVisit || ""}" data-action="date" data-id="${city.id}">
-              <button class="mini" title="Marquer aujourd'hui" data-action="today" data-id="${city.id}">✓</button>
-            </div>
-          </td>
-          <td>${city.age === 9999 ? "Jamais" : formatNumber(city.age)}</td>
-          <td><span class="score">${city.score}</span></td>
-          <td><button class="mini remove" title="Supprimer" data-action="remove" data-id="${city.id}">×</button></td>
-        </tr>
-      `).join("");
+      
+      els.rows.innerHTML = list.map((city, index) => {
+        const countVisited = city.visitedPlaces.length;
+        const countNogo = city.noGo.length;
+        const labelContent = (countVisited || countNogo) 
+          ? `${countVisited} Fait / ${countNogo} No Go` 
+          : "Vide";
+
+        return `
+          <tr>
+            <td class="priority"><div class="${priorityClass(city.score)}"></div></td>
+            <td class="rank">${index + 1}</td>
+            <td>
+              <span class="city">${city.name}</span>
+              <span class="sub">Département ${city.department}</span>
+            </td>
+            <td>${formatMinutes(Number(city.minutes))}</td>
+            <td>${formatNumber(Number(city.population))}</td>
+            <td>
+              <div class="date-cell">
+                <input type="date" value="${city.lastVisit || ""}" data-action="date" data-id="${city.id}">
+                <button class="mini" title="Marquer aujourd'hui" data-action="today" data-id="${city.id}">✓</button>
+              </div>
+            </td>
+            <td>${city.age === 9999 ? "Jamais" : formatNumber(city.age)}</td>
+            <td>
+              <button class="btn-link" data-action="open-details" data-id="${city.id}">
+                Détails (${labelContent}) →
+              </button>
+            </td>
+            <td><span class="score">${city.score}</span></td>
+            <td><button class="mini remove" title="Supprimer" data-action="remove" data-id="${city.id}">×</button></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    /* Redirection / Navigation vers l'écran de détail */
+    function openCityDetails(cityId) {
+      const city = state.cities.find(c => c.id === cityId);
+      if (!city) return;
+      
+      state.currentSelectedCityId = cityId;
+      els.detailCityName.textContent = city.name;
+      els.detailDept.textContent = `Département ${city.department}`;
+      
+      renderDetailLists(city);
+      
+      els.mainScreen.classList.remove("active");
+      els.detailScreen.classList.add("active");
+    }
+
+    function renderDetailLists(city) {
+      // Rendu Liste Fait
+      els.visitedList.innerHTML = city.visitedPlaces.length 
+        ? city.visitedPlaces.map((place, i) => `
+            <li>
+              <span>${place}</span>
+              <button class="delete-item" data-list="visited" data-index="${i}">×</button>
+            </li>`).join("")
+        : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucun lieu enregistré</li>`;
+
+      // Rendu Liste No Go
+      els.nogoList.innerHTML = city.noGo.length 
+        ? city.noGo.map((item, i) => `
+            <li>
+              <span>${item}</span>
+              <button class="delete-item" data-list="nogo" data-index="${i}">×</button>
+            </li>`).join("")
+        : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucune zone No Go</li>`;
+    }
+
+    function closeDetails() {
+      state.currentSelectedCityId = null;
+      els.detailScreen.classList.remove("active");
+      els.mainScreen.classList.add("active");
+      render();
     }
 
     function syncWeights(changed) {
@@ -792,6 +968,7 @@
       URL.revokeObjectURL(url);
     }
 
+    // Événements d'interaction du tableau principal
     els.search.addEventListener("input", event => {
       state.search = event.target.value;
       render();
@@ -811,41 +988,95 @@
     els.populationWeight.addEventListener("input", () => syncWeights("population"));
 
     els.rows.addEventListener("click", event => {
-      const button = event.target.closest("[data-action]");
-      if (!button) return;
-      const city = state.cities.find(item => item.id === button.dataset.id);
+      const target = event.target.closest("[data-action]");
+      if (!target) return;
+      const cityId = target.dataset.id;
+      const city = state.cities.find(item => item.id === cityId);
       if (!city) return;
-      if (button.dataset.action === "today") {
+
+      if (target.dataset.action === "open-details") {
+        openCityDetails(cityId);
+      }
+      if (target.dataset.action === "today") {
         city.lastVisit = todayIso();
         saveCities();
         render();
       }
-      if (button.dataset.action === "remove") {
-        state.cities = state.cities.filter(item => item.id !== city.id);
-        saveCities();
-        render();
+      if (target.dataset.action === "remove") {
+        if(confirm(`Supprimer la commune ${city.name} ?`)) {
+          state.cities = state.cities.filter(item => item.id !== city.id);
+          saveCities();
+          render();
+        }
       }
     });
 
     els.rows.addEventListener("change", event => {
-      if (event.target.dataset.action !== "date") return;
+      const action = event.target.dataset.action;
+      if (action !== "date") return;
       const city = state.cities.find(item => item.id === event.target.dataset.id);
       if (!city) return;
+      
       city.lastVisit = event.target.value;
       saveCities();
       render();
     });
 
+    // Événements liés à l'écran de détails
+    els.backToMainBtn.addEventListener("click", closeDetails);
+
+    // Gérer l'ajout d'éléments dans la page dédiée (Touche Entrée)
+    els.addVisitedInput.addEventListener("keydown", event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+      if (city) {
+        city.visitedPlaces.push(event.target.value.trim());
+        event.target.value = "";
+        saveCities();
+        renderDetailLists(city);
+      }
+    });
+
+    els.addNogoInput.addEventListener("keydown", event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+      if (city) {
+        city.noGo.push(event.target.value.trim());
+        event.target.value = "";
+        saveCities();
+        renderDetailLists(city);
+      }
+    });
+
+    // Supprimer un élément des listes Fait / No Go
+    document.querySelectorAll("#visitedList, #nogoList").forEach(ul => {
+      ul.addEventListener("click", event => {
+        const btn = event.target.closest(".delete-item");
+        if (!btn) return;
+        const index = parseInt(btn.dataset.index, 10);
+        const listType = btn.dataset.list;
+        const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+        
+        if (city) {
+          if (listType === "visited") city.visitedPlaces.splice(index, 1);
+          if (listType === "nogo") city.noGo.splice(index, 1);
+          saveCities();
+          renderDetailLists(city);
+        }
+      });
+    });
+
     els.addForm.addEventListener("submit", event => {
       event.preventDefault();
-      const form = new FormData(event.currentTarget);
       state.cities.push({
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
         name: document.querySelector("#newName").value.trim(),
         department: document.querySelector("#newDepartment").value.trim(),
         population: Number(document.querySelector("#newPopulation").value),
         minutes: Number(document.querySelector("#newTime").value),
-        lastVisit: document.querySelector("#newDate").value
+        lastVisit: document.querySelector("#newDate").value,
+        visitedPlaces: [],
+        noGo: []
       });
       event.currentTarget.reset();
       saveCities();
@@ -857,8 +1088,16 @@
     });
 
     document.querySelector("#exportCsv").addEventListener("click", () => {
-      const header = ["nom", "departement", "population", "minutes_depuis_toulouse", "dernier_passage"];
-      const rows = state.cities.map(city => [city.name, city.department, city.population, city.minutes, city.lastVisit]);
+      const header = ["nom", "departement", "population", "minutes_depuis_toulouse", "dernier_passage", "lieux_visites", "no_go"];
+      const rows = state.cities.map(city => [
+        city.name, 
+        city.department, 
+        city.population, 
+        city.minutes, 
+        city.lastVisit, 
+        city.visitedPlaces.join(" | "), 
+        city.noGo.join(" | ")
+      ]);
       const csv = [header, ...rows].map(row => row.map(value => `"${String(value ?? "").replaceAll('"', '""')}"`).join(",")).join("\n");
       download("villes-toulouse-2h.csv", csv, "text/csv;charset=utf-8");
     });
@@ -867,18 +1106,34 @@
     els.importFile.addEventListener("change", async event => {
       const file = event.target.files[0];
       if (!file) return;
-      const data = JSON.parse(await file.text());
-      state.cities = data.map((city, index) => ({
-        id: city.id || (crypto.randomUUID ? crypto.randomUUID() : String(index)),
-        name: city.name,
-        department: String(city.department),
-        population: Number(city.population),
-        minutes: Number(city.minutes),
-        lastVisit: city.lastVisit || ""
-      })).filter(city => city.name && city.department && city.population > 0);
-      saveCities();
+      try {
+        const data = JSON.parse(await file.text());
+        state.cities = data.map((city, index) => {
+          let vp = [];
+          if (Array.isArray(city.visitedPlaces)) vp = city.visitedPlaces;
+          else if (city.visitedPlaces) vp = [city.visitedPlaces];
+          
+          let ng = [];
+          if (Array.isArray(city.noGo)) ng = city.noGo;
+          else if (city.noGo) ng = [city.noGo];
+
+          return {
+            id: city.id || (crypto.randomUUID ? crypto.randomUUID() : String(index)),
+            name: city.name,
+            department: String(city.department),
+            population: Number(city.population),
+            minutes: Number(city.minutes),
+            lastVisit: city.lastVisit || "",
+            visitedPlaces: vp,
+            noGo: ng
+          };
+        }).filter(city => city.name && city.department && city.population > 0);
+        saveCities();
+        render();
+      } catch (e) {
+        alert("Erreur lors de l'importation du fichier.");
+      }
       event.target.value = "";
-      render();
     });
 
     document.querySelector("#resetBtn").addEventListener("click", () => {
