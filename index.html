@@ -651,7 +651,7 @@
   </main>
 
   <script>
-    const STORAGE_KEY = "toulouse-2h-cities-v4";
+    const STORAGE_KEY = "toulouse-2h-cities-v8";
     const todayIso = () => new Date().toISOString().slice(0, 10);
     
     const initialCities = [
@@ -730,7 +730,6 @@
   { name: "Cahors", department: "46", population: 20000, minutes: 78, lastVisit: "", visitedPlaces: [], noGo: [] },
   { name: "Tarbes", department: "65", population: 43000, minutes: 95, lastVisit: "2026-06-12", visitedPlaces: [], noGo: [] }
 ];
-
     const state = {
       cities: loadCities(),
       search: "",
