@@ -865,19 +865,27 @@
       }
     });
 
-    els.rows.addEventListener("change", async event => {
-      const action = event.target.dataset.action;
-      if (action !== "date") return;
-      const cityId = event.target.dataset.id;
-      const city = state.cities.find(item => item.id === cityId);
-      if (!city) return;
-      
-      const newDate = event.target.value;
-      city.lastVisit = newDate;
-      render();
-      await updateCityInDB(cityId, { lastVisit: newDate });
-    });
-
+   // PAR CE NOUVEAU BLOC :
+els.rows.addEventListener("change", async event => {
+  const action = event.target.dataset.action;
+  const cityId = event.target.dataset.id;
+  const city = state.cities.find(item => item.id === cityId);
+  if (!city) return;
+  
+  if (action === "date") {
+    const newDate = event.target.value;
+    city.lastVisit = newDate;
+    render();
+    await updateCityInDB(cityId, { lastVisit: newDate });
+  }
+  
+  if (action === "minutes") {
+    const newMinutes = Number(event.target.value);
+    city.minutes = newMinutes;
+    render(); // Met à jour l'affichage
+    await updateCityInDB(cityId, { minutes: newMinutes }); // Sauvegarde dans Supabase
+  }
+});
     // Événements sur les détails (Fait / No Go)
     els.addVisitedInput.addEventListener("keydown", async event => {
       if (event.key !== "Enter" || !event.target.value.trim()) return;
