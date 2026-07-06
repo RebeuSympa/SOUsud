@@ -507,6 +507,12 @@
               </div>
               <div class="field">
                 <label for="sortMode">Tri</label>
+                <select id="sortMode">
+                  <option value="date">Plus ancien passage</option>
+                  <option value="population">Population</option>
+                  <option value="time">Temps depuis Toulouse</option>
+                  <option value="name">Nom</option>
+                </select>
               </div>
             </div>
 
@@ -775,11 +781,6 @@
               </div>
             </td>
             <td>${city.age === 9999 ? "Jamais" : formatNumber(city.age)}</td>
-            <td>
-              <button class="btn-link" data-action="open-details" data-id="${city.id}">
-                Détails (${labelContent}) →
-              </button>
-            </td>
           </tr>
         `;
       }).join("");
@@ -849,13 +850,6 @@
         city.lastVisit = today;
         render();
         await updateCityInDB(cityId, { lastVisit: today });
-      }
-      if (target.dataset.action === "remove") {
-        if(confirm(`Supprimer la commune ${city.name} ?`)) {
-          state.cities = state.cities.filter(item => item.id !== city.id);
-          render();
-          await deleteCityFromDB(cityId);
-        }
       }
     });
 
@@ -945,11 +939,11 @@
 
     // INITIALISATION : On charge les données de Supabase au démarrage
     async function initApp() {
-      els.rows.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 20px;">Chargement depuis Supabase...</td></tr>';
+      els.rows.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">Chargement depuis Supabase...</td></tr>';
       state.cities = await loadCitiesFromDB();
       
       if (state.cities.length === 0) {
-          els.rows.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 20px;">La base de données est vide. Clique sur "Réinitialiser" en haut pour injecter les villes.</td></tr>';
+          els.rows.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">La base de données est vide.</td></tr>';
       } else {
           render();
       }
@@ -959,4 +953,3 @@
   </script>
 </body>
 </html>
-
