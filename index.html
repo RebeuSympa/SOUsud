@@ -507,13 +507,6 @@
               </div>
               <div class="field">
                 <label for="sortMode">Tri</label>
-                <select id="sortMode">
-                  <option value="score">Classement</option>
-                  <option value="date">Plus ancien passage</option>
-                  <option value="population">Population</option>
-                  <option value="time">Temps depuis Toulouse</option>
-                  <option value="name">Nom</option>
-                </select>
               </div>
             </div>
 
@@ -567,9 +560,6 @@
                     <th>Population</th>
                     <th>Dernier passage</th>
                     <th>Jours</th>
-                    <th>Contenu</th>
-                    <th>Score</th>
-                    <th></th>
                   </tr>
                 </thead>
                 <tbody id="rows"></tbody>
@@ -626,7 +616,7 @@
       cities: [],
       search: "",
       department: "all",
-      sortMode: "score",
+      sortMode: "date",
       dateWeight: 100,
       populationWeight: 0,
       currentSelectedCityId: null
@@ -790,8 +780,6 @@
                 Détails (${labelContent}) →
               </button>
             </td>
-            <td><span class="score">${city.score}</span></td>
-            <td><button class="mini remove" title="Supprimer" data-action="remove" data-id="${city.id}">×</button></td>
           </tr>
         `;
       }).join("");
