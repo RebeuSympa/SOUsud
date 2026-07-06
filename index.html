@@ -495,6 +495,13 @@
             <button id="toggleMapBtn" class="btn secondary">🗺️ Vue Carte</button>
           </div>
         </header>
+
+        <div id="detailMapWrapper" style="display: none; height: 300px; margin-bottom: 24px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line);">
+            <div id="detailMap" style="width: 100%; height: 100%;"></div>
+          </div>
+          <div class="detail-grid">
+
+        
         <div id="mapWrapper" style="display: none; height: 450px; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); z-index: 1;">
           <div id="map" style="width: 100%; height: 100%;"></div>
         </div>
@@ -663,7 +670,8 @@
       backToMainBtn: document.querySelector("#backToMainBtn"), // <-- LA VIRGULE EST BIEN LÀ
       toggleMapBtn: document.querySelector("#toggleMapBtn"),
       mapWrapper: document.querySelector("#mapWrapper"),
-      nearbyCitiesContainer: document.querySelector("#nearbyCitiesContainer")
+      nearbyCitiesContainer: document.querySelector("#nearbyCitiesContainer"),
+      detailMapWrapper: document.querySelector("#detailMapWrapper")
     };
 
     // --- FONCTIONS BASE DE DONNÉES ---
@@ -861,6 +869,8 @@
       state.currentSelectedCityId = null;
       els.detailScreen.classList.remove("active");
       els.mainScreen.classList.add("active");
+      els.detailMapWrapper.style.display = "none"; 
+      els.nearbyCitiesContainer.innerHTML = "";
       render();
     }
 
@@ -971,9 +981,9 @@ els.rows.addEventListener("change", async event => {
       }
     });
 
-// --- RECHERCHE DE PROXIMITÉ (30 min / ~25 km) ---
+// --- RECHERCHE DE PROXIMITÉ (30 min / ~25 km) AVEC CARTE ---
     function getDistanceKm(lat1, lon1, lat2, lon2) {
-      const R = 6371; // Rayon de la Terre en km
+      const R = 6371; 
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -982,43 +992,83 @@ els.rows.addEventListener("change", async event => {
       return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
+    let dMap = null;
+    let dMarkersLayer = null;
+
     els.detailCityName.addEventListener("click", async () => {
       const currentCityId = state.currentSelectedCityId;
       if (!currentCityId) return;
 
       const currentCity = state.cities.find(c => c.id === currentCityId);
-      els.nearbyCitiesContainer.innerHTML = "<i>⏳ Recherche des communes à proximité en cours...</i>";
+      els.nearbyCitiesContainer.innerHTML = "<i>⏳ Création de la carte en cours...</i>";
+      
+      // Afficher l'espace de la carte
+      els.detailMapWrapper.style.display = "block";
 
-      // Obtenir les coordonnées de la ville actuelle via l'API du Gouvernement
+      // Initialiser la mini-carte si elle n'existe pas encore
+      if (!dMap) {
+        dMap = L.map('detailMap');
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(dMap);
+        dMarkersLayer = L.layerGroup().addTo(dMap);
+      }
+      
+      // Corrige un bug d'affichage Leaflet sur les éléments cachés
+      setTimeout(() => dMap.invalidateSize(), 100);
+      dMarkersLayer.clearLayers();
+
       const currentCoords = await getCoordinates(currentCity.name, currentCity.department);
       if (!currentCoords) {
         els.nearbyCitiesContainer.innerHTML = "<span style='color: var(--accent-2)'>Impossible de localiser cette commune.</span>";
         return;
       }
 
-      // Scanner toutes les autres villes de votre liste
       let nearby = [];
       await Promise.all(state.cities.map(async (otherCity) => {
         if (otherCity.id === currentCity.id) return;
         const coords = await getCoordinates(otherCity.name, otherCity.department);
         if (coords) {
           const dist = getDistanceKm(currentCoords[0], currentCoords[1], coords[0], coords[1]);
-          // On estime 30 minutes de route à environ 25 km max
-          if (dist <= 25) {
-            nearby.push({ city: otherCity, distance: dist });
-          }
+          if (dist <= 25) nearby.push({ city: otherCity, distance: dist, coords: coords });
         }
       }));
 
-      // Trier les résultats du plus proche au plus éloigné
-      nearby.sort((a, b) => a.distance - b.distance);
+      // Placer le Pins de la ville centrale (Plus grand, contour foncé)
+      const currentHtml = `<div style="background-color: var(--ink); width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5);"></div>`;
+      const currentIcon = L.divIcon({ html: currentHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
+      L.marker(currentCoords, { icon: currentIcon, zIndexOffset: 1000 })
+        .bindPopup(`<b>${currentCity.name}</b><br>📍 Ville sélectionnée`)
+        .addTo(dMarkersLayer);
 
-      // Afficher le résultat
-      if (nearby.length === 0) {
-        els.nearbyCitiesContainer.innerHTML = "Aucune autre commune de votre liste n'est à moins de 30 min.";
+      // Limites pour le zoom automatique
+      let bounds = L.latLngBounds([currentCoords]);
+
+      // Placer les Pins des villes autour
+      nearby.forEach(item => {
+        const pClass = priorityClassByAge(item.city.age);
+        let color = "#3f9b70"; 
+        if (pClass === "p-hot") color = "#d13f2f"; 
+        if (pClass === "p-warm") color = "#e39423"; 
+        if (pClass === "p-mid") color = "#d0b936"; 
+
+        const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
+        const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
+
+        L.marker(item.coords, { icon: customIcon })
+          .bindPopup(`<b>${item.city.name}</b><br>🚗 ~${Math.round(item.distance)} km de distance`)
+          .addTo(dMarkersLayer);
+        
+        bounds.extend(item.coords);
+      });
+
+      // Adapter le zoom de la carte pour tout voir
+      if (nearby.length > 0) {
+        dMap.fitBounds(bounds, { padding: [40, 40] });
+        els.nearbyCitiesContainer.innerHTML = `<span style="color: var(--accent); font-weight: 800;">📍 ${nearby.length} communes à ~30 min affichées sur la carte.</span>`;
       } else {
-        const htmlList = nearby.map(item => `<b>${item.city.name}</b> (${Math.round(item.distance)} km)`).join(" • ");
-        els.nearbyCitiesContainer.innerHTML = `<span style="color: var(--accent); font-weight: 800;">📍 À ~30 min :</span> ${htmlList}`;
+        dMap.setView(currentCoords, 11);
+        els.nearbyCitiesContainer.innerHTML = "Aucune autre commune de votre liste n'est à moins de 30 min.";
       }
     });
     
