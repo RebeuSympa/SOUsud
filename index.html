@@ -782,6 +782,13 @@
               </div>
             </td>
             <td>${city.age === 9999 ? "Jamais" : formatNumber(city.age)}</td>
+            
+            <td>
+              <button class="btn-link" data-action="open-details" data-id="${city.id}">
+                Détails (${labelContent}) →
+              </button>
+            </td>
+
           </tr>
         `;
       }).join("");
