@@ -517,17 +517,6 @@
               </div>
             </div>
 
-            <div class="weights">
-              <label for="dateWeight">Poids date</label>
-              <strong id="dateWeightValue">65%</strong>
-              <input id="dateWeight" type="range" min="0" max="100" value="65">
-              <span></span>
-              <label for="populationWeight">Poids population</label>
-              <strong id="populationWeightValue">35%</strong>
-              <input id="populationWeight" type="range" min="0" max="100" value="35">
-              <span></span>
-            </div>
-
             <form class="add-form" id="addForm">
               <div class="field">
                 <label for="newName">Commune</label>
@@ -638,8 +627,8 @@
       search: "",
       department: "all",
       sortMode: "score",
-      dateWeight: 65,
-      populationWeight: 35,
+      dateWeight: 100,
+      populationWeight: 0,
       currentSelectedCityId: null
     };
 
@@ -651,10 +640,6 @@
       search: document.querySelector("#search"),
       departmentFilter: document.querySelector("#departmentFilter"),
       sortMode: document.querySelector("#sortMode"),
-      dateWeight: document.querySelector("#dateWeight"),
-      populationWeight: document.querySelector("#populationWeight"),
-      dateWeightValue: document.querySelector("#dateWeightValue"),
-      populationWeightValue: document.querySelector("#populationWeightValue"),
       cityCount: document.querySelector("#cityCount"),
       avgAge: document.querySelector("#avgAge"),
       resultTitle: document.querySelector("#resultTitle"),
@@ -774,8 +759,6 @@
       els.cityCount.textContent = list.length;
       els.avgAge.textContent = `${avg} j`;
       els.resultTitle.textContent = `${list.length} commune${list.length > 1 ? "s" : ""}`;
-      els.dateWeightValue.textContent = `${state.dateWeight}%`;
-      els.populationWeightValue.textContent = `${state.populationWeight}%`;
       els.emptyState.hidden = list.length !== 0;
       
       els.rows.innerHTML = list.map((city, index) => {
@@ -856,25 +839,10 @@
       render();
     }
 
-    function syncWeights(changed) {
-      if (changed === "date") {
-        state.dateWeight = Number(els.dateWeight.value);
-        state.populationWeight = 100 - state.dateWeight;
-        els.populationWeight.value = state.populationWeight;
-      } else {
-        state.populationWeight = Number(els.populationWeight.value);
-        state.dateWeight = 100 - state.populationWeight;
-        els.dateWeight.value = state.dateWeight;
-      }
-      render();
-    }
-
     // Événements basiques UI
     els.search.addEventListener("input", e => { state.search = e.target.value; render(); });
     els.departmentFilter.addEventListener("change", e => { state.department = e.target.value; render(); });
     els.sortMode.addEventListener("change", e => { state.sortMode = e.target.value; render(); });
-    els.dateWeight.addEventListener("input", () => syncWeights("date"));
-    els.populationWeight.addEventListener("input", () => syncWeights("population"));
     els.backToMainBtn.addEventListener("click", closeDetails);
 
     // Événements sur le tableau principal (Avec appels Supabase)
