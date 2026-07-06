@@ -725,13 +725,23 @@
       });
 
       const byName = (a, b) => a.name.localeCompare(b.name, "fr");
+      
+      // On attribue un rang à chaque catégorie (Rouge passe en premier, Vert en dernier)
+      const getCategoryRank = (age) => {
+        if (age === 9999 || age > 365) return 4; // Rouge
+        if (age >= 183) return 3;                // Orange
+        if (age >= 61) return 2;                 // Jaune
+        return 1;                                // Vert
+      };
+
       const sorters = {
-        score: (a, b) => b.score - a.score || b.age - a.age || b.population - a.population,
-        date: (a, b) => b.age - a.age || byName(a, b),
+        // Tri d'abord par rang de couleur, PUIS par population décroissante, PUIS par nom
+        date: (a, b) => getCategoryRank(b.age) - getCategoryRank(a.age) || b.population - a.population || byName(a, b),
         population: (a, b) => b.population - a.population || byName(a, b),
         time: (a, b) => a.minutes - b.minutes || byName(a, b),
         name: byName
       };
+      
       return list.sort(sorters[state.sortMode]);
     }
 
