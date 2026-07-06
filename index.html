@@ -773,11 +773,7 @@
               <span class="city">${city.name}</span>
               <span class="sub">Département ${city.department}</span>
             </td>
-            <td>
-  <div class="date-cell">
-    <input type="number" value="${city.minutes}" data-action="minutes" data-id="${city.id}" min="1" style="width: 70px; text-align: center;">
-  </div>
-</td>
+            <td>${formatMinutes(Number(city.minutes))}</td>
             <td>${formatNumber(Number(city.population))}</td>
             <td>
               <div class="date-cell">
@@ -865,26 +861,17 @@
       }
     });
 
-   // PAR CE NOUVEAU BLOC :
 els.rows.addEventListener("change", async event => {
   const action = event.target.dataset.action;
+  if (action !== "date") return; // On bloque tout ce qui n'est pas la date
   const cityId = event.target.dataset.id;
   const city = state.cities.find(item => item.id === cityId);
   if (!city) return;
   
-  if (action === "date") {
-    const newDate = event.target.value;
-    city.lastVisit = newDate;
-    render();
-    await updateCityInDB(cityId, { lastVisit: newDate });
-  }
-  
-  if (action === "minutes") {
-    const newMinutes = Number(event.target.value);
-    city.minutes = newMinutes;
-    render(); // Met à jour l'affichage
-    await updateCityInDB(cityId, { minutes: newMinutes }); // Sauvegarde dans Supabase
-  }
+  const newDate = event.target.value;
+  city.lastVisit = newDate;
+  render();
+  await updateCityInDB(cityId, { lastVisit: newDate });
 });
     // Événements sur les détails (Fait / No Go)
     els.addVisitedInput.addEventListener("keydown", async event => {
