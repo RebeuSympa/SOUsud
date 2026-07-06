@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="fr">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- AJOUTER CES DEUX LIGNES : -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Aide pour RM</title>
@@ -486,8 +491,12 @@
             <h1>Aide pour RM</h1>
           </div>
           <div class="toolbar">
+            <button id="toggleMapBtn" class="btn secondary">🗺️ Vue Carte</button>
           </div>
         </header>
+        <div id="mapWrapper" style="display: none; height: 450px; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); z-index: 1;">
+          <div id="map" style="width: 100%; height: 100%;"></div>
+        </div>
 
         <section class="grid">
           <aside class="panel controls">
@@ -650,6 +659,8 @@
       addVisitedInput: document.querySelector("#addVisitedInput"),
       addNogoInput: document.querySelector("#addNogoInput"),
       backToMainBtn: document.querySelector("#backToMainBtn")
+      toggleMapBtn: document.querySelector("#toggleMapBtn"),
+      mapWrapper: document.querySelector("#mapWrapper")
     };
 
     // --- FONCTIONS BASE DE DONNÉES ---
@@ -803,6 +814,7 @@
           </tr>
         `;
       }).join("");
+      if (els.mapWrapper && els.mapWrapper.style.display === "block") updateMap();
     }
 
     function openCityDetails(cityId) {
@@ -953,7 +965,76 @@ els.rows.addEventListener("change", async event => {
         render();
       }
     });
+// --- GESTION DE LA CARTE ---
+    let map = null;
+    let markersLayer = null;
+    let cityCoordinates = {}; // Cache pour ne pas re-télécharger les mêmes coordonnées
+    let mapUpdateId = 0;
 
+    async function getCoordinates(cityName, dept) {
+      if (cityCoordinates[cityName]) return cityCoordinates[cityName];
+      try {
+        // Interroge l'API du gouvernement français
+        const res = await fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(cityName)}&codeDepartement=${dept}&fields=centre&format=json&geometry=centre`);
+        const data = await res.json();
+        if (data && data.length > 0 && data[0].centre) {
+          const coords = [data[0].centre.coordinates[1], data[0].centre.coordinates[0]];
+          cityCoordinates[cityName] = coords;
+          return coords;
+        }
+      } catch (e) { console.error("Erreur géolocalisation pour", cityName); }
+      return null;
+    }
+
+    async function updateMap() {
+      if (!map) {
+        // Initialisation de la carte, centrée sur Toulouse/Occitanie
+        map = L.map('map').setView([43.6047, 1.4442], 8);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+        markersLayer = L.layerGroup().addTo(map);
+      }
+      
+      const currentUpdateId = ++mapUpdateId; // Sécurité si on tape trop vite dans la recherche
+      markersLayer.clearLayers();
+      const list = filteredCities(); 
+
+      for (const city of list) {
+        if (currentUpdateId !== mapUpdateId) return; // Annule si une nouvelle recherche a été lancée
+        
+        const coords = await getCoordinates(city.name, city.department);
+        if (coords) {
+          // Attribuer la bonne couleur selon l'âge du dernier passage
+          const pClass = priorityClassByAge(city.age);
+          let color = "#3f9b70"; // Vert par défaut
+          if (pClass === "p-hot") color = "#d13f2f"; // Rouge
+          if (pClass === "p-warm") color = "#e39423"; // Orange
+          if (pClass === "p-mid") color = "#d0b936"; // Jaune
+
+          // Création du pins visuel
+          const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
+          const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
+
+          L.marker(coords, { icon: customIcon })
+            .bindPopup(`<b>${city.name}</b> (${city.department})<br>Dernier passage : ${city.age === 9999 ? "Jamais" : city.age + " jours"}`)
+            .addTo(markersLayer);
+        }
+      }
+    }
+
+    // Gérer l'ouverture/fermeture de la carte
+    els.toggleMapBtn.addEventListener("click", () => {
+      const isHidden = els.mapWrapper.style.display === "none";
+      els.mapWrapper.style.display = isHidden ? "block" : "none";
+      if (isHidden) {
+        if (!map) updateMap();
+        else {
+          updateMap();
+          setTimeout(() => map.invalidateSize(), 100); // Corrige un bug Leaflet
+        }
+      }
+    });
 
     // INITIALISATION : On charge les données de Supabase au démarrage
     async function initApp() {
