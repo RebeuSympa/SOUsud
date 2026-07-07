@@ -630,14 +630,14 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
               <!-- Colonne @work -->
               <div class="list-box">
-                <h3 style="color: #2c3e50;">💼 @work (Commerces, Artisans...)</h3>
+                <h3 style="color: #2c3e50;">💼 @work </h3>
                 <ul class="list-items" id="workSuggestionsList">
                   <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
                 </ul>
               </div>
 
               <div class="list-box">
-                <h3 style="color: #e67e22;">🏋️ @sport (Salles, Terrains...)</h3>
+                <h3 style="color: #e67e22;">🏋️ @sport</h3>
                 <ul class="list-items" id="sportSuggestionsList">
                   <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
                 </ul>
@@ -645,7 +645,7 @@
 
               <!-- Colonne @study -->
               <div class="list-box">
-                <h3 style="color: #8e44ad;">📚 @study (Campus)</h3>
+                <h3 style="color: #8e44ad;">📚 @study </h3>
                 <ul class="list-items" id="studySuggestionsList">
                   <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
                 </ul>
@@ -1197,52 +1197,49 @@ els.generateAiTargetsBtn.addEventListener("click", async () => {
   if (!currentCity) return;
 
   const cols = ["work", "sport", "study"];
-  cols.forEach(type => document.getElementById(`${type}SuggestionsList`).innerHTML = "<li>Recherche en cours...</li>");
+  cols.forEach(type => document.getElementById(`${type}SuggestionsList`).innerHTML = "<li>Analyse en cours...</li>");
 
   const coords = await getCoordinates(currentCity.name, currentCity.department);
   if (!coords) return alert("Position introuvable");
 
   const radius = 5000;
-  // Requête élargie aux salles de sport, crossfit, danse et wake parks
+  // Requête étendue : inclusion des terrains (pitch) et tous les types d'écoles (education)
   const query = `[out:json];(
     node["shop"](around:${radius},${coords[0]},${coords[1]});
     node["craft"](around:${radius},${coords[0]},${coords[1]});
     node["amenity"="fast_food"](around:${radius},${coords[0]},${coords[1]});
     node["leisure"="fitness_centre"](around:${radius},${coords[0]},${coords[1]});
     node["leisure"="sports_centre"](around:${radius},${coords[0]},${coords[1]});
+    node["leisure"="pitch"](around:${radius},${coords[0]},${coords[1]});
     node["leisure"="dance"](around:${radius},${coords[0]},${coords[1]});
     node["sport"="wakeboarding"](around:${radius},${coords[0]},${coords[1]});
+    node["amenity"~"university|college|school"](around:${radius},${coords[0]},${coords[1]});
     );out center 150;`;
 
   try {
     const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
     const data = await res.json();
-    
-    // Filtrage et nettoyage
-    const allPlaces = data.elements.filter(e => e.tags && e.tags.name);
-    
+    const all = data.elements.filter(e => e.tags && e.tags.name);
+
     // Remplissage @work
-    document.getElementById("workSuggestionsList").innerHTML = allPlaces
+    document.getElementById("workSuggestionsList").innerHTML = all
       .filter(e => e.tags.shop || e.tags.craft || e.tags.amenity === "fast_food")
       .slice(0, 6).map(e => `<li>${e.tags.name}</li>`).join("");
 
-    // Remplissage @sport (Exclusion Basic Fit + tes nouveaux critères)
-    const sportPlaces = allPlaces.filter(e => {
-      const name = e.tags.name.toLowerCase();
-      const isBasicFit = name.includes("basic fit") || name.includes("basic-fit");
-      const isSport = e.tags.leisure === "fitness_centre" || 
-                      e.tags.leisure === "sports_centre" || 
-                      e.tags.leisure === "dance" || 
-                      e.tags.sport === "wakeboarding" ||
-                      name.includes("crossfit") || name.includes("hyrox");
-      return isSport && !isBasicFit;
-    });
+    // Remplissage @sport : inclut fitness, danse, wake et les terrains (volley, etc.)
+    document.getElementById("sportSuggestionsList").innerHTML = all
+      .filter(e => {
+        const name = e.tags.name.toLowerCase();
+        const isSport = ["fitness_centre", "sports_centre", "pitch", "dance"].includes(e.tags.leisure) || e.tags.sport === "wakeboarding";
+        return isSport && !name.includes("basic fit") && !name.includes("basic-fit");
+      })
+      .slice(0, 6).map(e => `<li>${e.tags.name}</li>`).join("");
 
-    document.getElementById("sportSuggestionsList").innerHTML = sportPlaces.length > 0 
-      ? sportPlaces.slice(0, 6).map(e => `<li>${e.tags.name}</li>`).join("") 
-      : "<li>Aucun spot sportif trouvé.</li>";
+    // Remplissage @study : inclut facs, écoles ingé, commerce, archi (via tags amenity)
+    document.getElementById("studySuggestionsList").innerHTML = all
+      .filter(e => ["university", "college", "school"].includes(e.tags.amenity))
+      .slice(0, 6).map(e => `<li>${e.tags.name}</li>`).join("");
 
-    document.getElementById("studySuggestionsList").innerHTML = "<li>Analyse focus commerces/sport active</li>";
   } catch (e) { alert("Erreur lors de la recherche"); }
 });
     initApp();
