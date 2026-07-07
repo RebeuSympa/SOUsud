@@ -1191,36 +1191,46 @@ els.rows.addEventListener("change", async event => {
           render();
       }
     }
-// --- ANALYSE IA OPTIMISÉE (Anti-429) ---
+// --- ANALYSE IA CIBLÉE (Supérieur uniquement) ---
 els.generateAiTargetsBtn.addEventListener("click", async () => {
   const currentCity = state.cities.find(c => c.id === state.currentSelectedCityId);
   if (!currentCity) return;
 
-  // 1. Message visuel
-  document.querySelectorAll("[id$='SuggestionsList']").forEach(el => el.innerHTML = "<li>Recherche...</li>");
+  const lists = { work: "workSuggestionsList", sport: "sportSuggestionsList", study: "studySuggestionsList" };
+  Object.values(lists).forEach(id => document.getElementById(id).innerHTML = "<li>Recherche...</li>");
 
   const coords = await getCoordinates(currentCity.name, currentCity.department);
   if (!coords) return alert("Position introuvable");
 
-  // 2. Requête simplifiée (plus légère pour éviter le blocage 429)
-  const query = `[out:json][timeout:15];(node["shop"](around:3000,${coords[0]},${coords[1]});node["leisure"~"fitness_centre|sports_centre|pitch|dance"](around:3000,${coords[0]},${coords[1]});node["amenity"~"university|college|school"](around:3000,${coords[0]},${coords[1]}););out center 50;`;
+  // Requête : On garde les shops/crafts et sports, mais pour les études on filtre sur university/college
+  const query = `[out:json][timeout:15];(
+    node["shop"](around:3000,${coords[0]},${coords[1]});
+    node["craft"](around:3000,${coords[0]},${coords[1]});
+    node["leisure"~"fitness_centre|sports_centre|pitch|dance"](around:3000,${coords[0]},${coords[1]});
+    node["sport"="wakeboarding"](around:3000,${coords[0]},${coords[1]});
+    node["amenity"~"university|college"](around:3000,${coords[0]},${coords[1]});
+    );out center 100;`;
 
   try {
     const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
-    if (!res.ok) throw new Error("Erreur serveur : " + res.status);
-    
     const data = await res.json();
     const all = data.elements.filter(e => e.tags?.name);
 
-    // 3. Remplissage sécurisé
-    document.getElementById("workSuggestionsList").innerHTML = all.filter(e => e.tags.shop).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("") || "<li>Aucun commerce</li>";
-    document.getElementById("sportSuggestionsList").innerHTML = all.filter(e => e.tags.leisure && !e.tags.name.toLowerCase().includes("basic")).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("") || "<li>Aucun spot sport</li>";
-    document.getElementById("studySuggestionsList").innerHTML = all.filter(e => e.tags.amenity).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("") || "<li>Aucune école</li>";
+    // Remplissage @work
+    document.getElementById(lists.work).innerHTML = all.filter(e => e.tags.shop || e.tags.craft).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
 
-  } catch (e) {
-    console.error(e);
-    alert("Le serveur de cartes est surchargé (429). Attends 30 secondes avant de relancer.");
-  }
+    // Remplissage @sport (Exclusion Basic Fit)
+    document.getElementById(lists.sport).innerHTML = all.filter(e => 
+        (["fitness_centre", "sports_centre", "pitch", "dance"].includes(e.tags.leisure) || e.tags.sport === "wakeboarding") 
+        && !e.tags.name.toLowerCase().includes("basic")
+    ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
+
+    // Remplissage @study : On ne garde que university ou college (exclut school/primaire/collège/lycée)
+    document.getElementById(lists.study).innerHTML = all.filter(e => 
+        ["university", "college"].includes(e.tags.amenity)
+    ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
+
+  } catch (e) { alert("Erreur lors de la recherche"); }
 });
 
 // 4. Appel final unique
