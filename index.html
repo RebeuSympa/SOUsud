@@ -1197,22 +1197,38 @@ els.generateAiTargetsBtn.addEventListener("click", async () => {
   if (!currentCity) return;
 
   const cols = ["work", "sport", "study"];
-  cols.forEach(type => document.getElementById(`${type}SuggestionsList`).innerHTML = "<li>Recherche en cours...</li>");
+  cols.forEach(type => document.getElementById(`${type}SuggestionsList`).innerHTML = "<li>Analyse de la zone...</li>");
 
   const coords = await getCoordinates(currentCity.name, currentCity.department);
   if (!coords) return alert("Position introuvable");
 
-  const radius = 5000;
-  const query = `[out:json];(node["shop"](around:${radius},${coords[0]},${coords[1]});node["craft"](around:${radius},${coords[0]},${coords[1]});node["office"](around:${radius},${coords[0]},${coords[1]});node["leisure"="fitness_centre"](around:${radius},${coords[0]},${coords[1]});node["amenity"="university"](around:${radius},${coords[0]},${coords[1]}););out 150;`;
+  // On élargit la requête pour inclure commerces, zones artisanales et centres commerciaux
+  const query = `[out:json];(
+    node["shop"](around:5000,${coords[0]},${coords[1]});
+    way["shop"](around:5000,${coords[0]},${coords[1]});
+    node["craft"](around:5000,${coords[0]},${coords[1]});
+    node["amenity"="fast_food"](around:5000,${coords[0]},${coords[1]});
+    node["leisure"="fitness_centre"](around:5000,${coords[0]},${coords[1]});
+    );out center 150;`;
 
   try {
     const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
     const data = await res.json();
     
-    // Rendu des résultats
-    document.getElementById("workSuggestionsList").innerHTML = data.elements.filter(e => e.tags.shop || e.tags.craft).slice(0, 3).map(e => `<li>${e.tags.name}</li>`).join("");
-    document.getElementById("sportSuggestionsList").innerHTML = data.elements.filter(e => e.tags.leisure === "fitness_centre").slice(0, 3).map(e => `<li>${e.tags.name}</li>`).join("");
-    document.getElementById("studySuggestionsList").innerHTML = data.elements.filter(e => e.tags.amenity === "university").slice(0, 3).map(e => `<li>${e.tags.name}</li>`).join("");
+    // Filtrage pour ne garder que des noms uniques
+    const unique = (arr) => [...new Map(arr.map(item => [item.tags.name, item])).values()];
+    const filtered = unique(data.elements.filter(e => e.tags && e.tags.name));
+
+    // Remplissage des listes
+    document.getElementById("workSuggestionsList").innerHTML = filtered
+      .filter(e => e.tags.shop || e.tags.craft || e.tags.amenity === "fast_food")
+      .slice(0, 6).map(e => `<li>${e.tags.name}</li>`).join("");
+
+    document.getElementById("sportSuggestionsList").innerHTML = filtered
+      .filter(e => e.tags.leisure === "fitness_centre")
+      .slice(0, 6).map(e => `<li>${e.tags.name}</li>`).join("");
+
+    document.getElementById("studySuggestionsList").innerHTML = "<li>Analyse focus commerces active</li>";
   } catch (e) { alert("Erreur lors de la recherche"); }
 });
     initApp();
