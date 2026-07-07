@@ -1108,25 +1108,6 @@ els.rows.addEventListener("change", async event => {
       }
     });
 
-    // --- MOTEUR DE RECOMMANDATION (Overpass API - OpenStreetMap) ---
-    document.getElementById("generateAiTargetsBtn").addEventListener("click", async () => {
-      const currentCity = state.cities.find(c => c.id === state.currentSelectedCityId);
-      if (!currentCity) return;
-
-      const cols = ["work", "sport", "study"];
-      cols.forEach(type => {
-        document.getElementById(`${type}SuggestionsList`).innerHTML = "<li style='color: var(--muted);'><i>Recherche radar en cours... ⏳</i></li>";
-      });
-
-      const coords = await getCoordinates(currentCity.name, currentCity.department);
-      if (!coords) {
-        alert("Impossible de localiser cette ville pour la recherche.");
-        return;
-      }
-
-      const [lat, lon] = coords;
-      const radius = 5000; 
-
       // --- MOTEUR DE RECOMMANDATION (Overpass API - OpenStreetMap) ---
     document.getElementById("generateAiTargetsBtn").addEventListener("click", async () => {
       const currentCity = state.cities.find(c => c.id === state.currentSelectedCityId);
