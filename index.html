@@ -1197,38 +1197,52 @@ els.generateAiTargetsBtn.addEventListener("click", async () => {
   if (!currentCity) return;
 
   const cols = ["work", "sport", "study"];
-  cols.forEach(type => document.getElementById(`${type}SuggestionsList`).innerHTML = "<li>Analyse de la zone...</li>");
+  cols.forEach(type => document.getElementById(`${type}SuggestionsList`).innerHTML = "<li>Recherche en cours...</li>");
 
   const coords = await getCoordinates(currentCity.name, currentCity.department);
   if (!coords) return alert("Position introuvable");
 
-  // On élargit la requête pour inclure commerces, zones artisanales et centres commerciaux
+  const radius = 5000;
+  // Requête élargie aux salles de sport, crossfit, danse et wake parks
   const query = `[out:json];(
-    node["shop"](around:5000,${coords[0]},${coords[1]});
-    way["shop"](around:5000,${coords[0]},${coords[1]});
-    node["craft"](around:5000,${coords[0]},${coords[1]});
-    node["amenity"="fast_food"](around:5000,${coords[0]},${coords[1]});
-    node["leisure"="fitness_centre"](around:5000,${coords[0]},${coords[1]});
+    node["shop"](around:${radius},${coords[0]},${coords[1]});
+    node["craft"](around:${radius},${coords[0]},${coords[1]});
+    node["amenity"="fast_food"](around:${radius},${coords[0]},${coords[1]});
+    node["leisure"="fitness_centre"](around:${radius},${coords[0]},${coords[1]});
+    node["leisure"="sports_centre"](around:${radius},${coords[0]},${coords[1]});
+    node["leisure"="dance"](around:${radius},${coords[0]},${coords[1]});
+    node["sport"="wakeboarding"](around:${radius},${coords[0]},${coords[1]});
     );out center 150;`;
 
   try {
     const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
     const data = await res.json();
     
-    // Filtrage pour ne garder que des noms uniques
-    const unique = (arr) => [...new Map(arr.map(item => [item.tags.name, item])).values()];
-    const filtered = unique(data.elements.filter(e => e.tags && e.tags.name));
-
-    // Remplissage des listes
-    document.getElementById("workSuggestionsList").innerHTML = filtered
+    // Filtrage et nettoyage
+    const allPlaces = data.elements.filter(e => e.tags && e.tags.name);
+    
+    // Remplissage @work
+    document.getElementById("workSuggestionsList").innerHTML = allPlaces
       .filter(e => e.tags.shop || e.tags.craft || e.tags.amenity === "fast_food")
       .slice(0, 6).map(e => `<li>${e.tags.name}</li>`).join("");
 
-    document.getElementById("sportSuggestionsList").innerHTML = filtered
-      .filter(e => e.tags.leisure === "fitness_centre")
-      .slice(0, 6).map(e => `<li>${e.tags.name}</li>`).join("");
+    // Remplissage @sport (Exclusion Basic Fit + tes nouveaux critères)
+    const sportPlaces = allPlaces.filter(e => {
+      const name = e.tags.name.toLowerCase();
+      const isBasicFit = name.includes("basic fit") || name.includes("basic-fit");
+      const isSport = e.tags.leisure === "fitness_centre" || 
+                      e.tags.leisure === "sports_centre" || 
+                      e.tags.leisure === "dance" || 
+                      e.tags.sport === "wakeboarding" ||
+                      name.includes("crossfit") || name.includes("hyrox");
+      return isSport && !isBasicFit;
+    });
 
-    document.getElementById("studySuggestionsList").innerHTML = "<li>Analyse focus commerces active</li>";
+    document.getElementById("sportSuggestionsList").innerHTML = sportPlaces.length > 0 
+      ? sportPlaces.slice(0, 6).map(e => `<li>${e.tags.name}</li>`).join("") 
+      : "<li>Aucun spot sportif trouvé.</li>";
+
+    document.getElementById("studySuggestionsList").innerHTML = "<li>Analyse focus commerces/sport active</li>";
   } catch (e) { alert("Erreur lors de la recherche"); }
 });
     initApp();
