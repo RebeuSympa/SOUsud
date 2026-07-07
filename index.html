@@ -702,7 +702,8 @@
       toggleMapBtn: document.querySelector("#toggleMapBtn"),
       mapWrapper: document.querySelector("#mapWrapper"),
       nearbyCitiesContainer: document.querySelector("#nearbyCitiesContainer"),
-      detailMapWrapper: document.querySelector("#detailMapWrapper")
+      detailMapWrapper: document.querySelector("#detailMapWrapper"),
+      generateAiTargetsBtn: document.querySelector("#generateAiTargetsBtn")
     };
 
     // --- FONCTIONS BASE DE DONNÉES ---
@@ -1190,7 +1191,15 @@ els.rows.addEventListener("change", async event => {
           render();
       }
     }
+const aiBtn = document.getElementById("generateAiTargetsBtn");
 
+aiBtn.addEventListener("click", () => {
+    console.log("Clic détecté !");
+    alert("Le bouton fonctionne !"); // C'est un test pour voir si ton navigateur réagit
+    
+    // Si l'alert s'affiche, c'est que le problème venait de l'attachement de l'événement.
+    // Tu pourras alors remplacer l'alert par ta fonction de logique.
+});
     initApp();
   </script>
 </body>
