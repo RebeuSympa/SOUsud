@@ -1191,14 +1191,29 @@ els.rows.addEventListener("change", async event => {
           render();
       }
     }
-const aiBtn = document.getElementById("generateAiTargetsBtn");
+// --- LOGIQUE D'ANALYSE RÉELLE ---
+els.generateAiTargetsBtn.addEventListener("click", async () => {
+  const currentCity = state.cities.find(c => c.id === state.currentSelectedCityId);
+  if (!currentCity) return;
 
-aiBtn.addEventListener("click", () => {
-    console.log("Clic détecté !");
-    alert("Le bouton fonctionne !"); // C'est un test pour voir si ton navigateur réagit
+  const cols = ["work", "sport", "study"];
+  cols.forEach(type => document.getElementById(`${type}SuggestionsList`).innerHTML = "<li>Recherche en cours...</li>");
+
+  const coords = await getCoordinates(currentCity.name, currentCity.department);
+  if (!coords) return alert("Position introuvable");
+
+  const radius = 5000;
+  const query = `[out:json];(node["shop"](around:${radius},${coords[0]},${coords[1]});node["craft"](around:${radius},${coords[0]},${coords[1]});node["office"](around:${radius},${coords[0]},${coords[1]});node["leisure"="fitness_centre"](around:${radius},${coords[0]},${coords[1]});node["amenity"="university"](around:${radius},${coords[0]},${coords[1]}););out 150;`;
+
+  try {
+    const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
+    const data = await res.json();
     
-    // Si l'alert s'affiche, c'est que le problème venait de l'attachement de l'événement.
-    // Tu pourras alors remplacer l'alert par ta fonction de logique.
+    // Rendu des résultats
+    document.getElementById("workSuggestionsList").innerHTML = data.elements.filter(e => e.tags.shop || e.tags.craft).slice(0, 3).map(e => `<li>${e.tags.name}</li>`).join("");
+    document.getElementById("sportSuggestionsList").innerHTML = data.elements.filter(e => e.tags.leisure === "fitness_centre").slice(0, 3).map(e => `<li>${e.tags.name}</li>`).join("");
+    document.getElementById("studySuggestionsList").innerHTML = data.elements.filter(e => e.tags.amenity === "university").slice(0, 3).map(e => `<li>${e.tags.name}</li>`).join("");
+  } catch (e) { alert("Erreur lors de la recherche"); }
 });
     initApp();
   </script>
