@@ -1082,6 +1082,7 @@ els.rows.addEventListener("change", async event => {
       let bounds = L.latLngBounds([currentCoords]);
 
       // Placer les Pins des villes autour
+      // Placer les Pins des villes autour
       nearby.forEach(item => {
         const pClass = priorityClassByAge(item.city.age);
         let color = "#3f9b70"; 
@@ -1092,8 +1093,24 @@ els.rows.addEventListener("change", async event => {
         const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
         const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
 
+        // --- ICI LE CHANGEMENT ---
+        const popupDiv = document.createElement("div");
+        popupDiv.innerHTML = `<b>${item.city.name}</b><br>🚗 ~${Math.round(item.distance)} km`;
+        
+        const btn = document.createElement("button");
+        btn.className = "btn-link";
+        btn.style.marginTop = "8px";
+        btn.innerText = "Voir détails →";
+        
+        btn.onclick = () => {
+            closeDetails();            // 1. Ferme la fiche actuelle
+            openCityDetails(item.city.id); // 2. Ouvre la nouvelle
+        };
+        
+        popupDiv.appendChild(btn);
+
         L.marker(item.coords, { icon: customIcon })
-          .bindPopup(`<b>${item.city.name}</b><br>🚗 ~${Math.round(item.distance)} km de distance`)
+          .bindPopup(popupDiv)
           .addTo(dMarkersLayer);
         
         bounds.extend(item.coords);
@@ -1160,8 +1177,26 @@ els.rows.addEventListener("change", async event => {
           const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
           const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
 
+          // Création du contenu du popup avec un bouton dynamique
+          const popupDiv = document.createElement("div");
+          popupDiv.innerHTML = `<b>${city.name}</b> (${city.department})<br>Passage : ${city.age === 9999 ? "Jamais" : city.age + " jours"}<br>`;
+          
+          const detailBtn = document.createElement("button");
+          detailBtn.className = "btn-link";
+          detailBtn.style.marginTop = "8px";
+          detailBtn.innerText = "Voir détails →";
+          
+          // L'action du bouton : on ferme le popup et on ouvre la vue détail
+          detailBtn.onclick = () => {
+             map.closePopup(); // Ferme le popup de la carte
+             openCityDetails(city.id); // Ouvre la vue détail de la ville
+          };
+          
+          popupDiv.appendChild(detailBtn);
+
+          // On ajoute le marqueur avec ce contenu personnalisé
           L.marker(coords, { icon: customIcon })
-            .bindPopup(`<b>${city.name}</b> (${city.department})<br>Dernier passage : ${city.age === 9999 ? "Jamais" : city.age + " jours"}`)
+            .bindPopup(popupDiv)
             .addTo(markersLayer);
         }
       }
