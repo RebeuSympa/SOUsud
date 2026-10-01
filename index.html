@@ -7,7 +7,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Aide pour RM</title>
+  <title>Aide pour RM - Toulouse & Quartiers</title>
   
   <style>
     :root {
@@ -38,33 +38,14 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    button, input, select {
-      font: inherit;
-    }
+    button, input, select { font: inherit; }
+    button { border: 0; cursor: pointer; transition: all 0.2s ease; }
 
-    button {
-      border: 0;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
+    .app { min-height: 100vh; padding: 32px 20px; }
+    .shell { max-width: 1280px; margin: 0 auto; }
 
-    .app {
-      min-height: 100vh;
-      padding: 32px 20px;
-    }
-
-    .shell {
-      max-width: 1280px;
-      margin: 0 auto;
-    }
-
-    .screen {
-      display: none;
-    }
-    .screen.active {
-      display: block;
-      animation: fadeIn 0.3s ease-in-out;
-    }
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn 0.3s ease-in-out; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(4px); }
@@ -97,10 +78,7 @@
       color: var(--ink);
     }
 
-    .toolbar {
-      display: flex;
-      gap: 10px;
-    }
+    .toolbar { display: flex; gap: 10px; }
 
     .btn {
       display: inline-flex;
@@ -116,11 +94,7 @@
       font-size: 14px;
       box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2);
     }
-
-    .btn:hover {
-      background: var(--accent-hover);
-      transform: translateY(-1px);
-    }
+    .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
 
     .btn.secondary {
       background: white;
@@ -128,9 +102,12 @@
       border: 1px solid var(--line);
       box-shadow: var(--shadow);
     }
+    .btn.secondary:hover { background: var(--soft); }
 
-    .btn.secondary:hover {
-      background: var(--soft);
+    .btn.toulouse-special {
+      background: linear-gradient(135deg, #0d9488, #0f766e);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
     }
 
     .grid {
@@ -147,17 +124,9 @@
       box-shadow: var(--shadow);
     }
 
-    .controls {
-      padding: 20px;
-      position: sticky;
-      top: 24px;
-    }
+    .controls { padding: 20px; position: sticky; top: 24px; }
 
-    .field {
-      display: grid;
-      gap: 6px;
-      margin-bottom: 16px;
-    }
+    .field { display: grid; gap: 6px; margin-bottom: 16px; }
 
     label {
       font-size: 11px;
@@ -179,7 +148,6 @@
       font-size: 14px;
       transition: all 0.2s;
     }
-
     input:focus, select:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
@@ -198,7 +166,6 @@
       border-radius: 12px;
       padding: 14px;
     }
-
     .metric b {
       display: block;
       font-size: 22px;
@@ -208,29 +175,12 @@
       margin-bottom: 4px;
       color: var(--ink);
     }
+    .metric span { color: var(--muted); font-size: 12px; font-weight: 500; }
 
-    .metric span {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 500;
-    }
+    .add-form { border-top: 1px solid var(--line); padding-top: 20px; margin-top: 20px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-    .add-form {
-      border-top: 1px solid var(--line);
-      padding-top: 20px;
-      margin-top: 20px;
-    }
-
-    .two {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .table-panel {
-      overflow: hidden;
-    }
-
+    .table-panel { overflow: hidden; }
     .table-head {
       display: flex;
       justify-content: space-between;
@@ -240,232 +190,91 @@
       background: rgba(255, 255, 255, 0.8);
       backdrop-filter: blur(8px);
     }
+    .table-head strong { font-size: 16px; font-weight: 700; }
 
-    .table-head strong {
-      font-size: 16px;
-      font-weight: 700;
-    }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 11px; font-weight: 600; }
+    .dot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; margin-right: 6px; vertical-align: middle; }
 
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      display: inline-block;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-
-    .table-wrap {
-      overflow: auto;
-      max-height: calc(100vh - 180px);
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      min-width: 800px;
-      background: white;
-    }
-
-    th, td {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-      vertical-align: middle;
-      font-size: 14px;
-    }
-
+    .table-wrap { overflow: auto; max-height: calc(100vh - 180px); }
+    table { border-collapse: collapse; width: 100%; min-width: 800px; background: white; }
+    th, td { padding: 14px 16px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; font-size: 14px; }
     th {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      background: #f8fafc;
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      white-space: nowrap;
+      position: sticky; top: 0; z-index: 2; background: #f8fafc; color: var(--muted);
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap;
     }
 
-    tbody tr {
-      transition: background 0.15s;
-    }
+    tbody tr { transition: background 0.15s; }
+    tbody tr:hover { background: #f8fafc; }
 
-    tbody tr:hover {
-      background: #f8fafc;
-    }
-
-    .rank {
-      width: 50px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-
-    .priority {
-      width: 6px;
-      min-width: 6px;
-      padding: 0;
-    }
-
-    .priority div {
-      width: 6px;
-      height: 100%;
-      min-height: 50px;
-      border-radius: 0 4px 4px 0;
-    }
+    .rank { width: 50px; font-weight: 700; color: var(--muted); }
+    .priority { width: 6px; min-width: 6px; padding: 0; }
+    .priority div { width: 6px; height: 100%; min-height: 50px; border-radius: 0 4px 4px 0; }
 
     .p-hot { background: #ef4444; }
     .p-warm { background: #f59e0b; }
     .p-mid { background: #eab308; }
     .p-cool { background: #10b981; }
 
-    .city {
-      font-weight: 700;
-      font-size: 14px;
-      color: var(--ink);
-    }
+    .city { font-weight: 700; font-size: 14px; color: var(--ink); }
+    .sub { color: var(--muted); display: block; font-size: 12px; margin-top: 2px; }
 
-    .sub {
-      color: var(--muted);
-      display: block;
-      font-size: 12px;
-      margin-top: 2px;
-    }
+    .date-cell { display: flex; gap: 6px; align-items: center; }
+    .date-cell input { height: 36px; max-width: 135px; font-size: 13px; }
 
-    .date-cell {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .date-cell input {
-      height: 36px;
-      max-width: 135px;
-      font-size: 13px;
-    }
-
-    .mini {
-      height: 36px;
-      width: 36px;
-      border-radius: 8px;
-      background: var(--soft);
-      color: var(--ink);
-      font-weight: 700;
-      border: 1px solid var(--line);
-    }
-
-    .mini:hover {
-      background: var(--line);
-    }
+    .mini { height: 36px; width: 36px; border-radius: 8px; background: var(--soft); color: var(--ink); font-weight: 700; border: 1px solid var(--line); }
+    .mini:hover { background: var(--line); }
 
     .btn-link {
-      background: var(--soft);
-      color: var(--accent);
-      border: 1px solid transparent;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      border-radius: 8px;
-      transition: all 0.2s;
+      background: var(--soft); color: var(--accent); border: 1px solid transparent;
+      padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 8px; transition: all 0.2s;
     }
-    .btn-link:hover {
-      background: rgba(13, 148, 136, 0.1);
-      border-color: rgba(13, 148, 136, 0.2);
-    }
+    .btn-link:hover { background: rgba(13, 148, 136, 0.1); border-color: rgba(13, 148, 136, 0.2); }
 
-    .empty {
-      padding: 40px 20px;
-      color: var(--muted);
-      text-align: center;
-      font-size: 14px;
-    }
+    .empty { padding: 40px 20px; color: var(--muted); text-align: center; font-size: 14px; }
 
+    /* Écrans de détails et Toulouse */
     .detail-container {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 28px;
-      box-shadow: var(--shadow-lg);
+      background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 28px; box-shadow: var(--shadow-lg);
     }
-
     .detail-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 20px;
-      margin-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 24px;
+    }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    .list-box { background: #f8fafc; border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+    .list-box h3 { margin-top: 0; margin-bottom: 14px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .list-box.nogo-box h3 { color: var(--accent-2); }
+
+    .list-items { list-style: none; padding: 0; margin: 0 0 14px 0; display: flex; flex-direction: column; gap: 8px; }
+    .list-items li {
+      background: white; border: 1px solid var(--line); padding: 10px 14px; border-radius: 8px;
+      display: flex; justify-content: space-between; align-items: center; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
 
-    .detail-grid {
+    .delete-item { background: transparent; color: var(--muted); font-size: 16px; font-weight: bold; padding: 0 4px; border-radius: 4px; }
+    .delete-item:hover { color: var(--accent-2); background: rgba(239, 68, 68, 0.08); }
+
+    /* Grille spécifique des quartiers de Toulouse */
+    .districts-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
     }
-
-    .list-box {
-      background: #f8fafc;
+    .district-card {
+      background: white;
       border: 1px solid var(--line);
       border-radius: 12px;
       padding: 18px;
-    }
-
-    .list-box h3 {
-      margin-top: 0;
-      margin-bottom: 14px;
-      font-size: 14px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .list-box.nogo-box h3 {
-      color: var(--accent-2);
-    }
-
-    .list-items {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 14px 0;
+      box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
-      gap: 8px;
-    }
-
-    .list-items li {
-      background: white;
-      border: 1px solid var(--line);
-      padding: 10px 14px;
-      border-radius: 8px;
-      display: flex;
       justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+      transition: transform 0.2s, border-color 0.2s;
     }
-
-    .delete-item {
-      background: transparent;
-      color: var(--muted);
-      font-size: 16px;
-      font-weight: bold;
-      padding: 0 4px;
-      border-radius: 4px;
-    }
-    .delete-item:hover {
-      color: var(--accent-2);
-      background: rgba(239, 68, 68, 0.08);
+    .district-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
     }
 
     @media (max-width: 980px) {
@@ -481,6 +290,7 @@
   <main class="app">
     <div class="shell">
       
+      <!-- ÉCRAN PRINCIPAL -->
       <div id="mainScreen" class="screen active">
         <header class="topbar">
           <div>
@@ -488,6 +298,7 @@
             <h1>Aide pour RM</h1>
           </div>
           <div class="toolbar">
+            <button id="openToulouseBtn" class="btn toulouse-special">🏙️ Quartiers de Toulouse</button>
             <button id="toggleMapBtn" class="btn secondary">🗺️ Vue Carte</button>
           </div>
        </header>
@@ -585,6 +396,7 @@
         </section>
       </div>
 
+      <!-- ÉCRAN DÉTAIL VILLE CLASSIQUE -->
       <div id="detailScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
@@ -647,7 +459,60 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
+      <!-- ÉCRAN SPÉCIAL TOULOUSE & QUARTIERS -->
+      <div id="toulouseScreen" class="screen">
+        <div class="detail-container">
+          <header class="detail-header">
+            <div>
+              <p class="eyebrow">Hub Central - Haute-Garonne (31)</p>
+              <h1>Toulouse : Quartiers & Secteurs</h1>
+              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Gérez les bars, spots, et zones à surveiller quartier par quartier.</div>
+            </div>
+            <button class="btn secondary" id="backFromToulouseBtn">← Retour au tableau général</button>
+          </header>
+
+          <div style="margin-bottom: 24px; display: flex; gap: 10px;">
+            <input type="text" id="newDistrictInput" placeholder="Ajouter un nouveau quartier (ex: Saint-Agne, Les Chalets...)" style="max-width: 400px;">
+            <button id="addDistrictBtn" class="btn">Ajouter le quartier</button>
+          </div>
+
+          <div class="districts-grid" id="districtsGrid">
+            <!-- Généré dynamiquement -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ÉCRAN DÉTAIL D'UN QUARTIER DE TOULOUSE -->
+      <div id="districtDetailScreen" class="screen">
+        <div class="detail-container">
+          <header class="detail-header">
+            <div>
+              <p class="eyebrow">Toulouse - Quartier</p>
+              <h1 id="districtDetailName">Nom du Quartier</h1>
+            </div>
+            <button class="btn secondary" id="backToToulouseBtn">← Retour aux quartiers</button>
+          </header>
+
+          <div class="detail-grid">
+            <div class="list-box">
+              <h3>✓ Lieux visités (Fait)</h3>
+              <ul class="list-items" id="districtVisitedList"></ul>
+              <div class="field" style="margin-bottom:0;">
+                <input type="text" id="addDistrictVisitedInput" placeholder="Ajouter un lieu... (Entrée)">
+              </div>
+            </div>
+
+            <div class="list-box nogo-box">
+              <h3>⚠ Zones ou Établissements No Go</h3>
+              <ul class="list-items" id="districtNogoList"></ul>
+              <div class="field" style="margin-bottom:0;">
+                <input type="text" id="addDistrictNogoInput" placeholder="Ajouter un élément No Go... (Entrée)">
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -663,17 +528,21 @@
 
     const state = {
       cities: [],
+      districts: [], // Stocke les quartiers de Toulouse
       search: "",
       department: "all",
       sortMode: "date",
       dateWeight: 100,
       populationWeight: 0,
-      currentSelectedCityId: null
+      currentSelectedCityId: null,
+      currentSelectedDistrictId: null
     };
 
     const els = {
-       mainScreen: document.querySelector("#mainScreen"),
+      mainScreen: document.querySelector("#mainScreen"),
       detailScreen: document.querySelector("#detailScreen"),
+      toulouseScreen: document.querySelector("#toulouseScreen"),
+      districtDetailScreen: document.querySelector("#districtDetailScreen"),
       rows: document.querySelector("#rows"),
       emptyState: document.querySelector("#emptyState"),
       search: document.querySelector("#search"),
@@ -695,37 +564,55 @@
       mapWrapper: document.querySelector("#mapWrapper"),
       nearbyCitiesContainer: document.querySelector("#nearbyCitiesContainer"),
       detailMapWrapper: document.querySelector("#detailMapWrapper"),
-      generateAiTargetsBtn: document.querySelector("#generateAiTargetsBtn")
+      generateAiTargetsBtn: document.querySelector("#generateAiTargetsBtn"),
+      
+      openToulouseBtn: document.querySelector("#openToulouseBtn"),
+      backFromToulouseBtn: document.querySelector("#backFromToulouseBtn"),
+      backToToulouseBtn: document.querySelector("#backToToulouseBtn"),
+      districtsGrid: document.querySelector("#districtsGrid"),
+      newDistrictInput: document.querySelector("#newDistrictInput"),
+      addDistrictBtn: document.querySelector("#addDistrictBtn"),
+      districtDetailName: document.querySelector("#districtDetailName"),
+      districtVisitedList: document.querySelector("#districtVisitedList"),
+      districtNogoList: document.querySelector("#districtNogoList"),
+      addDistrictVisitedInput: document.querySelector("#addDistrictVisitedInput"),
+      addDistrictNogoInput: document.querySelector("#addDistrictNogoInput")
     };
 
+    // --- SUPABASE CHARGEMENT ---
     async function loadCitiesFromDB() {
       const { data, error } = await db.from('cities').select('*');
+      if (error) { console.error("Erreur chargement:", error); return []; }
+      return data || [];
+    }
+
+    async function loadDistrictsFromDB() {
+      // On utilise une table 'toulouse_districts' ou similaire. Si elle n'existe pas encore, on peut simuler ou stocker dans supabase.
+      const { data, error } = await db.from('toulouse_districts').select('*');
       if (error) {
-        console.error("Erreur de chargement:", error);
-        return [];
+        // Table par défaut si non créée
+        return [
+          { id: '1', name: 'Capitole / Hypercentre', visitedPlaces: [], noGo: [] },
+          { id: '2', name: 'Saint-Cyprien', visitedPlaces: [], noGo: [] },
+          { id: '3', name: 'Carmes / Saint-Étienne', visitedPlaces: [], noGo: [] },
+          { id: '4', name: 'Compans-Caffarelli', visitedPlaces: [], noGo: [] },
+          { id: '5', name: 'Saint-Michel / Empalot', visitedPlaces: [], noGo: [] },
+          { id: '6', name: 'Minimes / Barrière de Paris', visitedPlaces: [], noGo: [] },
+          { id: '7', name: 'Jolimont / Roseraie', visitedPlaces: [], noGo: [] }
+        ];
       }
       return data || [];
     }
 
     async function updateCityInDB(cityId, updates) {
-      const { error } = await db.from('cities').update(updates).eq('id', cityId);
-      if (error) console.error("Erreur de mise à jour:", error);
+      await db.from('cities').update(updates).eq('id', cityId);
     }
 
-    async function deleteCityFromDB(cityId) {
-      const { error } = await db.from('cities').delete().eq('id', cityId);
-      if (error) console.error("Erreur de suppression:", error);
+    async function updateDistrictInDB(districtId, updates) {
+      await db.from('toulouse_districts').update(updates).eq('id', districtId);
     }
 
-    async function addCityToDB(newCity) {
-      const { data, error } = await db.from('cities').insert([newCity]).select();
-      if (error) {
-        console.error("Erreur d'ajout:", error);
-        return null;
-      }
-      return data[0];
-    }
-
+    // --- LOGIQUE GÉNÉRALE VILLES ---
     function daysSince(dateString) {
       if (!dateString) return 9999;
       const date = new Date(dateString + "T00:00:00");
@@ -740,9 +627,7 @@
       return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
     }
 
-    function formatNumber(value) {
-      return new Intl.NumberFormat("fr-FR").format(value);
-    }
+    function formatNumber(value) { return new Intl.NumberFormat("fr-FR").format(value); }
 
     function enrichedCities() {
       const maxAge = Math.max(...state.cities.map(city => daysSince(city.lastVisit)), 1);
@@ -767,7 +652,6 @@
       });
 
       const byName = (a, b) => a.name.localeCompare(b.name, "fr");
-      
       const getCategoryRank = (age) => {
         if (age === 9999 || age > 365) return 4;
         if (age >= 183) return 3;
@@ -812,9 +696,7 @@
       els.rows.innerHTML = list.map((city, index) => {
         const countVisited = (city.visitedPlaces || []).length;
         const countNogo = (city.noGo || []).length;
-        const labelContent = (countVisited || countNogo) 
-          ? `${countVisited} Fait / ${countNogo} No Go` 
-          : "Vide";
+        const labelContent = (countVisited || countNogo) ? `${countVisited} Fait / ${countNogo} No Go` : "Vide";
 
         return `
           <tr>
@@ -833,74 +715,143 @@
               </div>
             </td>
             <td>${city.age === 9999 ? "Jamais" : formatNumber(city.age)}</td>
-            
             <td>
               <button class="btn-link" data-action="open-details" data-id="${city.id}">
                 Détails (${labelContent}) →
               </button>
             </td>
-
           </tr>
         `;
       }).join("");
       if (els.mapWrapper && els.mapWrapper.style.display === "block") updateMap();
     }
 
+    // --- NAVIGATION ÉCRANS ---
+    function switchScreen(screenName) {
+      els.mainScreen.classList.remove("active");
+      els.detailScreen.classList.remove("active");
+      els.toulouseScreen.classList.remove("active");
+      els.districtDetailScreen.classList.remove("active");
+
+      if (screenName === 'main') els.mainScreen.classList.add("active");
+      if (screenName === 'detail') els.detailScreen.classList.add("active");
+      if (screenName === 'toulouse') { els.toulouseScreen.classList.add("active"); renderDistricts(); }
+      if (screenName === 'districtDetail') els.districtDetailScreen.classList.add("active");
+    }
+
     function openCityDetails(cityId) {
       const city = state.cities.find(c => c.id === cityId);
       if (!city) return;
-      
       state.currentSelectedCityId = cityId;
       els.detailCityName.textContent = city.name;
       els.detailDept.textContent = `Département ${city.department}`;
-
       els.nearbyCitiesContainer.innerHTML = "<i>💡 Cliquez sur le nom de la ville pour voir les communes à ~30 min.</i>";
-      
       renderDetailLists(city);
-      
-      els.mainScreen.classList.remove("active");
-      els.detailScreen.classList.add("active");
+      switchScreen('detail');
     }
 
     function renderDetailLists(city) {
       const vp = city.visitedPlaces || [];
       const ng = city.noGo || [];
-
-      els.visitedList.innerHTML = vp.length 
-        ? vp.map((place, i) => `
-            <li>
-              <span>${place}</span>
-              <button class="delete-item" data-list="visited" data-index="${i}">×</button>
-            </li>`).join("")
-        : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucun lieu enregistré</li>`;
-
-      els.nogoList.innerHTML = ng.length 
-        ? ng.map((item, i) => `
-            <li>
-              <span>${item}</span>
-              <button class="delete-item" data-list="nogo" data-index="${i}">×</button>
-            </li>`).join("")
-        : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
+      els.visitedList.innerHTML = vp.length ? vp.map((place, i) => `<li><span>${place}</span><button class="delete-item" data-list="visited" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucun lieu enregistré</li>`;
+      els.nogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
     }
 
-    function closeDetails() {
-      state.currentSelectedCityId = null;
-      els.detailScreen.classList.remove("active");
-      els.mainScreen.classList.add("active");
-      els.detailMapWrapper.style.display = "none"; 
-      els.nearbyCitiesContainer.innerHTML = "";
-      
-      document.getElementById("workSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>`;
-      document.getElementById("sportSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>`;
-      document.getElementById("studySuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>`;
-
-      render();
+    // --- GESTION DES QUARTIERS DE TOULOUSE ---
+    function renderDistricts() {
+      els.districtsGrid.innerHTML = state.districts.map(d => {
+        const vCount = (d.visitedPlaces || []).length;
+        const nCount = (d.noGo || []).length;
+        return `
+          <div class="district-card">
+            <div>
+              <h3 style="margin: 0 0 8px 0; font-size: 16px; color: var(--ink);">${d.name}</h3>
+              <p style="margin: 0 0 16px 0; font-size: 13px; color: var(--muted);">✓ ${vCount} lieu(x) visité(s) | ⚠ ${nCount} No Go</p>
+            </div>
+            <button class="btn secondary" style="width: 100%;" onclick="openDistrict('${d.id}')">Gérer le quartier →</button>
+          </div>
+        `;
+      }).join("");
     }
 
+    window.openDistrict = function(districtId) {
+      const district = state.districts.find(d => d.id === districtId);
+      if (!district) return;
+      state.currentSelectedDistrictId = districtId;
+      els.districtDetailName.textContent = district.name;
+      renderDistrictLists(district);
+      switchScreen('districtDetail');
+    };
+
+    function renderDistrictLists(district) {
+      const vp = district.visitedPlaces || [];
+      const ng = district.noGo || [];
+      els.districtVisitedList.innerHTML = vp.length ? vp.map((p, i) => `<li><span>${p}</span><button class="delete-item" data-list="d-visited" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucun lieu enregistré</li>`;
+      els.districtNogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="d-nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
+    }
+
+    // Événements boutons Toulouse
+    els.openToulouseBtn.addEventListener("click", () => switchScreen('toulouse'));
+    els.backFromToulouseBtn.addEventListener("click", () => switchScreen('main'));
+    els.backToToulouseBtn.addEventListener("click", () => switchScreen('toulouse'));
+    els.backToMainBtn.addEventListener("click", () => switchScreen('main'));
+
+    els.addDistrictBtn.addEventListener("click", async () => {
+      const name = els.newDistrictInput.value.trim();
+      if (!name) return;
+      const newD = { id: Date.now().toString(), name, visitedPlaces: [], noGo: [] };
+      state.districts.push(newD);
+      els.newDistrictInput.value = "";
+      renderDistricts();
+      // Sauvegarde DB optionnelle si table existante
+      try { await db.from('toulouse_districts').insert([newD]); } catch(e){}
+    });
+
+    // Ajout éléments dans les listes des quartiers
+    els.addDistrictVisitedInput.addEventListener("keydown", async event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
+      if (district) {
+        if (!district.visitedPlaces) district.visitedPlaces = [];
+        district.visitedPlaces.push(event.target.value.trim());
+        event.target.value = "";
+        renderDistrictLists(district);
+        try { await updateDistrictInDB(district.id, { visitedPlaces: district.visitedPlaces }); } catch(e){}
+      }
+    });
+
+    els.addDistrictNogoInput.addEventListener("keydown", async event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
+      if (district) {
+        if (!district.noGo) district.noGo = [];
+        district.noGo.push(event.target.value.trim());
+        event.target.value = "";
+        renderDistrictLists(district);
+        try { await updateDistrictInDB(district.id, { noGo: district.noGo }); } catch(e){}
+      }
+    });
+
+    document.querySelectorAll("#districtVisitedList, #districtNogoList").forEach(ul => {
+      ul.addEventListener("click", async event => {
+        const btn = event.target.closest(".delete-item");
+        if (!btn) return;
+        const index = parseInt(btn.dataset.index, 10);
+        const listType = btn.dataset.list;
+        const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
+        if (district) {
+          if (listType === "d-visited") district.visitedPlaces.splice(index, 1);
+          if (listType === "d-nogo") district.noGo.splice(index, 1);
+          renderDistrictLists(district);
+          try { await updateDistrictInDB(district.id, { visitedPlaces: district.visitedPlaces, noGo: district.noGo }); } catch(e){}
+        }
+      });
+    });
+
+    // --- ÉVÉNEMENTS GLOBAUX ---
     els.search.addEventListener("input", e => { state.search = e.target.value; render(); });
     els.departmentFilter.addEventListener("change", e => { state.department = e.target.value; render(); });
     els.sortMode.addEventListener("change", e => { state.sortMode = e.target.value; render(); });
-    els.backToMainBtn.addEventListener("click", closeDetails);
 
     els.rows.addEventListener("click", async event => {
       const target = event.target.closest("[data-action]");
@@ -909,9 +860,7 @@
       const city = state.cities.find(item => item.id === cityId);
       if (!city) return;
 
-      if (target.dataset.action === "open-details") {
-        openCityDetails(cityId);
-      }
+      if (target.dataset.action === "open-details") openCityDetails(cityId);
       if (target.dataset.action === "today") {
         const today = todayIso();
         city.lastVisit = today;
@@ -921,189 +870,17 @@
     });
 
     els.rows.addEventListener("change", async event => {
-      const action = event.target.dataset.action;
-      if (action !== "date") return;
+      if (event.target.dataset.action !== "date") return;
       const cityId = event.target.dataset.id;
       const city = state.cities.find(item => item.id === cityId);
       if (!city) return;
-      
-      const newDate = event.target.value;
-      city.lastVisit = newDate;
+      city.lastVisit = event.target.value;
       render();
-      await updateCityInDB(cityId, { lastVisit: newDate });
+      await updateCityInDB(cityId, { lastVisit: event.target.value });
     });
 
-    els.addVisitedInput.addEventListener("keydown", async event => {
-      if (event.key !== "Enter" || !event.target.value.trim()) return;
-      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
-      if (city) {
-        if (!city.visitedPlaces) city.visitedPlaces = [];
-        city.visitedPlaces.push(event.target.value.trim());
-        event.target.value = "";
-        renderDetailLists(city);
-        await updateCityInDB(city.id, { visitedPlaces: city.visitedPlaces });
-      }
-    });
-
-    els.addNogoInput.addEventListener("keydown", async event => {
-      if (event.key !== "Enter" || !event.target.value.trim()) return;
-      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
-      if (city) {
-        if (!city.noGo) city.noGo = [];
-        city.noGo.push(event.target.value.trim());
-        event.target.value = "";
-        renderDetailLists(city);
-        await updateCityInDB(city.id, { noGo: city.noGo });
-      }
-    });
-
-    document.querySelectorAll("#visitedList, #nogoList").forEach(ul => {
-      ul.addEventListener("click", async event => {
-        const btn = event.target.closest(".delete-item");
-        if (!btn) return;
-        const index = parseInt(btn.dataset.index, 10);
-        const listType = btn.dataset.list;
-        const city = state.cities.find(c => c.id === state.currentSelectedCityId);
-        
-        if (city) {
-          if (listType === "visited") {
-            city.visitedPlaces.splice(index, 1);
-            renderDetailLists(city);
-            await updateCityInDB(city.id, { visitedPlaces: city.visitedPlaces });
-          }
-          if (listType === "nogo") {
-            city.noGo.splice(index, 1);
-            renderDetailLists(city);
-            await updateCityInDB(city.id, { noGo: city.noGo });
-          }
-        }
-      });
-    });
-
-    els.addForm.addEventListener("submit", async event => {
-      event.preventDefault();
-      const newCity = {
-        name: document.querySelector("#newName").value.trim(),
-        department: document.querySelector("#newDepartment").value.trim(),
-        population: Number(document.querySelector("#newPopulation").value),
-        minutes: Number(document.querySelector("#newTime").value),
-        lastVisit: document.querySelector("#newDate").value || null,
-        visitedPlaces: [],
-        noGo: []
-      };
-      
-      event.currentTarget.reset();
-      
-      const savedCity = await addCityToDB(newCity);
-      if (savedCity) {
-        state.cities.push(savedCity);
-        render();
-      }
-    });
-
-    function getDistanceKm(lat1, lon1, lat2, lon2) {
-      const R = 6371; 
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-    }
-
-    let dMap = null;
-    let dMarkersLayer = null;
-
-    els.detailCityName.addEventListener("click", async () => {
-      const currentCityId = state.currentSelectedCityId;
-      if (!currentCityId) return;
-
-      const currentCity = state.cities.find(c => c.id === currentCityId);
-      els.nearbyCitiesContainer.innerHTML = "<i>⏳ Création de la carte en cours...</i>";
-      
-      els.detailMapWrapper.style.display = "block";
-
-      if (!dMap) {
-        dMap = L.map('detailMap');
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(dMap);
-        dMarkersLayer = L.layerGroup().addTo(dMap);
-      }
-      
-      setTimeout(() => dMap.invalidateSize(), 100);
-      dMarkersLayer.clearLayers();
-
-      const currentCoords = await getCoordinates(currentCity.name, currentCity.department);
-      if (!currentCoords) {
-        els.nearbyCitiesContainer.innerHTML = "<span style='color: var(--accent-2)'>Impossible de localiser cette commune.</span>";
-        return;
-      }
-
-      let nearby = [];
-      await Promise.all(state.cities.map(async (otherCity) => {
-        if (otherCity.id === currentCity.id) return;
-        const coords = await getCoordinates(otherCity.name, otherCity.department);
-        if (coords) {
-          const dist = getDistanceKm(currentCoords[0], currentCoords[1], coords[0], coords[1]);
-          if (dist <= 25) nearby.push({ city: otherCity, distance: dist, coords: coords });
-        }
-      }));
-
-      const currentHtml = `<div style="background-color: var(--ink); width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5);"></div>`;
-      const currentIcon = L.divIcon({ html: currentHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
-      L.marker(currentCoords, { icon: currentIcon, zIndexOffset: 1000 })
-        .bindPopup(`<b>${currentCity.name}</b><br>📍 Ville sélectionnée`)
-        .addTo(dMarkersLayer);
-
-      let bounds = L.latLngBounds([currentCoords]);
-
-      nearby.forEach(item => {
-        const pClass = priorityClassByAge(item.city.age);
-        let color = "#10b981"; 
-        if (pClass === "p-hot") color = "#ef4444"; 
-        if (pClass === "p-warm") color = "#f59e0b"; 
-        if (pClass === "p-mid") color = "#eab308"; 
-
-        const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
-        const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
-
-        const popupDiv = document.createElement("div");
-        popupDiv.innerHTML = `<b>${item.city.name}</b><br>🚗 ~${Math.round(item.distance)} km`;
-        
-        const btn = document.createElement("button");
-        btn.className = "btn-link";
-        btn.style.marginTop = "8px";
-        btn.innerText = "Voir détails →";
-        
-        btn.onclick = () => {
-            closeDetails();            
-            openCityDetails(item.city.id); 
-        };
-        
-        popupDiv.appendChild(btn);
-
-        L.marker(item.coords, { icon: customIcon })
-          .bindPopup(popupDiv)
-          .addTo(dMarkersLayer);
-        
-        bounds.extend(item.coords);
-      });
-
-      if (nearby.length > 0) {
-        dMap.fitBounds(bounds, { padding: [40, 40] });
-        els.nearbyCitiesContainer.innerHTML = `<span style="color: var(--accent); font-weight: 700;">📍 ${nearby.length} communes à ~30 min affichées sur la carte.</span>`;
-      } else {
-        dMap.setView(currentCoords, 11);
-        els.nearbyCitiesContainer.innerHTML = "Aucune autre commune de votre liste n'est à moins de 30 min.";
-      }
-    });
-
-    let map = null;
-    let markersLayer = null;
-    let cityCoordinates = {}; 
-    let mapUpdateId = 0;
-
+    // --- CARTOGRAPHIE PRINCIPALE ---
+    let map = null, markersLayer = null, cityCoordinates = {};
     async function getCoordinates(cityName, dept) {
       if (cityCoordinates[cityName]) return cityCoordinates[cityName];
       try {
@@ -1114,55 +891,38 @@
           cityCoordinates[cityName] = coords;
           return coords;
         }
-      } catch (e) { console.error("Erreur géolocalisation pour", cityName); }
+      } catch (e) {}
       return null;
     }
 
     async function updateMap() {
       if (!map) {
-        map = L.map('map').setView([43.6047, 1.4442], 8);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+        map = L.map('map').setView([43.6047, 1.4442], 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
         markersLayer = L.layerGroup().addTo(map);
       }
-      
-      const currentUpdateId = ++mapUpdateId; 
       markersLayer.clearLayers();
-      const list = filteredCities(); 
-
-      for (const city of list) {
-        if (currentUpdateId !== mapUpdateId) return; 
-        
+      for (const city of filteredCities()) {
         const coords = await getCoordinates(city.name, city.department);
         if (coords) {
           const pClass = priorityClassByAge(city.age);
-          let color = "#10b981"; 
-          if (pClass === "p-hot") color = "#ef4444"; 
-          if (pClass === "p-warm") color = "#f59e0b"; 
-          if (pClass === "p-mid") color = "#eab308"; 
-
+          let color = "#10b981";
+          if (pClass === "p-hot") color = "#ef4444";
+          if (pClass === "p-warm") color = "#f59e0b";
+          if (pClass === "p-mid") color = "#eab308";
           const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
           const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
-
+          
           const popupDiv = document.createElement("div");
           popupDiv.innerHTML = `<b>${city.name}</b> (${city.department})<br>Passage : ${city.age === 9999 ? "Jamais" : city.age + " jours"}<br>`;
-          
           const detailBtn = document.createElement("button");
           detailBtn.className = "btn-link";
           detailBtn.style.marginTop = "8px";
           detailBtn.innerText = "Voir détails →";
-          
-          detailBtn.onclick = () => {
-             map.closePopup(); 
-             openCityDetails(city.id); 
-          };
-          
+          detailBtn.onclick = () => { map.closePopup(); openCityDetails(city.id); };
           popupDiv.appendChild(detailBtn);
 
-          L.marker(coords, { icon: customIcon })
-            .bindPopup(popupDiv)
-            .addTo(markersLayer);
+          L.marker(coords, { icon: customIcon }).bindPopup(popupDiv).addTo(markersLayer);
         }
       }
     }
@@ -1170,62 +930,19 @@
     els.toggleMapBtn.addEventListener("click", () => {
       const isHidden = els.mapWrapper.style.display === "none";
       els.mapWrapper.style.display = isHidden ? "block" : "none";
-      if (isHidden) {
-        if (!map) updateMap();
-        else {
-          updateMap();
-          setTimeout(() => map.invalidateSize(), 100); 
-        }
-      }
+      if (isHidden) { if (!map) updateMap(); else { updateMap(); setTimeout(() => map.invalidateSize(), 100); } }
     });
 
+    // INITIALISATION
     async function initApp() {
-      els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Chargement depuis Supabase...</td></tr>';
-      state.cities = await loadCitiesFromDB();
-      
+      els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Chargement...</td></tr>';
+      [state.cities, state.districts] = await Promise.all([loadCitiesFromDB(), loadDistrictsFromDB()]);
       if (state.cities.length === 0) {
-          els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">La base de données est vide.</td></tr>';
+        els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Base de données vide.</td></tr>';
       } else {
-          render();
+        render();
       }
     }
-
-    els.generateAiTargetsBtn.addEventListener("click", async () => {
-      const currentCity = state.cities.find(c => c.id === state.currentSelectedCityId);
-      if (!currentCity) return;
-
-      const lists = { work: "workSuggestionsList", sport: "sportSuggestionsList", study: "studySuggestionsList" };
-      Object.values(lists).forEach(id => document.getElementById(id).innerHTML = "<li>Recherche...</li>");
-
-      const coords = await getCoordinates(currentCity.name, currentCity.department);
-      if (!coords) return alert("Position introuvable");
-
-      const query = `[out:json][timeout:15];(
-        node["shop"](around:3000,${coords[0]},${coords[1]});
-        node["craft"](around:3000,${coords[0]},${coords[1]});
-        node["leisure"~"fitness_centre|sports_centre|pitch|dance"](around:3000,${coords[0]},${coords[1]});
-        node["sport"="wakeboarding"](around:3000,${coords[0]},${coords[1]});
-        node["amenity"~"university|college"](around:3000,${coords[0]},${coords[1]});
-        );out center 100;`;
-
-      try {
-        const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
-        const data = await res.json();
-        const all = data.elements.filter(e => e.tags?.name);
-
-        document.getElementById(lists.work).innerHTML = all.filter(e => e.tags.shop || e.tags.craft).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
-
-        document.getElementById(lists.sport).innerHTML = all.filter(e => 
-            (["fitness_centre", "sports_centre", "pitch", "dance"].includes(e.tags.leisure) || e.tags.sport === "wakeboarding") 
-            && !e.tags.name.toLowerCase().includes("basic")
-        ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
-
-        document.getElementById(lists.study).innerHTML = all.filter(e => 
-            ["university", "college"].includes(e.tags.amenity)
-        ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
-
-      } catch (e) { alert("Erreur lors de la recherche"); }
-    });
 
     initApp();
   </script>
