@@ -262,7 +262,7 @@
             <h1>Aide pour RM</h1>
           </div>
           <div class="toolbar">
-            <button id="openToulouseDistrictsBtn" class="btn toulouse-special">🗺️ Carte des Quartiers de Toulouse</button>
+            <button id="openToulouseDistrictsBtn" class="btn toulouse-special">🗺️ Carte & Suivi des Quartiers</button>
             <button id="toggleMapBtn" class="btn secondary">🗺️ Vue Carte Générale</button>
           </div>
        </header>
@@ -396,20 +396,47 @@
         </div>
       </div>
 
-      <!-- ÉCRAN CARTE INTERACTIVE DES QUARTIERS PRÉCIS DE TOULOUSE -->
+      <!-- ÉCRAN CARTE & SUIVI DES QUARTIERS DE TOULOUSE -->
       <div id="toulouseDistrictsScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
             <div>
               <p class="eyebrow">Haute-Garonne (31) - Échantillonnage Précis</p>
-              <h1>Carte Interactive des Quartiers de Toulouse</h1>
-              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Cliquez sur un marqueur de quartier sur la carte pour accéder aux détails (Jolimont et La Roseraie sont bien séparés).</div>
+              <h1>Carte & Suivi des Quartiers de Toulouse</h1>
+              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Modifiez vos dates de passage directement ici (Jolimont et La Roseraie sont bien séparés).</div>
             </div>
             <button class="btn secondary" id="backFromToulouseDistrictsBtn">← Retour au tableau général</button>
           </header>
 
-          <div style="height: 550px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); position: relative; margin-bottom: 24px;">
+          <div style="height: 480px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); position: relative; margin-bottom: 24px;">
             <div id="toulouseDistrictsMap" style="width: 100%; height: 100%;"></div>
+          </div>
+
+          <div class="table-panel panel">
+            <div class="table-head">
+              <strong>Liste et gestion des micro-quartiers</strong>
+              <div class="legend">
+                <span><i class="dot p-hot"></i>Jamais / > 1 an</span>
+                <span><i class="dot p-warm"></i>6 mois - 1 an</span>
+                <span><i class="dot p-mid"></i>2 - 6 mois</span>
+                <span><i class="dot p-cool"></i>< 2 mois</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Quartier</th>
+                    <th>Dernier passage</th>
+                    <th>Jours</th>
+                    <th>Lieux / No Go</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="districtsRows"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -497,6 +524,7 @@
       backFromToulouseDistrictsBtn: document.querySelector("#backFromToulouseDistrictsBtn"),
       backToToulouseDistrictsBtn: document.querySelector("#backToToulouseDistrictsBtn"),
       
+      districtsRows: document.querySelector("#districtsRows"),
       districtDetailName: document.querySelector("#districtDetailName"),
       districtVisitedList: document.querySelector("#districtVisitedList"),
       districtNogoList: document.querySelector("#districtNogoList"),
@@ -512,34 +540,33 @@
 
     async function loadDistrictsFromDB() {
       const { data, error } = await db.from('toulouse_districts').select('*');
-      if (error) {
-        // Liste précise des micro-quartiers avec leurs coordonnées GPS exactes au centre de Toulouse
+      if (error || !data || data.length === 0) {
         return [
-          { id: 'd1', name: 'Capitole / Hypercentre', coords: [43.6047, 1.4442], visitedPlaces: [], noGo: [] },
-          { id: 'd2', name: 'Carmes', coords: [43.5975, 1.4485], visitedPlaces: [], noGo: [] },
-          { id: 'd3', name: 'Saint-Étienne', coords: [43.5990, 1.4530], visitedPlaces: [], noGo: [] },
-          { id: 'd4', name: 'Saint-Cyprien', coords: [43.5980, 1.4320], visitedPlaces: [], noGo: [] },
-          { id: 'd5', name: 'Patte d\'Oie', coords: [43.5950, 1.4230], visitedPlaces: [], noGo: [] },
-          { id: 'd6', name: 'Arènes', coords: [43.5890, 1.4220], visitedPlaces: [], noGo: [] },
-          { id: 'd7', name: 'Cartoucherie', coords: [43.5990, 1.4150], visitedPlaces: [], noGo: [] },
-          { id: 'd8', name: 'Compans-Caffarelli', coords: [43.6130, 1.4420], visitedPlaces: [], noGo: [] },
-          { id: 'd9', name: 'Les Chalets', coords: [43.6110, 1.4470], visitedPlaces: [], noGo: [] },
-          { id: 'd10', name: 'Bayard / Matabiau', coords: [43.6080, 1.4530], visitedPlaces: [], noGo: [] },
-          { id: 'd11', name: 'Bonnefoy', coords: [43.6160, 1.4540], visitedPlaces: [], noGo: [] },
-          { id: 'd12', name: 'Jolimont', coords: [43.6100, 1.4640], visitedPlaces: [], noGo: [] },
-          { id: 'd13', name: 'La Roseraie', coords: [43.6190, 1.4680], visitedPlaces: [], noGo: [] },
-          { id: 'd14', name: 'Minimes', coords: [43.6210, 1.4390], visitedPlaces: [], noGo: [] },
-          { id: 'd15', name: 'Barrière de Paris', coords: [43.6280, 1.4350], visitedPlaces: [], noGo: [] },
-          { id: 'd16', name: 'Sept-Deniers', coords: [43.6240, 1.4190], visitedPlaces: [], noGo: [] },
-          { id: 'd17', name: 'Saint-Michel', coords: [43.5870, 1.4460], visitedPlaces: [], noGo: [] },
-          { id: 'd18', name: 'Saint-Agne', coords: [43.5780, 1.4510], visitedPlaces: [], noGo: [] },
-          { id: 'd19', name: 'Rangueil', coords: [43.5670, 1.4580], visitedPlaces: [], noGo: [] },
-          { id: 'd20', name: 'Empalot', coords: [43.5790, 1.4390], visitedPlaces: [], noGo: [] },
-          { id: 'd21', name: 'Saouzelong', coords: [43.5750, 1.4550], visitedPlaces: [], noGo: [] },
-          { id: 'd22', name: 'Montaudran', coords: [43.5820, 1.4720], visitedPlaces: [], noGo: [] },
-          { id: 'd23', name: 'Lardenne', coords: [43.5980, 1.3980], visitedPlaces: [], noGo: [] },
-          { id: 'd24', name: 'Saint-Martin du Touch', coords: [43.6070, 1.3890], visitedPlaces: [], noGo: [] },
-          { id: 'd25', name: 'Mirail / Reynerie', coords: [43.5770, 1.4100], visitedPlaces: [], noGo: [] }
+          { id: 'd1', name: 'Capitole / Hypercentre', coords: [43.6047, 1.4442], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd2', name: 'Carmes', coords: [43.5975, 1.4485], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd3', name: 'Saint-Étienne', coords: [43.5990, 1.4530], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd4', name: 'Saint-Cyprien', coords: [43.5980, 1.4320], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd5', name: 'Patte d\'Oie', coords: [43.5950, 1.4230], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd6', name: 'Arènes', coords: [43.5890, 1.4220], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd7', name: 'Cartoucherie', coords: [43.5990, 1.4150], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd8', name: 'Compans-Caffarelli', coords: [43.6130, 1.4420], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd9', name: 'Les Chalets', coords: [43.6110, 1.4470], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd10', name: 'Bayard / Matabiau', coords: [43.6080, 1.4530], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd11', name: 'Bonnefoy', coords: [43.6160, 1.4540], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd12', name: 'Jolimont', coords: [43.6100, 1.4640], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd13', name: 'La Roseraie', coords: [43.6190, 1.4680], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd14', name: 'Minimes', coords: [43.6210, 1.4390], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd15', name: 'Barrière de Paris', coords: [43.6280, 1.4350], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd16', name: 'Sept-Deniers', coords: [43.6240, 1.4190], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd17', name: 'Saint-Michel', coords: [43.5870, 1.4460], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd18', name: 'Saint-Agne', coords: [43.5780, 1.4510], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd19', name: 'Rangueil', coords: [43.5670, 1.4580], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd20', name: 'Empalot', coords: [43.5790, 1.4390], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd21', name: 'Saouzelong', coords: [43.5750, 1.4550], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd22', name: 'Montaudran', coords: [43.5820, 1.4720], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd23', name: 'Lardenne', coords: [43.5980, 1.3980], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd24', name: 'Saint-Martin du Touch', coords: [43.6070, 1.3890], lastVisit: '', visitedPlaces: [], noGo: [] },
+          { id: 'd25', name: 'Mirail / Reynerie', coords: [43.5770, 1.4100], lastVisit: '', visitedPlaces: [], noGo: [] }
         ];
       }
       return data || [];
@@ -560,24 +587,21 @@
       return Math.max(0, Math.round((now - date) / 86400000));
     }
 
-    function formatMinutes(minutes) {
-      if (minutes < 60) return `${minutes} min`;
-      const h = Math.floor(minutes / 60);
-      const m = minutes % 60;
-      return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
-    }
-
     function formatNumber(value) { return new Intl.NumberFormat("fr-FR").format(value); }
+
+    function priorityClassByAge(age) {
+      if (age === 9999 || age > 365) return "p-hot";
+      if (age >= 183) return "p-warm";
+      if (age >= 61) return "p-mid";
+      return "p-cool";
+    }
 
     function enrichedCities() {
       const maxAge = Math.max(...state.cities.map(city => daysSince(city.lastVisit)), 1);
       const maxPop = Math.max(...state.cities.map(city => Number(city.population)), 1);
       return state.cities.map(city => {
         const age = daysSince(city.lastVisit);
-        const dateScore = age / maxAge;
-        const populationScore = Number(city.population) / maxPop;
-        const score = Math.round(((dateScore * state.dateWeight) + (populationScore * state.populationWeight)) * 100 / (state.dateWeight + state.populationWeight));
-        return { ...city, age, score };
+        return { ...city, age };
       });
     }
 
@@ -609,13 +633,6 @@
       return list.sort(sorters[state.sortMode]);
     }
 
-    function priorityClassByAge(age) {
-      if (age === 9999 || age > 365) return "p-hot";
-      if (age >= 183) return "p-warm";
-      if (age >= 61) return "p-mid";
-      return "p-cool";
-    }
-
     function renderDepartmentFilter() {
       const selected = state.department;
       const departments = [...new Set(state.cities.map(city => city.department))].sort((a, b) => a.localeCompare(b, "fr", { numeric: true }));
@@ -627,26 +644,27 @@
     function render() {
       renderDepartmentFilter();
       const list = filteredCities();
-      const avg = list.length ? Math.round(list.reduce((sum, city) => sum + city.age, 0) / list.length) : 0;
+      const avg = list.length ? Math.round(list.reduce((sum, city) => sum + daysSince(city.lastVisit), 0) / list.length) : 0;
       els.cityCount.textContent = list.length;
       els.avgAge.textContent = `${avg} j`;
       els.resultTitle.textContent = `${list.length} commune${list.length > 1 ? "s" : ""}`;
       els.emptyState.hidden = list.length !== 0;
       
       els.rows.innerHTML = list.map((city, index) => {
+        const age = daysSince(city.lastVisit);
         const countVisited = (city.visitedPlaces || []).length;
         const countNogo = (city.noGo || []).length;
         const labelContent = (countVisited || countNogo) ? `${countVisited} Fait / ${countNogo} No Go` : "Vide";
 
         return `
           <tr>
-            <td class="priority"><div class="${priorityClassByAge(city.age)}"></div></td>
+            <td class="priority"><div class="${priorityClassByAge(age)}"></div></td>
             <td class="rank">${index + 1}</td>
             <td>
               <span class="city">${city.name}</span>
               <span class="sub">Département ${city.department}</span>
             </td>
-            <td>${formatMinutes(Number(city.minutes))}</td>
+            <td>${city.minutes} min</td>
             <td>${formatNumber(Number(city.population))}</td>
             <td>
               <div class="date-cell">
@@ -654,7 +672,7 @@
                 <button class="mini" title="Marquer aujourd'hui" data-action="today" data-id="${city.id}">✓</button>
               </div>
             </td>
-            <td>${city.age === 9999 ? "Jamais" : formatNumber(city.age)}</td>
+            <td>${age === 9999 ? "Jamais" : formatNumber(age)}</td>
             <td>
               <button class="btn-link" data-action="open-details" data-id="${city.id}">
                 Détails (${labelContent}) →
@@ -677,6 +695,7 @@
       if (screenName === 'toulouseDistricts') {
         els.toulouseDistrictsScreen.classList.add("active");
         setTimeout(() => initToulouseDistrictsMap(), 100);
+        renderDistrictsTable();
       }
       if (screenName === 'districtDetail') els.districtDetailScreen.classList.add("active");
     }
@@ -699,34 +718,47 @@
       els.nogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
     }
 
-    // --- CARTE INTERACTIVE DES QUARTIERS DE TOULOUSE ---
+    // --- CARTE & TABLEAU DES QUARTIERS DE TOULOUSE ---
     let districtsMap = null;
     let districtsMarkersLayer = null;
 
     function initToulouseDistrictsMap() {
       if (!districtsMap) {
         districtsMap = L.map('toulouseDistrictsMap').setView([43.6047, 1.4442], 13);
-        // Fond de carte esthétique & moderne (CartoDB Voyager)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; OpenStreetMap contributors & CARTO'
+        // Fond OpenStreetMap standard 100% gratuit, sans clé d'API requise
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
         }).addTo(districtsMap);
         districtsMarkersLayer = L.layerGroup().addTo(districtsMap);
       } else {
         districtsMap.invalidateSize();
       }
 
+      updateDistrictsMapMarkers();
+    }
+
+    function updateDistrictsMapMarkers() {
+      if (!districtsMarkersLayer) return;
       districtsMarkersLayer.clearLayers();
 
       state.districts.forEach(d => {
         if (!d.coords) return;
+        const age = daysSince(d.lastVisit);
+        const pClass = priorityClassByAge(age);
+        
+        let color = "#10b981";
+        if (pClass === "p-hot") color = "#ef4444";
+        if (pClass === "p-warm") color = "#f59e0b";
+        if (pClass === "p-mid") color = "#eab308";
+
+        const markerHtml = `<div style="background-color: ${color}; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; border: 2px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.2);">${age === 9999 ? '?' : age + 'j'}</div>`;
+        const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [28, 28], iconAnchor: [14, 14] });
+
         const vCount = (d.visitedPlaces || []).length;
         const nCount = (d.noGo || []).length;
 
-        const markerHtml = `<div style="background-color: var(--accent); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; border: 2px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.15);">${vCount}</div>`;
-        const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [28, 28], iconAnchor: [14, 14] });
-
         const popupDiv = document.createElement("div");
-        popupDiv.innerHTML = `<b style="font-size: 14px; color: var(--ink);">${d.name}</b><br><span style="color: var(--muted); font-size: 12px;">✓ ${vCount} visités | ⚠ ${nCount} No Go</span><br>`;
+        popupDiv.innerHTML = `<b style="font-size: 14px; color: var(--ink);">${d.name}</b><br><span style="color: var(--muted); font-size: 12px;">Dernier passage : ${d.lastVisit || 'Jamais'} (${age === 9999 ? 'Jamais' : age + ' jours'})</span><br>`;
         
         const btn = document.createElement("button");
         btn.className = "btn-link";
@@ -744,6 +776,36 @@
       });
     }
 
+    function renderDistrictsTable() {
+      // Tri automatique par ancienneté du dernier passage (comme sur le tableau principal)
+      const sortedDistricts = [...state.districts].sort((a, b) => daysSince(b.lastVisit) - daysSince(a.lastVisit));
+
+      els.districtsRows.innerHTML = sortedDistricts.map(d => {
+        const age = daysSince(d.lastVisit);
+        const vCount = (d.visitedPlaces || []).length;
+        const nCount = (d.noGo || []).length;
+        const labelContent = (vCount || nCount) ? `${vCount} Fait / ${nCount} No Go` : "Vide";
+
+        return `
+          <tr>
+            <td class="priority"><div class="${priorityClassByAge(age)}"></div></td>
+            <td><strong style="color: var(--ink);">${d.name}</strong></td>
+            <td>
+              <div class="date-cell">
+                <input type="date" value="${d.lastVisit || ""}" data-action="district-date" data-id="${d.id}">
+                <button class="mini" title="Marquer aujourd'hui" data-action="district-today" data-id="${d.id}">✓</button>
+              </div>
+            </td>
+            <td>${age === 9999 ? "Jamais" : formatNumber(age) + " j"}</td>
+            <td>${labelContent}</td>
+            <td>
+              <button class="btn-link" onclick="openDistrict('${d.id}')">Détails →</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
     window.openDistrict = function(districtId) {
       const district = state.districts.find(d => d.id === districtId);
       if (!district) return;
@@ -759,6 +821,33 @@
       els.districtVisitedList.innerHTML = vp.length ? vp.map((p, i) => `<li><span>${p}</span><button class="delete-item" data-list="d-visited" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucun lieu enregistré</li>`;
       els.districtNogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="d-nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
     }
+
+    els.districtsRows.addEventListener("click", async event => {
+      const target = event.target.closest("[data-action]");
+      if (!target) return;
+      const dId = target.dataset.id;
+      const district = state.districts.find(d => d.id === dId);
+      if (!district) return;
+
+      if (target.dataset.action === "district-today") {
+        const today = todayIso();
+        district.lastVisit = today;
+        renderDistrictsTable();
+        updateDistrictsMapMarkers();
+        try { await updateDistrictInDB(dId, { lastVisit: today }); } catch(e){}
+      }
+    });
+
+    els.districtsRows.addEventListener("change", async event => {
+      if (event.target.dataset.action !== "district-date") return;
+      const dId = event.target.dataset.id;
+      const district = state.districts.find(d => d.id === dId);
+      if (!district) return;
+      district.lastVisit = event.target.value;
+      renderDistrictsTable();
+      updateDistrictsMapMarkers();
+      try { await updateDistrictInDB(dId, { lastVisit: event.target.value }); } catch(e){}
+    });
 
     els.openToulouseDistrictsBtn.addEventListener("click", () => switchScreen('toulouseDistricts'));
     els.backFromToulouseDistrictsBtn.addEventListener("click", () => switchScreen('main'));
@@ -853,14 +942,15 @@
     async function updateMap() {
       if (!map) {
         map = L.map('map').setView([43.6047, 1.4442], 10);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution: '&copy; CARTO' }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
         markersLayer = L.layerGroup().addTo(map);
       }
       markersLayer.clearLayers();
       for (const city of filteredCities()) {
         const coords = await getCoordinates(city.name, city.department);
         if (coords) {
-          const pClass = priorityClassByAge(city.age);
+          const age = daysSince(city.lastVisit);
+          const pClass = priorityClassByAge(age);
           let color = "#10b981";
           if (pClass === "p-hot") color = "#ef4444";
           if (pClass === "p-warm") color = "#f59e0b";
@@ -869,7 +959,7 @@
           const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
           
           const popupDiv = document.createElement("div");
-          popupDiv.innerHTML = `<b>${city.name}</b> (${city.department})<br>Passage : ${city.age === 9999 ? "Jamais" : city.age + " jours"}<br>`;
+          popupDiv.innerHTML = `<b>${city.name}</b> (${city.department})<br>Passage : ${age === 9999 ? "Jamais" : age + " jours"}<br>`;
           const detailBtn = document.createElement("button");
           detailBtn.className = "btn-link";
           detailBtn.style.marginTop = "8px";
