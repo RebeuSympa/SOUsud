@@ -403,7 +403,7 @@
             <div>
               <p class="eyebrow">Haute-Garonne (31) - Échantillonnage Précis</p>
               <h1>Carte & Suivi des Quartiers de Toulouse</h1>
-              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Modifiez vos dates de passage directement ici (Jolimont et La Roseraie sont bien séparés).</div>
+              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Modifiez vos dates de passage ci-dessous (Jolimont et La Roseraie sont bien séparés).</div>
             </div>
             <button class="btn secondary" id="backFromToulouseDistrictsBtn">← Retour au tableau général</button>
           </header>
@@ -414,7 +414,7 @@
 
           <div class="table-panel panel">
             <div class="table-head">
-              <strong>Liste et gestion des micro-quartiers</strong>
+              <strong>Classement des micro-quartiers par dernière visite</strong>
               <div class="legend">
                 <span><i class="dot p-hot"></i>Jamais / > 1 an</span>
                 <span><i class="dot p-warm"></i>6 mois - 1 an</span>
@@ -725,7 +725,7 @@
     function initToulouseDistrictsMap() {
       if (!districtsMap) {
         districtsMap = L.map('toulouseDistrictsMap').setView([43.6047, 1.4442], 13);
-        // Fond OpenStreetMap standard 100% gratuit, sans clé d'API requise
+        // Fond OpenStreetMap standard 100% gratuit
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors'
         }).addTo(districtsMap);
@@ -777,7 +777,7 @@
     }
 
     function renderDistrictsTable() {
-      // Tri automatique par ancienneté du dernier passage (comme sur le tableau principal)
+      // Tri automatique par ancienneté du dernier passage (du plus ancien / jamais visité au plus récent)
       const sortedDistricts = [...state.districts].sort((a, b) => daysSince(b.lastVisit) - daysSince(a.lastVisit));
 
       els.districtsRows.innerHTML = sortedDistricts.map(d => {
