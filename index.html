@@ -241,29 +241,6 @@
     .delete-item { background: transparent; color: var(--muted); font-size: 16px; font-weight: bold; padding: 0 4px; border-radius: 4px; }
     .delete-item:hover { color: var(--accent-2); background: rgba(239, 68, 68, 0.08); }
 
-    /* Grille spécifique des quartiers précis de Toulouse */
-    .districts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-      margin-top: 20px;
-    }
-    .district-card {
-      background: white;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-    .district-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent);
-    }
-
     @media (max-width: 980px) {
       .app { padding: 16px; }
       .topbar, .grid, .detail-grid { grid-template-columns: 1fr; }
@@ -285,7 +262,7 @@
             <h1>Aide pour RM</h1>
           </div>
           <div class="toolbar">
-            <button id="openToulouseDistrictsBtn" class="btn toulouse-special">🏙️ Quartiers Précis de Toulouse</button>
+            <button id="openToulouseDistrictsBtn" class="btn toulouse-special">🗺️ Carte des Quartiers de Toulouse</button>
             <button id="toggleMapBtn" class="btn secondary">🗺️ Vue Carte Générale</button>
           </div>
        </header>
@@ -419,25 +396,20 @@
         </div>
       </div>
 
-      <!-- ÉCRAN DE TOUS LES QUARTIERS PRÉCIS DE TOULOUSE -->
+      <!-- ÉCRAN CARTE INTERACTIVE DES QUARTIERS PRÉCIS DE TOULOUSE -->
       <div id="toulouseDistrictsScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
             <div>
               <p class="eyebrow">Haute-Garonne (31) - Échantillonnage Précis</p>
-              <h1>Quartiers de Toulouse</h1>
-              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Sélectionnez un quartier spécifique pour affiner le suivi (Jolimont et La Roseraie sont bien séparés).</div>
+              <h1>Carte Interactive des Quartiers de Toulouse</h1>
+              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Cliquez sur un marqueur de quartier sur la carte pour accéder aux détails (Jolimont et La Roseraie sont bien séparés).</div>
             </div>
             <button class="btn secondary" id="backFromToulouseDistrictsBtn">← Retour au tableau général</button>
           </header>
 
-          <div style="margin-bottom: 24px; display: flex; gap: 10px;">
-            <input type="text" id="newDistrictInput" placeholder="Ajouter un micro-quartier spécifique..." style="max-width: 380px;">
-            <button id="addDistrictBtn" class="btn">Ajouter le quartier</button>
-          </div>
-
-          <div class="districts-grid" id="districtsGrid">
-            <!-- Injecté dynamiquement -->
+          <div style="height: 550px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); position: relative; margin-bottom: 24px;">
+            <div id="toulouseDistrictsMap" style="width: 100%; height: 100%;"></div>
           </div>
         </div>
       </div>
@@ -450,7 +422,7 @@
               <p class="eyebrow">Toulouse - Micro-Quartier</p>
               <h1 id="districtDetailName">Nom du Quartier</h1>
             </div>
-            <button class="btn secondary" id="backToToulouseDistrictsBtn">← Retour aux quartiers de Toulouse</button>
+            <button class="btn secondary" id="backToToulouseDistrictsBtn">← Retour à la carte des quartiers</button>
           </header>
 
           <div class="detail-grid">
@@ -525,9 +497,6 @@
       backFromToulouseDistrictsBtn: document.querySelector("#backFromToulouseDistrictsBtn"),
       backToToulouseDistrictsBtn: document.querySelector("#backToToulouseDistrictsBtn"),
       
-      districtsGrid: document.querySelector("#districtsGrid"),
-      newDistrictInput: document.querySelector("#newDistrictInput"),
-      addDistrictBtn: document.querySelector("#addDistrictBtn"),
       districtDetailName: document.querySelector("#districtDetailName"),
       districtVisitedList: document.querySelector("#districtVisitedList"),
       districtNogoList: document.querySelector("#districtNogoList"),
@@ -544,33 +513,33 @@
     async function loadDistrictsFromDB() {
       const { data, error } = await db.from('toulouse_districts').select('*');
       if (error) {
-        // Liste exhaustive et précise des quartiers de Toulouse pour un échantillonnage fin
+        // Liste précise des micro-quartiers avec leurs coordonnées GPS exactes au centre de Toulouse
         return [
-          { id: 'd1', name: 'Capitole / Hypercentre', visitedPlaces: [], noGo: [] },
-          { id: 'd2', name: 'Carmes', visitedPlaces: [], noGo: [] },
-          { id: 'd3', name: 'Saint-Étienne', visitedPlaces: [], noGo: [] },
-          { id: 'd4', name: 'Saint-Cyprien', visitedPlaces: [], noGo: [] },
-          { id: 'd5', name: 'Patte d\'Oie', visitedPlaces: [], noGo: [] },
-          { id: 'd6', name: 'Arènes / Left Bank', visitedPlaces: [], noGo: [] },
-          { id: 'd7', name: 'Cartoucherie', visitedPlaces: [], noGo: [] },
-          { id: 'd8', name: 'Compans-Caffarelli', visitedPlaces: [], noGo: [] },
-          { id: 'd9', name: 'Les Chalets', visitedPlaces: [], noGo: [] },
-          { id: 'd10', name: 'Bayard / Matabiau', visitedPlaces: [], noGo: [] },
-          { id: 'd11', name: 'Bonnefoy', visitedPlaces: [], noGo: [] },
-          { id: 'd12', name: 'Jolimont', visitedPlaces: [], noGo: [] },
-          { id: 'd13', name: 'La Roseraie', visitedPlaces: [], noGo: [] },
-          { id: 'd14', name: 'Minimes', visitedPlaces: [], noGo: [] },
-          { id: 'd15', name: 'Barrière de Paris', visitedPlaces: [], noGo: [] },
-          { id: 'd16', name: 'Sept-Deniers', visitedPlaces: [], noGo: [] },
-          { id: 'd17', name: 'Saint-Michel', visitedPlaces: [], noGo: [] },
-          { id: 'd18', name: 'Saint-Agne', visitedPlaces: [], noGo: [] },
-          { id: 'd19', name: 'Rangueil', visitedPlaces: [], noGo: [] },
-          { id: 'd20', name: 'Empalot', visitedPlaces: [], noGo: [] },
-          { id: 'd21', name: 'Saouzelong', visitedPlaces: [], noGo: [] },
-          { id: 'd22', name: 'Le Palays / Montaudran', visitedPlaces: [], noGo: [] },
-          { id: 'd23', name: 'Lardenne', visitedPlaces: [], noGo: [] },
-          { id: 'd24', name: 'Saint-Martin du Touch', visitedPlaces: [], noGo: [] },
-          { id: 'd25', name: 'Mirail / Reynerie', visitedPlaces: [], noGo: [] }
+          { id: 'd1', name: 'Capitole / Hypercentre', coords: [43.6047, 1.4442], visitedPlaces: [], noGo: [] },
+          { id: 'd2', name: 'Carmes', coords: [43.5975, 1.4485], visitedPlaces: [], noGo: [] },
+          { id: 'd3', name: 'Saint-Étienne', coords: [43.5990, 1.4530], visitedPlaces: [], noGo: [] },
+          { id: 'd4', name: 'Saint-Cyprien', coords: [43.5980, 1.4320], visitedPlaces: [], noGo: [] },
+          { id: 'd5', name: 'Patte d\'Oie', coords: [43.5950, 1.4230], visitedPlaces: [], noGo: [] },
+          { id: 'd6', name: 'Arènes', coords: [43.5890, 1.4220], visitedPlaces: [], noGo: [] },
+          { id: 'd7', name: 'Cartoucherie', coords: [43.5990, 1.4150], visitedPlaces: [], noGo: [] },
+          { id: 'd8', name: 'Compans-Caffarelli', coords: [43.6130, 1.4420], visitedPlaces: [], noGo: [] },
+          { id: 'd9', name: 'Les Chalets', coords: [43.6110, 1.4470], visitedPlaces: [], noGo: [] },
+          { id: 'd10', name: 'Bayard / Matabiau', coords: [43.6080, 1.4530], visitedPlaces: [], noGo: [] },
+          { id: 'd11', name: 'Bonnefoy', coords: [43.6160, 1.4540], visitedPlaces: [], noGo: [] },
+          { id: 'd12', name: 'Jolimont', coords: [43.6100, 1.4640], visitedPlaces: [], noGo: [] },
+          { id: 'd13', name: 'La Roseraie', coords: [43.6190, 1.4680], visitedPlaces: [], noGo: [] },
+          { id: 'd14', name: 'Minimes', coords: [43.6210, 1.4390], visitedPlaces: [], noGo: [] },
+          { id: 'd15', name: 'Barrière de Paris', coords: [43.6280, 1.4350], visitedPlaces: [], noGo: [] },
+          { id: 'd16', name: 'Sept-Deniers', coords: [43.6240, 1.4190], visitedPlaces: [], noGo: [] },
+          { id: 'd17', name: 'Saint-Michel', coords: [43.5870, 1.4460], visitedPlaces: [], noGo: [] },
+          { id: 'd18', name: 'Saint-Agne', coords: [43.5780, 1.4510], visitedPlaces: [], noGo: [] },
+          { id: 'd19', name: 'Rangueil', coords: [43.5670, 1.4580], visitedPlaces: [], noGo: [] },
+          { id: 'd20', name: 'Empalot', coords: [43.5790, 1.4390], visitedPlaces: [], noGo: [] },
+          { id: 'd21', name: 'Saouzelong', coords: [43.5750, 1.4550], visitedPlaces: [], noGo: [] },
+          { id: 'd22', name: 'Montaudran', coords: [43.5820, 1.4720], visitedPlaces: [], noGo: [] },
+          { id: 'd23', name: 'Lardenne', coords: [43.5980, 1.3980], visitedPlaces: [], noGo: [] },
+          { id: 'd24', name: 'Saint-Martin du Touch', coords: [43.6070, 1.3890], visitedPlaces: [], noGo: [] },
+          { id: 'd25', name: 'Mirail / Reynerie', coords: [43.5770, 1.4100], visitedPlaces: [], noGo: [] }
         ];
       }
       return data || [];
@@ -707,7 +676,7 @@
       if (screenName === 'detail') els.detailScreen.classList.add("active");
       if (screenName === 'toulouseDistricts') {
         els.toulouseDistrictsScreen.classList.add("active");
-        renderDistrictsGrid();
+        setTimeout(() => initToulouseDistrictsMap(), 100);
       }
       if (screenName === 'districtDetail') els.districtDetailScreen.classList.add("active");
     }
@@ -730,20 +699,49 @@
       els.nogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
     }
 
-    function renderDistrictsGrid() {
-      els.districtsGrid.innerHTML = state.districts.map(d => {
+    // --- CARTE INTERACTIVE DES QUARTIERS DE TOULOUSE ---
+    let districtsMap = null;
+    let districtsMarkersLayer = null;
+
+    function initToulouseDistrictsMap() {
+      if (!districtsMap) {
+        districtsMap = L.map('toulouseDistrictsMap').setView([43.6047, 1.4442], 13);
+        // Fond de carte esthétique & moderne (CartoDB Voyager)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; OpenStreetMap contributors & CARTO'
+        }).addTo(districtsMap);
+        districtsMarkersLayer = L.layerGroup().addTo(districtsMap);
+      } else {
+        districtsMap.invalidateSize();
+      }
+
+      districtsMarkersLayer.clearLayers();
+
+      state.districts.forEach(d => {
+        if (!d.coords) return;
         const vCount = (d.visitedPlaces || []).length;
         const nCount = (d.noGo || []).length;
-        return `
-          <div class="district-card">
-            <div>
-              <h3 style="margin: 0 0 6px 0; font-size: 15px; color: var(--ink);">${d.name}</h3>
-              <p style="margin: 0 0 14px 0; font-size: 12px; color: var(--muted);">✓ ${vCount} lieu(x) | ⚠ ${nCount} No Go</p>
-            </div>
-            <button class="btn secondary" style="width: 100%; height: 36px; font-size: 13px;" onclick="openDistrict('${d.id}')">Gérer le quartier →</button>
-          </div>
-        `;
-      }).join("");
+
+        const markerHtml = `<div style="background-color: var(--accent); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; border: 2px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.15);">${vCount}</div>`;
+        const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [28, 28], iconAnchor: [14, 14] });
+
+        const popupDiv = document.createElement("div");
+        popupDiv.innerHTML = `<b style="font-size: 14px; color: var(--ink);">${d.name}</b><br><span style="color: var(--muted); font-size: 12px;">✓ ${vCount} visités | ⚠ ${nCount} No Go</span><br>`;
+        
+        const btn = document.createElement("button");
+        btn.className = "btn-link";
+        btn.style.marginTop = "8px";
+        btn.innerText = "Gérer le quartier →";
+        btn.onclick = () => {
+          districtsMap.closePopup();
+          openDistrict(d.id);
+        };
+        popupDiv.appendChild(btn);
+
+        L.marker(d.coords, { icon: customIcon })
+          .bindPopup(popupDiv)
+          .addTo(districtsMarkersLayer);
+      });
     }
 
     window.openDistrict = function(districtId) {
@@ -766,16 +764,6 @@
     els.backFromToulouseDistrictsBtn.addEventListener("click", () => switchScreen('main'));
     els.backToToulouseDistrictsBtn.addEventListener("click", () => switchScreen('toulouseDistricts'));
     els.backToMainBtn.addEventListener("click", () => switchScreen('main'));
-
-    els.addDistrictBtn.addEventListener("click", async () => {
-      const name = els.newDistrictInput.value.trim();
-      if (!name) return;
-      const newD = { id: 'dist_' + Date.now(), name, visitedPlaces: [], noGo: [] };
-      state.districts.push(newD);
-      els.newDistrictInput.value = "";
-      renderDistrictsGrid();
-      try { await db.from('toulouse_districts').insert([newD]); } catch(e){}
-    });
 
     els.addDistrictVisitedInput.addEventListener("keydown", async event => {
       if (event.key !== "Enter" || !event.target.value.trim()) return;
@@ -865,7 +853,7 @@
     async function updateMap() {
       if (!map) {
         map = L.map('map').setView([43.6047, 1.4442], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution: '&copy; CARTO' }).addTo(map);
         markersLayer = L.layerGroup().addTo(map);
       }
       markersLayer.clearLayers();
