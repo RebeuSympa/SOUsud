@@ -11,29 +11,31 @@
   
   <style>
     :root {
-      --bg: #f5f6f4;
-      --ink: #1d2526;
-      --muted: #65706d;
-      --line: #d8ded8;
+      --bg: #f8fafc;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
       --panel: #ffffff;
-      --accent: #1f7a6d;
-      --accent-2: #c5462d;
-      --warn: #c78116;
-      --good: #2f8b57;
-      --soft: #edf4f0;
-      --shadow: 0 16px 36px rgba(28, 42, 39, .10);
+      --accent: #0d9488;
+      --accent-hover: #0f766e;
+      --accent-2: #ef4444;
+      --soft: #f1f5f9;
+      --shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+      --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
       color-scheme: light;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      background:
-        linear-gradient(180deg, rgba(31, 122, 109, .08), transparent 320px),
-        var(--bg);
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.04) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.02) 0px, transparent 50%);
       color: var(--ink);
+      -webkit-font-smoothing: antialiased;
     }
 
     button, input, select {
@@ -43,15 +45,16 @@
     button {
       border: 0;
       cursor: pointer;
+      transition: all 0.2s ease;
     }
 
     .app {
       min-height: 100vh;
-      padding: 24px;
+      padding: 32px 20px;
     }
 
     .shell {
-      max-width: 1200px;
+      max-width: 1280px;
       margin: 0 auto;
     }
 
@@ -60,38 +63,43 @@
     }
     .screen.active {
       display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .topbar {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 20px;
-      align-items: end;
-      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
     }
 
     .eyebrow {
       color: var(--accent);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .08em;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
       text-transform: uppercase;
-      margin: 0 0 8px;
+      margin: 0 0 6px;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(30px, 4vw, 54px);
-      line-height: .98;
-      letter-spacing: 0;
-      max-width: 760px;
+      font-size: clamp(26px, 3vw, 40px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ink);
     }
 
     .toolbar {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
-      justify-content: flex-end;
     }
 
     .btn {
@@ -99,113 +107,124 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      min-height: 40px;
-      padding: 0 14px;
-      border-radius: 8px;
-      background: var(--ink);
+      height: 42px;
+      padding: 0 16px;
+      border-radius: 10px;
+      background: var(--accent);
       color: white;
-      font-weight: 750;
-      white-space: nowrap;
+      font-weight: 600;
+      font-size: 14px;
+      box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2);
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
     }
 
     .btn.secondary {
       background: white;
       color: var(--ink);
       border: 1px solid var(--line);
+      box-shadow: var(--shadow);
     }
 
-    .btn.danger {
-      background: #8f3326;
+    .btn.secondary:hover {
+      background: var(--soft);
     }
 
     .grid {
       display: grid;
-      grid-template-columns: minmax(240px, 330px) 1fr;
-      gap: 18px;
+      grid-template-columns: 340px 1fr;
+      gap: 24px;
       align-items: start;
     }
 
     .panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 16px;
       box-shadow: var(--shadow);
     }
 
     .controls {
-      padding: 16px;
+      padding: 20px;
       position: sticky;
-      top: 18px;
+      top: 24px;
     }
 
     .field {
       display: grid;
-      gap: 7px;
-      margin-bottom: 14px;
+      gap: 6px;
+      margin-bottom: 16px;
     }
 
     label {
-      font-size: 12px;
-      font-weight: 800;
+      font-size: 11px;
+      font-weight: 700;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: .04em;
+      letter-spacing: .05em;
     }
 
     input, select {
       width: 100%;
-      min-height: 42px;
+      height: 44px;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 10px;
       background: #fff;
       color: var(--ink);
-      padding: 0 12px;
+      padding: 0 14px;
       outline: none;
+      font-size: 14px;
+      transition: all 0.2s;
     }
 
     input:focus, select:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(31, 122, 109, .14);
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
     }
 
     .metric-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 14px;
+      gap: 12px;
+      margin-bottom: 20px;
     }
 
     .metric {
       background: var(--soft);
-      border: 1px solid #dce8e2;
-      border-radius: 8px;
-      padding: 12px;
-      min-height: 78px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
     }
 
     .metric b {
       display: block;
-      font-size: 24px;
-      line-height: 1;
-      margin-bottom: 6px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 4px;
+      color: var(--ink);
     }
 
     .metric span {
       color: var(--muted);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 500;
     }
 
     .add-form {
       border-top: 1px solid var(--line);
-      padding-top: 16px;
-      margin-top: 16px;
+      padding-top: 20px;
+      margin-top: 20px;
     }
 
     .two {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 12px;
     }
 
     .table-panel {
@@ -213,52 +232,52 @@
     }
 
     .table-head {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      padding: 14px 16px;
+      padding: 18px 20px;
       border-bottom: 1px solid var(--line);
-      background: rgba(255,255,255,.72);
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(8px);
     }
 
     .table-head strong {
       font-size: 16px;
+      font-weight: 700;
     }
 
     .legend {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 12px;
       color: var(--muted);
-      font-size: 12px;
-      font-weight: 750;
+      font-size: 11px;
+      font-weight: 600;
     }
 
     .dot {
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-radius: 999px;
       display: inline-block;
-      margin-right: 5px;
-      vertical-align: -1px;
+      margin-right: 6px;
+      vertical-align: middle;
     }
 
     .table-wrap {
       overflow: auto;
-      max-height: calc(100vh - 160px);
+      max-height: calc(100vh - 180px);
     }
 
     table {
-      border-collapse: separate;
-      border-spacing: 0;
+      border-collapse: collapse;
       width: 100%;
       min-width: 800px;
       background: white;
     }
 
     th, td {
-      padding: 11px 12px;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--line);
       text-align: left;
       vertical-align: middle;
@@ -269,43 +288,51 @@
       position: sticky;
       top: 0;
       z-index: 2;
-      background: #fbfcfb;
+      background: #f8fafc;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .04em;
+      letter-spacing: .05em;
       white-space: nowrap;
     }
 
+    tbody tr {
+      transition: background 0.15s;
+    }
+
     tbody tr:hover {
-      background: #f8fbf8;
+      background: #f8fafc;
     }
 
     .rank {
-      width: 56px;
-      font-weight: 900;
-      font-size: 18px;
+      width: 50px;
+      font-weight: 700;
+      color: var(--muted);
     }
 
     .priority {
-      width: 10px;
-      min-width: 10px;
+      width: 6px;
+      min-width: 6px;
       padding: 0;
     }
 
     .priority div {
-      width: 10px;
-      min-height: 56px;
+      width: 6px;
+      height: 100%;
+      min-height: 50px;
+      border-radius: 0 4px 4px 0;
     }
 
-    .p-hot { background: #d13f2f; }
-    .p-warm { background: #e39423; }
-    .p-mid { background: #d0b936; }
-    .p-cool { background: #3f9b70; }
+    .p-hot { background: #ef4444; }
+    .p-warm { background: #f59e0b; }
+    .p-mid { background: #eab308; }
+    .p-cool { background: #10b981; }
 
     .city {
-      font-weight: 850;
-      font-size: 15px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink);
     }
 
     .sub {
@@ -315,69 +342,60 @@
       margin-top: 2px;
     }
 
-    .score {
-      display: inline-flex;
-      min-width: 52px;
-      min-height: 32px;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      background: var(--soft);
-      font-weight: 900;
-    }
-
     .date-cell {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
     }
 
     .date-cell input {
-      min-height: 36px;
-      max-width: 140px;
+      height: 36px;
+      max-width: 135px;
+      font-size: 13px;
     }
 
     .mini {
-      min-height: 36px;
+      height: 36px;
       width: 36px;
       border-radius: 8px;
-      background: #edf1ef;
+      background: var(--soft);
       color: var(--ink);
-      font-weight: 900;
+      font-weight: 700;
+      border: 1px solid var(--line);
+    }
+
+    .mini:hover {
+      background: var(--line);
     }
 
     .btn-link {
       background: var(--soft);
       color: var(--accent);
-      border: 1px solid #dce8e2;
+      border: 1px solid transparent;
       padding: 6px 12px;
-      font-size: 13px;
-      font-weight: 700;
-      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.2s;
     }
     .btn-link:hover {
-      background: #dbeae2;
-    }
-
-    .remove {
-      background: transparent;
-      color: #8f3326;
-      border: 1px solid #ead1cc;
+      background: rgba(13, 148, 136, 0.1);
+      border-color: rgba(13, 148, 136, 0.2);
     }
 
     .empty {
-      padding: 34px 18px;
+      padding: 40px 20px;
       color: var(--muted);
       text-align: center;
+      font-size: 14px;
     }
 
     .detail-container {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 24px;
-      box-shadow: var(--shadow);
-      margin-top: 10px;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: var(--shadow-lg);
     }
 
     .detail-header {
@@ -385,27 +403,28 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid var(--line);
-      padding-bottom: 16px;
+      padding-bottom: 20px;
       margin-bottom: 24px;
     }
 
     .detail-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      gap: 20px;
     }
 
     .list-box {
-      background: #fbfcfb;
+      background: #f8fafc;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 16px;
+      border-radius: 12px;
+      padding: 18px;
     }
 
     .list-box h3 {
       margin-top: 0;
       margin-bottom: 14px;
-      font-size: 16px;
+      font-size: 14px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -427,12 +446,13 @@
     .list-items li {
       background: white;
       border: 1px solid var(--line);
-      padding: 8px 12px;
-      border-radius: 6px;
+      padding: 10px 14px;
+      border-radius: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 14px;
+      font-size: 13px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
 
     .delete-item {
@@ -441,24 +461,19 @@
       font-size: 16px;
       font-weight: bold;
       padding: 0 4px;
+      border-radius: 4px;
     }
     .delete-item:hover {
       color: var(--accent-2);
+      background: rgba(239, 68, 68, 0.08);
     }
 
     @media (max-width: 980px) {
-      .app { padding: 14px; }
+      .app { padding: 16px; }
       .topbar, .grid, .detail-grid { grid-template-columns: 1fr; }
       .toolbar { justify-content: flex-start; }
       .controls { position: static; }
       .table-wrap { max-height: none; }
-    }
-
-    @media (max-width: 560px) {
-      h1 { font-size: 32px; }
-      .toolbar, .two { grid-template-columns: 1fr; display: grid; }
-      .btn, .btn.icon { width: 100%; }
-      .metric-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -477,7 +492,7 @@
           </div>
        </header>
 
-        <div id="mapWrapper" style="display: none; height: 450px; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); z-index: 1;">
+        <div id="mapWrapper" style="display: none; height: 450px; margin-bottom: 24px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow);">
           <div id="map" style="width: 100%; height: 100%;"></div>
         </div>
 
@@ -534,7 +549,7 @@
                   <input id="newDate" type="date">
                 </div>
               </div>
-              <button class="btn" type="submit">Ajouter</button>
+              <button class="btn" type="submit" style="width: 100%; margin-top: 6px;">Ajouter la commune</button>
             </form>
           </aside>
 
@@ -576,12 +591,12 @@
             <div>
               <p class="eyebrow" id="detailDept">Département --</p>
               <h1 id="detailCityName" title="Cliquez pour trouver les villes à proximité" style="cursor: pointer; position: relative;">Nom de la Ville</h1>
-              <div id="nearbyCitiesContainer" style="margin-top: 10px; font-size: 13px; color: var(--muted);"></div>
+              <div id="nearbyCitiesContainer" style="margin-top: 8px; font-size: 13px; color: var(--muted);"></div>
             </div>
            <button class="btn secondary" id="backToMainBtn">← Retour au tableau</button>
           </header>
 
-          <div id="detailMapWrapper" style="display: none; height: 300px; margin-bottom: 24px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line);">
+          <div id="detailMapWrapper" style="display: none; height: 320px; margin-bottom: 24px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow);">
             <div id="detailMap" style="width: 100%; height: 100%;"></div>
           </div>
 
@@ -590,7 +605,7 @@
               <h3>✓ Lieux visités (Fait)</h3>
               <ul class="list-items" id="visitedList"></ul>
               <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addVisitedInput" placeholder="Ajouter un lieu visité... (Appuyez sur Entrée)">
+                <input type="text" id="addVisitedInput" placeholder="Ajouter un lieu... (Entrée)">
               </div>
             </div>
 
@@ -598,7 +613,7 @@
               <h3>⚠ Zones ou Établissements No Go</h3>
               <ul class="list-items" id="nogoList"></ul>
               <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addNogoInput" placeholder="Ajouter un élément No Go... (Appuyez sur Entrée)">
+                <input type="text" id="addNogoInput" placeholder="Ajouter un élément No Go... (Entrée)">
               </div>
             </div>
           </div>
@@ -609,25 +624,25 @@
               <button id="generateAiTargetsBtn" class="btn">#giiiveyouwings</button>
             </div>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
               <div class="list-box">
-                <h3 style="color: #2c3e50;">💼 @work </h3>
+                <h3 style="color: #0f172a;">💼 @work </h3>
                 <ul class="list-items" id="workSuggestionsList">
-                  <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
+                  <li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>
                 </ul>
               </div>
 
               <div class="list-box">
-                <h3 style="color: #e67e22;">🏋️ @sport</h3>
+                <h3 style="color: #d97706;">🏋️ @sport</h3>
                 <ul class="list-items" id="sportSuggestionsList">
-                  <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
+                  <li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>
                 </ul>
               </div>
 
               <div class="list-box">
-                <h3 style="color: #8e44ad;">📚 @study </h3>
+                <h3 style="color: #7c3aed;">📚 @study </h3>
                 <ul class="list-items" id="studySuggestionsList">
-                  <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
+                  <li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>
                 </ul>
               </div>
             </div>
@@ -857,7 +872,7 @@
               <span>${place}</span>
               <button class="delete-item" data-list="visited" data-index="${i}">×</button>
             </li>`).join("")
-        : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucun lieu enregistré</li>`;
+        : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucun lieu enregistré</li>`;
 
       els.nogoList.innerHTML = ng.length 
         ? ng.map((item, i) => `
@@ -865,7 +880,7 @@
               <span>${item}</span>
               <button class="delete-item" data-list="nogo" data-index="${i}">×</button>
             </li>`).join("")
-        : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucune zone No Go</li>`;
+        : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
     }
 
     function closeDetails() {
@@ -875,9 +890,9 @@
       els.detailMapWrapper.style.display = "none"; 
       els.nearbyCitiesContainer.innerHTML = "";
       
-      document.getElementById("workSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
-      document.getElementById("sportSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
-      document.getElementById("studySuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
+      document.getElementById("workSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>`;
+      document.getElementById("sportSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>`;
+      document.getElementById("studySuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>`;
 
       render();
     }
@@ -1010,7 +1025,6 @@
 
       if (!dMap) {
         dMap = L.map('detailMap');
-        // Remplacement par les tuiles OpenStreetMap gratuites
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors'
         }).addTo(dMap);
@@ -1046,10 +1060,10 @@
 
       nearby.forEach(item => {
         const pClass = priorityClassByAge(item.city.age);
-        let color = "#3f9b70"; 
-        if (pClass === "p-hot") color = "#d13f2f"; 
-        if (pClass === "p-warm") color = "#e39423"; 
-        if (pClass === "p-mid") color = "#d0b936"; 
+        let color = "#10b981"; 
+        if (pClass === "p-hot") color = "#ef4444"; 
+        if (pClass === "p-warm") color = "#f59e0b"; 
+        if (pClass === "p-mid") color = "#eab308"; 
 
         const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
         const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
@@ -1078,7 +1092,7 @@
 
       if (nearby.length > 0) {
         dMap.fitBounds(bounds, { padding: [40, 40] });
-        els.nearbyCitiesContainer.innerHTML = `<span style="color: var(--accent); font-weight: 800;">📍 ${nearby.length} communes à ~30 min affichées sur la carte.</span>`;
+        els.nearbyCitiesContainer.innerHTML = `<span style="color: var(--accent); font-weight: 700;">📍 ${nearby.length} communes à ~30 min affichées sur la carte.</span>`;
       } else {
         dMap.setView(currentCoords, 11);
         els.nearbyCitiesContainer.innerHTML = "Aucune autre commune de votre liste n'est à moins de 30 min.";
@@ -1107,7 +1121,6 @@
     async function updateMap() {
       if (!map) {
         map = L.map('map').setView([43.6047, 1.4442], 8);
-        // Remplacement par les tuiles OpenStreetMap gratuites
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
@@ -1124,10 +1137,10 @@
         const coords = await getCoordinates(city.name, city.department);
         if (coords) {
           const pClass = priorityClassByAge(city.age);
-          let color = "#3f9b70"; 
-          if (pClass === "p-hot") color = "#d13f2f"; 
-          if (pClass === "p-warm") color = "#e39423"; 
-          if (pClass === "p-mid") color = "#d0b936"; 
+          let color = "#10b981"; 
+          if (pClass === "p-hot") color = "#ef4444"; 
+          if (pClass === "p-warm") color = "#f59e0b"; 
+          if (pClass === "p-mid") color = "#eab308"; 
 
           const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
           const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
@@ -1167,11 +1180,11 @@
     });
 
     async function initApp() {
-      els.rows.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">Chargement depuis Supabase...</td></tr>';
+      els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Chargement depuis Supabase...</td></tr>';
       state.cities = await loadCitiesFromDB();
       
       if (state.cities.length === 0) {
-          els.rows.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">La base de données est vide.</td></tr>';
+          els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">La base de données est vide.</td></tr>';
       } else {
           render();
       }
