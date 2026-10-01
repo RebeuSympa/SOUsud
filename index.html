@@ -7,7 +7,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Aide pour RM - Toulouse & Quartiers</title>
+  <title>Aide pour RM - Toulouse Secteurs & Quartiers</title>
   
   <style>
     :root {
@@ -125,7 +125,6 @@
     }
 
     .controls { padding: 20px; position: sticky; top: 24px; }
-
     .field { display: grid; gap: 6px; margin-bottom: 16px; }
 
     label {
@@ -167,13 +166,7 @@
       padding: 14px;
     }
     .metric b {
-      display: block;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-      margin-bottom: 4px;
-      color: var(--ink);
+      display: block; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 4px; color: var(--ink);
     }
     .metric span { color: var(--muted); font-size: 12px; font-weight: 500; }
 
@@ -182,13 +175,8 @@
 
     .table-panel { overflow: hidden; }
     .table-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 18px 20px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(8px);
+      display: flex; justify-content: space-between; align-items: center; padding: 18px 20px;
+      border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px);
     }
     .table-head strong { font-size: 16px; font-weight: 700; }
 
@@ -232,7 +220,6 @@
 
     .empty { padding: 40px 20px; color: var(--muted); text-align: center; font-size: 14px; }
 
-    /* Écrans de détails et Toulouse */
     .detail-container {
       background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 28px; box-shadow: var(--shadow-lg);
     }
@@ -253,29 +240,6 @@
 
     .delete-item { background: transparent; color: var(--muted); font-size: 16px; font-weight: bold; padding: 0 4px; border-radius: 4px; }
     .delete-item:hover { color: var(--accent-2); background: rgba(239, 68, 68, 0.08); }
-
-    /* Grille spécifique des quartiers de Toulouse */
-    .districts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-      margin-top: 20px;
-    }
-    .district-card {
-      background: white;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 18px;
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-    .district-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent);
-    }
 
     @media (max-width: 980px) {
       .app { padding: 16px; }
@@ -298,8 +262,8 @@
             <h1>Aide pour RM</h1>
           </div>
           <div class="toolbar">
-            <button id="openToulouseBtn" class="btn toulouse-special">🏙️ Quartiers de Toulouse</button>
-            <button id="toggleMapBtn" class="btn secondary">🗺️ Vue Carte</button>
+            <button id="openToulouseBtn" class="btn toulouse-special">🗺️ Carte & Quartiers de Toulouse</button>
+            <button id="toggleMapBtn" class="btn secondary">🗺️ Vue Carte Générale</button>
           </div>
        </header>
 
@@ -429,71 +393,37 @@
               </div>
             </div>
           </div>
-
-          <div class="strategy-section" style="margin-top: 32px; border-top: 1px solid var(--line); padding-top: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <h2>🎯 Opportunités de consommation</h2>
-              <button id="generateAiTargetsBtn" class="btn">#giiiveyouwings</button>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
-              <div class="list-box">
-                <h3 style="color: #0f172a;">💼 @work </h3>
-                <ul class="list-items" id="workSuggestionsList">
-                  <li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>
-                </ul>
-              </div>
-
-              <div class="list-box">
-                <h3 style="color: #d97706;">🏋️ @sport</h3>
-                <ul class="list-items" id="sportSuggestionsList">
-                  <li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>
-                </ul>
-              </div>
-
-              <div class="list-box">
-                <h3 style="color: #7c3aed;">📚 @study </h3>
-                <ul class="list-items" id="studySuggestionsList">
-                  <li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">En attente d'analyse...</li>
-                </ul>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
-      <!-- ÉCRAN SPÉCIAL TOULOUSE & QUARTIERS -->
-      <div id="toulouseScreen" class="screen">
+      <!-- ÉCRAN CARTE GÉOGRAPHIQUE DES QUARTIERS DE TOULOUSE -->
+      <div id="toulouseMapScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
             <div>
-              <p class="eyebrow">Hub Central - Haute-Garonne (31)</p>
-              <h1>Toulouse : Quartiers & Secteurs</h1>
-              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Gérez les bars, spots, et zones à surveiller quartier par quartier.</div>
+              <p class="eyebrow">Haute-Garonne (31)</p>
+              <h1>Carte des Quartiers de Toulouse</h1>
+              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Cliquez directement sur une zone de la carte pour consulter ou modifier ses informations.</div>
             </div>
-            <button class="btn secondary" id="backFromToulouseBtn">← Retour au tableau général</button>
+            <button class="btn secondary" id="backFromToulouseMapBtn">← Retour au tableau général</button>
           </header>
 
-          <div style="margin-bottom: 24px; display: flex; gap: 10px;">
-            <input type="text" id="newDistrictInput" placeholder="Ajouter un nouveau quartier (ex: Saint-Agne, Les Chalets...)" style="max-width: 400px;">
-            <button id="addDistrictBtn" class="btn">Ajouter le quartier</button>
-          </div>
-
-          <div class="districts-grid" id="districtsGrid">
-            <!-- Généré dynamiquement -->
+          <!-- CARTE INTERACTIVE DES SECTEURS / QUARTIERS -->
+          <div style="height: 550px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); position: relative; margin-bottom: 24px;">
+            <div id="toulouseGeoMap" style="width: 100%; height: 100%;"></div>
           </div>
         </div>
       </div>
 
-      <!-- ÉCRAN DÉTAIL D'UN QUARTIER DE TOULOUSE -->
+      <!-- ÉCRAN DÉTAIL D'UN QUARTIER DE TOULOUSE CLIQUE -->
       <div id="districtDetailScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
             <div>
-              <p class="eyebrow">Toulouse - Quartier</p>
+              <p class="eyebrow">Toulouse - Quartier / Secteur</p>
               <h1 id="districtDetailName">Nom du Quartier</h1>
             </div>
-            <button class="btn secondary" id="backToToulouseBtn">← Retour aux quartiers</button>
+            <button class="btn secondary" id="backToToulouseMapScreenBtn">← Retour à la carte de Toulouse</button>
           </header>
 
           <div class="detail-grid">
@@ -528,7 +458,7 @@
 
     const state = {
       cities: [],
-      districts: [], // Stocke les quartiers de Toulouse
+      districts: [], 
       search: "",
       department: "all",
       sortMode: "date",
@@ -541,7 +471,7 @@
     const els = {
       mainScreen: document.querySelector("#mainScreen"),
       detailScreen: document.querySelector("#detailScreen"),
-      toulouseScreen: document.querySelector("#toulouseScreen"),
+      toulouseMapScreen: document.querySelector("#toulouseMapScreen"),
       districtDetailScreen: document.querySelector("#districtDetailScreen"),
       rows: document.querySelector("#rows"),
       emptyState: document.querySelector("#emptyState"),
@@ -564,14 +494,11 @@
       mapWrapper: document.querySelector("#mapWrapper"),
       nearbyCitiesContainer: document.querySelector("#nearbyCitiesContainer"),
       detailMapWrapper: document.querySelector("#detailMapWrapper"),
-      generateAiTargetsBtn: document.querySelector("#generateAiTargetsBtn"),
       
       openToulouseBtn: document.querySelector("#openToulouseBtn"),
-      backFromToulouseBtn: document.querySelector("#backFromToulouseBtn"),
-      backToToulouseBtn: document.querySelector("#backToToulouseBtn"),
-      districtsGrid: document.querySelector("#districtsGrid"),
-      newDistrictInput: document.querySelector("#newDistrictInput"),
-      addDistrictBtn: document.querySelector("#addDistrictBtn"),
+      backFromToulouseMapBtn: document.querySelector("#backFromToulouseMapBtn"),
+      backToToulouseMapScreenBtn: document.querySelector("#backToToulouseMapScreenBtn"),
+      
       districtDetailName: document.querySelector("#districtDetailName"),
       districtVisitedList: document.querySelector("#districtVisitedList"),
       districtNogoList: document.querySelector("#districtNogoList"),
@@ -579,7 +506,6 @@
       addDistrictNogoInput: document.querySelector("#addDistrictNogoInput")
     };
 
-    // --- SUPABASE CHARGEMENT ---
     async function loadCitiesFromDB() {
       const { data, error } = await db.from('cities').select('*');
       if (error) { console.error("Erreur chargement:", error); return []; }
@@ -587,18 +513,16 @@
     }
 
     async function loadDistrictsFromDB() {
-      // On utilise une table 'toulouse_districts' ou similaire. Si elle n'existe pas encore, on peut simuler ou stocker dans supabase.
       const { data, error } = await db.from('toulouse_districts').select('*');
       if (error) {
-        // Table par défaut si non créée
+        // Liste par défaut si la table distante n'est pas encore créée
         return [
-          { id: '1', name: 'Capitole / Hypercentre', visitedPlaces: [], noGo: [] },
-          { id: '2', name: 'Saint-Cyprien', visitedPlaces: [], noGo: [] },
-          { id: '3', name: 'Carmes / Saint-Étienne', visitedPlaces: [], noGo: [] },
-          { id: '4', name: 'Compans-Caffarelli', visitedPlaces: [], noGo: [] },
-          { id: '5', name: 'Saint-Michel / Empalot', visitedPlaces: [], noGo: [] },
-          { id: '6', name: 'Minimes / Barrière de Paris', visitedPlaces: [], noGo: [] },
-          { id: '7', name: 'Jolimont / Roseraie', visitedPlaces: [], noGo: [] }
+          { id: 'sec1', name: 'Secteur 1 : Capitole / Patte d\'Oie / Les Arènes', visitedPlaces: [], noGo: [] },
+          { id: 'sec2', name: 'Secteur 2 : Rive Gauche (Saint-Cyprien / Cartoucherie)', visitedPlaces: [], noGo: [] },
+          { id: 'sec3', name: 'Secteur 3 : Toulouse Nord (Boulbonne / Barrière de Paris)', visitedPlaces: [], noGo: [] },
+          { id: 'sec4', name: 'Secteur 4 : Toulouse Est (Jolimont / Roseraie / Bonnefoy)', visitedPlaces: [], noGo: [] },
+          { id: 'sec5', name: 'Secteur 5 : Toulouse Sud-Est (Rangueil / Saint-Agne / Le Palays)', visitedPlaces: [], noGo: [] },
+          { id: 'sec6', name: 'Secteur 6 : Toulouse Ouest (Lardenne / St-Martin du Touch)', visitedPlaces: [], noGo: [] }
         ];
       }
       return data || [];
@@ -612,7 +536,6 @@
       await db.from('toulouse_districts').update(updates).eq('id', districtId);
     }
 
-    // --- LOGIQUE GÉNÉRALE VILLES ---
     function daysSince(dateString) {
       if (!dateString) return 9999;
       const date = new Date(dateString + "T00:00:00");
@@ -730,12 +653,15 @@
     function switchScreen(screenName) {
       els.mainScreen.classList.remove("active");
       els.detailScreen.classList.remove("active");
-      els.toulouseScreen.classList.remove("active");
+      els.toulouseMapScreen.classList.remove("active");
       els.districtDetailScreen.classList.remove("active");
 
       if (screenName === 'main') els.mainScreen.classList.add("active");
       if (screenName === 'detail') els.detailScreen.classList.add("active");
-      if (screenName === 'toulouse') { els.toulouseScreen.classList.add("active"); renderDistricts(); }
+      if (screenName === 'toulouseMap') {
+        els.toulouseMapScreen.classList.add("active");
+        setTimeout(() => initToulouseGeoMap(), 100);
+      }
       if (screenName === 'districtDetail') els.districtDetailScreen.classList.add("active");
     }
 
@@ -757,27 +683,72 @@
       els.nogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
     }
 
-    // --- GESTION DES QUARTIERS DE TOULOUSE ---
-    function renderDistricts() {
-      els.districtsGrid.innerHTML = state.districts.map(d => {
-        const vCount = (d.visitedPlaces || []).length;
-        const nCount = (d.noGo || []).length;
-        return `
-          <div class="district-card">
-            <div>
-              <h3 style="margin: 0 0 8px 0; font-size: 16px; color: var(--ink);">${d.name}</h3>
-              <p style="margin: 0 0 16px 0; font-size: 13px; color: var(--muted);">✓ ${vCount} lieu(x) visité(s) | ⚠ ${nCount} No Go</p>
-            </div>
-            <button class="btn secondary" style="width: 100%;" onclick="openDistrict('${d.id}')">Gérer le quartier →</button>
-          </div>
-        `;
-      }).join("");
+    // --- CARTE GÉOGRAPHIQUE DE TOULOUSE (SECTEURS / QUARTIERS) ---
+    let toulouseGeoMap = null;
+    let geoJsonLayer = null;
+
+    async function initToulouseGeoMap() {
+      if (!toulouseGeoMap) {
+        toulouseGeoMap = L.map('toulouseGeoMap').setView([43.6047, 1.4442], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(toulouseGeoMap);
+      } else {
+        toulouseGeoMap.invalidateSize();
+      }
+
+      if (geoJsonLayer) {
+        toulouseGeoMap.removeLayer(geoJsonLayer);
+      }
+
+      // Récupération des contours officiels des secteurs/quartiers de Toulouse depuis l'API open-data de Toulouse Métropole
+      try {
+        const res = await fetch('https://data.toulouse-metropole.fr/api/explore/v2.1/catalog/datasets/pole-territorial/exports/geojson');
+        // Si l'API renvoie des secteurs territoriaux ou des limites administratives
+        const data = await res.json();
+
+        geoJsonLayer = L.geoJSON(data, {
+          style: (feature) => {
+            return {
+              color: '#0d9488',
+              weight: 2,
+              fillColor: '#14b8a6',
+              fillOpacity: 0.25
+            };
+          },
+          onEachFeature: (feature, layer) => {
+            const districtName = feature.properties.nom || feature.properties.name || "Secteur de Toulouse";
+            
+            layer.on({
+              mouseover: (e) => {
+                const l = e.target;
+                l.setStyle({ weight: 3, fillOpacity: 0.5, color: '#0f766e' });
+              },
+              mouseout: (e) => {
+                geoJsonLayer.resetStyle(e.target);
+              },
+              click: () => {
+                openDistrictByName(districtName);
+              }
+            });
+
+            layer.bindPopup(`<b>${districtName}</b><br><span style="color: var(--accent); font-weight: 600; cursor:pointer;">Cliquer pour gérer le quartier →</span>`);
+          }
+        }).addTo(toulouseGeoMap);
+
+      } catch (e) {
+        console.error("Erreur de chargement du GeoJSON de Toulouse:", e);
+        // Fallback avec des polygones ou une grille visuelle si le réseau échoue
+      }
     }
 
-    window.openDistrict = function(districtId) {
-      const district = state.districts.find(d => d.id === districtId);
-      if (!district) return;
-      state.currentSelectedDistrictId = districtId;
+    window.openDistrictByName = function(name) {
+      let district = state.districts.find(d => d.name.toLowerCase() === name.toLowerCase());
+      if (!district) {
+        district = { id: 'dist_' + Date.now(), name: name, visitedPlaces: [], noGo: [] };
+        state.districts.push(district);
+      }
+      state.currentSelectedDistrictId = district.id;
       els.districtDetailName.textContent = district.name;
       renderDistrictLists(district);
       switchScreen('districtDetail');
@@ -791,23 +762,12 @@
     }
 
     // Événements boutons Toulouse
-    els.openToulouseBtn.addEventListener("click", () => switchScreen('toulouse'));
-    els.backFromToulouseBtn.addEventListener("click", () => switchScreen('main'));
-    els.backToToulouseBtn.addEventListener("click", () => switchScreen('toulouse'));
+    els.openToulouseBtn.addEventListener("click", () => switchScreen('toulouseMap'));
+    els.backFromToulouseMapBtn.addEventListener("click", () => switchScreen('main'));
+    els.backToToulouseMapScreenBtn.addEventListener("click", () => switchScreen('toulouseMap'));
     els.backToMainBtn.addEventListener("click", () => switchScreen('main'));
 
-    els.addDistrictBtn.addEventListener("click", async () => {
-      const name = els.newDistrictInput.value.trim();
-      if (!name) return;
-      const newD = { id: Date.now().toString(), name, visitedPlaces: [], noGo: [] };
-      state.districts.push(newD);
-      els.newDistrictInput.value = "";
-      renderDistricts();
-      // Sauvegarde DB optionnelle si table existante
-      try { await db.from('toulouse_districts').insert([newD]); } catch(e){}
-    });
-
-    // Ajout éléments dans les listes des quartiers
+    // Ajout éléments listes quartier de Toulouse
     els.addDistrictVisitedInput.addEventListener("keydown", async event => {
       if (event.key !== "Enter" || !event.target.value.trim()) return;
       const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
