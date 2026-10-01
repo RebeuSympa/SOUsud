@@ -3,15 +3,12 @@
 <head>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
-  <!-- AJOUTER CES DEUX LIGNES : -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Aide pour RM</title>
   
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root {
       --bg: #f5f6f4;
@@ -169,19 +166,6 @@
     input:focus, select:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(31, 122, 109, .14);
-    }
-
-    .weights {
-      display: grid;
-      grid-template-columns: 1fr 72px;
-      gap: 8px 10px;
-      align-items: center;
-      margin: 12px 0 18px;
-    }
-
-    input[type="range"] {
-      padding: 0;
-      accent-color: var(--accent);
     }
 
     .metric-grid {
@@ -387,7 +371,6 @@
       text-align: center;
     }
 
-    /* Styles pour l'écran de détail */
     .detail-container {
       background: var(--panel);
       border: 1px solid var(--line);
@@ -620,7 +603,6 @@
             </div>
           </div>
 
-          <!-- NOUVELLE SECTION 3 COLONNES (IA) -->
           <div class="strategy-section" style="margin-top: 32px; border-top: 1px solid var(--line); padding-top: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <h2>🎯 Opportunités de consommation</h2>
@@ -628,7 +610,6 @@
             </div>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
-              <!-- Colonne @work -->
               <div class="list-box">
                 <h3 style="color: #2c3e50;">💼 @work </h3>
                 <ul class="list-items" id="workSuggestionsList">
@@ -643,7 +624,6 @@
                 </ul>
               </div>
 
-              <!-- Colonne @study -->
               <div class="list-box">
                 <h3 style="color: #8e44ad;">📚 @study </h3>
                 <ul class="list-items" id="studySuggestionsList">
@@ -652,7 +632,6 @@
               </div>
             </div>
           </div>
-          <!-- FIN NOUVELLE SECTION -->
 
         </div>
       </div>
@@ -661,11 +640,9 @@
   </main>
 
   <script>
-    // --- CONFIGURATION SUPABASE ---
     const supabaseUrl = 'https://teeuganjefwegazhoubj.supabase.co'; 
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlZXVnYW5qZWZ3ZWdhemhvdWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMjA4MjEsImV4cCI6MjA5ODU5NjgyMX0.bLlpaeGA39NA3FWpQrsCSo1xHjxQG1Yv_5gbEgVdWZU'; // <-- À REMPLACER PAR TA CLÉ sb_publishable...
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlZXVnYW5qZWZ3ZWdhemhvdWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMjA4MjEsImV4cCI6MjA5ODU5NjgyMX0.bLlpaeGA39NA3FWpQrsCSo1xHjxQG1Yv_5gbEgVdWZU';
     
-    // CORRECTION : On renomme en "db" pour éviter le conflit avec le nom "supabase" importé par le CDN
     const db = window.supabase.createClient(supabaseUrl, supabaseKey);
     const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -698,15 +675,13 @@
       nogoList: document.querySelector("#nogoList"),
       addVisitedInput: document.querySelector("#addVisitedInput"),
       addNogoInput: document.querySelector("#addNogoInput"),
-      backToMainBtn: document.querySelector("#backToMainBtn"), // <-- LA VIRGULE EST BIEN LÀ
+      backToMainBtn: document.querySelector("#backToMainBtn"),
       toggleMapBtn: document.querySelector("#toggleMapBtn"),
       mapWrapper: document.querySelector("#mapWrapper"),
       nearbyCitiesContainer: document.querySelector("#nearbyCitiesContainer"),
       detailMapWrapper: document.querySelector("#detailMapWrapper"),
       generateAiTargetsBtn: document.querySelector("#generateAiTargetsBtn")
     };
-
-    // --- FONCTIONS BASE DE DONNÉES ---
 
     async function loadCitiesFromDB() {
       const { data, error } = await db.from('cities').select('*');
@@ -735,8 +710,6 @@
       }
       return data[0];
     }
-
-    // --- LOGIQUE DE L'APPLICATION ---
 
     function daysSince(dateString) {
       if (!dateString) return 9999;
@@ -780,16 +753,14 @@
 
       const byName = (a, b) => a.name.localeCompare(b.name, "fr");
       
-      // On attribue un rang à chaque catégorie (Rouge passe en premier, Vert en dernier)
       const getCategoryRank = (age) => {
-        if (age === 9999 || age > 365) return 4; // Rouge
-        if (age >= 183) return 3;                // Orange
-        if (age >= 61) return 2;                 // Jaune
-        return 1;                                // Vert
+        if (age === 9999 || age > 365) return 4;
+        if (age >= 183) return 3;
+        if (age >= 61) return 2;
+        return 1;
       };
 
       const sorters = {
-        // Tri d'abord par rang de couleur, PUIS par population décroissante, PUIS par nom
         date: (a, b) => getCategoryRank(b.age) - getCategoryRank(a.age) || b.population - a.population || byName(a, b),
         population: (a, b) => b.population - a.population || byName(a, b),
         time: (a, b) => a.minutes - b.minutes || byName(a, b),
@@ -911,13 +882,11 @@
       render();
     }
 
-    // Événements basiques UI
     els.search.addEventListener("input", e => { state.search = e.target.value; render(); });
     els.departmentFilter.addEventListener("change", e => { state.department = e.target.value; render(); });
     els.sortMode.addEventListener("change", e => { state.sortMode = e.target.value; render(); });
     els.backToMainBtn.addEventListener("click", closeDetails);
 
-    // Événements sur le tableau principal (Avec appels Supabase)
     els.rows.addEventListener("click", async event => {
       const target = event.target.closest("[data-action]");
       if (!target) return;
@@ -936,19 +905,19 @@
       }
     });
 
-els.rows.addEventListener("change", async event => {
-  const action = event.target.dataset.action;
-  if (action !== "date") return; // On bloque tout ce qui n'est pas la date
-  const cityId = event.target.dataset.id;
-  const city = state.cities.find(item => item.id === cityId);
-  if (!city) return;
-  
-  const newDate = event.target.value;
-  city.lastVisit = newDate;
-  render();
-  await updateCityInDB(cityId, { lastVisit: newDate });
-});
-    // Événements sur les détails (Fait / No Go)
+    els.rows.addEventListener("change", async event => {
+      const action = event.target.dataset.action;
+      if (action !== "date") return;
+      const cityId = event.target.dataset.id;
+      const city = state.cities.find(item => item.id === cityId);
+      if (!city) return;
+      
+      const newDate = event.target.value;
+      city.lastVisit = newDate;
+      render();
+      await updateCityInDB(cityId, { lastVisit: newDate });
+    });
+
     els.addVisitedInput.addEventListener("keydown", async event => {
       if (event.key !== "Enter" || !event.target.value.trim()) return;
       const city = state.cities.find(c => c.id === state.currentSelectedCityId);
@@ -996,7 +965,6 @@ els.rows.addEventListener("change", async event => {
       });
     });
 
-    // Formulaire d'ajout
     els.addForm.addEventListener("submit", async event => {
       event.preventDefault();
       const newCity = {
@@ -1018,7 +986,6 @@ els.rows.addEventListener("change", async event => {
       }
     });
 
-// --- RECHERCHE DE PROXIMITÉ (30 min / ~25 km) AVEC CARTE ---
     function getDistanceKm(lat1, lon1, lat2, lon2) {
       const R = 6371; 
       const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -1039,19 +1006,17 @@ els.rows.addEventListener("change", async event => {
       const currentCity = state.cities.find(c => c.id === currentCityId);
       els.nearbyCitiesContainer.innerHTML = "<i>⏳ Création de la carte en cours...</i>";
       
-      // Afficher l'espace de la carte
       els.detailMapWrapper.style.display = "block";
 
-      // Initialiser la mini-carte si elle n'existe pas encore
       if (!dMap) {
         dMap = L.map('detailMap');
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; OpenStreetMap'
+        // Remplacement par les tuiles OpenStreetMap gratuites
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
         }).addTo(dMap);
         dMarkersLayer = L.layerGroup().addTo(dMap);
       }
       
-      // Corrige un bug d'affichage Leaflet sur les éléments cachés
       setTimeout(() => dMap.invalidateSize(), 100);
       dMarkersLayer.clearLayers();
 
@@ -1071,18 +1036,14 @@ els.rows.addEventListener("change", async event => {
         }
       }));
 
-      // Placer le Pins de la ville centrale (Plus grand, contour foncé)
       const currentHtml = `<div style="background-color: var(--ink); width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5);"></div>`;
       const currentIcon = L.divIcon({ html: currentHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
       L.marker(currentCoords, { icon: currentIcon, zIndexOffset: 1000 })
         .bindPopup(`<b>${currentCity.name}</b><br>📍 Ville sélectionnée`)
         .addTo(dMarkersLayer);
 
-      // Limites pour le zoom automatique
       let bounds = L.latLngBounds([currentCoords]);
 
-      // Placer les Pins des villes autour
-      // Placer les Pins des villes autour
       nearby.forEach(item => {
         const pClass = priorityClassByAge(item.city.age);
         let color = "#3f9b70"; 
@@ -1093,7 +1054,6 @@ els.rows.addEventListener("change", async event => {
         const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
         const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
 
-        // --- ICI LE CHANGEMENT ---
         const popupDiv = document.createElement("div");
         popupDiv.innerHTML = `<b>${item.city.name}</b><br>🚗 ~${Math.round(item.distance)} km`;
         
@@ -1103,8 +1063,8 @@ els.rows.addEventListener("change", async event => {
         btn.innerText = "Voir détails →";
         
         btn.onclick = () => {
-            closeDetails();            // 1. Ferme la fiche actuelle
-            openCityDetails(item.city.id); // 2. Ouvre la nouvelle
+            closeDetails();            
+            openCityDetails(item.city.id); 
         };
         
         popupDiv.appendChild(btn);
@@ -1116,7 +1076,6 @@ els.rows.addEventListener("change", async event => {
         bounds.extend(item.coords);
       });
 
-      // Adapter le zoom de la carte pour tout voir
       if (nearby.length > 0) {
         dMap.fitBounds(bounds, { padding: [40, 40] });
         els.nearbyCitiesContainer.innerHTML = `<span style="color: var(--accent); font-weight: 800;">📍 ${nearby.length} communes à ~30 min affichées sur la carte.</span>`;
@@ -1126,16 +1085,14 @@ els.rows.addEventListener("change", async event => {
       }
     });
 
-// --- GESTION DE LA CARTE ---
     let map = null;
     let markersLayer = null;
-    let cityCoordinates = {}; // Cache pour ne pas re-télécharger les mêmes coordonnées
+    let cityCoordinates = {}; 
     let mapUpdateId = 0;
 
     async function getCoordinates(cityName, dept) {
       if (cityCoordinates[cityName]) return cityCoordinates[cityName];
       try {
-        // Interroge l'API du gouvernement français
         const res = await fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(cityName)}&codeDepartement=${dept}&fields=centre&format=json&geometry=centre`);
         const data = await res.json();
         if (data && data.length > 0 && data[0].centre) {
@@ -1149,35 +1106,32 @@ els.rows.addEventListener("change", async event => {
 
     async function updateMap() {
       if (!map) {
-        // Initialisation de la carte, centrée sur Toulouse/Occitanie
         map = L.map('map').setView([43.6047, 1.4442], 8);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; OpenStreetMap'
+        // Remplacement par les tuiles OpenStreetMap gratuites
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
         markersLayer = L.layerGroup().addTo(map);
       }
       
-      const currentUpdateId = ++mapUpdateId; // Sécurité si on tape trop vite dans la recherche
+      const currentUpdateId = ++mapUpdateId; 
       markersLayer.clearLayers();
       const list = filteredCities(); 
 
       for (const city of list) {
-        if (currentUpdateId !== mapUpdateId) return; // Annule si une nouvelle recherche a été lancée
+        if (currentUpdateId !== mapUpdateId) return; 
         
         const coords = await getCoordinates(city.name, city.department);
         if (coords) {
-          // Attribuer la bonne couleur selon l'âge du dernier passage
           const pClass = priorityClassByAge(city.age);
-          let color = "#3f9b70"; // Vert par défaut
-          if (pClass === "p-hot") color = "#d13f2f"; // Rouge
-          if (pClass === "p-warm") color = "#e39423"; // Orange
-          if (pClass === "p-mid") color = "#d0b936"; // Jaune
+          let color = "#3f9b70"; 
+          if (pClass === "p-hot") color = "#d13f2f"; 
+          if (pClass === "p-warm") color = "#e39423"; 
+          if (pClass === "p-mid") color = "#d0b936"; 
 
-          // Création du pins visuel
           const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
           const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
 
-          // Création du contenu du popup avec un bouton dynamique
           const popupDiv = document.createElement("div");
           popupDiv.innerHTML = `<b>${city.name}</b> (${city.department})<br>Passage : ${city.age === 9999 ? "Jamais" : city.age + " jours"}<br>`;
           
@@ -1186,15 +1140,13 @@ els.rows.addEventListener("change", async event => {
           detailBtn.style.marginTop = "8px";
           detailBtn.innerText = "Voir détails →";
           
-          // L'action du bouton : on ferme le popup et on ouvre la vue détail
           detailBtn.onclick = () => {
-             map.closePopup(); // Ferme le popup de la carte
-             openCityDetails(city.id); // Ouvre la vue détail de la ville
+             map.closePopup(); 
+             openCityDetails(city.id); 
           };
           
           popupDiv.appendChild(detailBtn);
 
-          // On ajoute le marqueur avec ce contenu personnalisé
           L.marker(coords, { icon: customIcon })
             .bindPopup(popupDiv)
             .addTo(markersLayer);
@@ -1202,7 +1154,6 @@ els.rows.addEventListener("change", async event => {
       }
     }
 
-    // Gérer l'ouverture/fermeture de la carte
     els.toggleMapBtn.addEventListener("click", () => {
       const isHidden = els.mapWrapper.style.display === "none";
       els.mapWrapper.style.display = isHidden ? "block" : "none";
@@ -1210,12 +1161,11 @@ els.rows.addEventListener("change", async event => {
         if (!map) updateMap();
         else {
           updateMap();
-          setTimeout(() => map.invalidateSize(), 100); // Corrige un bug Leaflet
+          setTimeout(() => map.invalidateSize(), 100); 
         }
       }
     });
 
-    // INITIALISATION : On charge les données de Supabase au démarrage
     async function initApp() {
       els.rows.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">Chargement depuis Supabase...</td></tr>';
       state.cities = await loadCitiesFromDB();
@@ -1226,51 +1176,45 @@ els.rows.addEventListener("change", async event => {
           render();
       }
     }
-// --- ANALYSE IA CIBLÉE (Supérieur uniquement) ---
-els.generateAiTargetsBtn.addEventListener("click", async () => {
-  const currentCity = state.cities.find(c => c.id === state.currentSelectedCityId);
-  if (!currentCity) return;
 
-  const lists = { work: "workSuggestionsList", sport: "sportSuggestionsList", study: "studySuggestionsList" };
-  Object.values(lists).forEach(id => document.getElementById(id).innerHTML = "<li>Recherche...</li>");
+    els.generateAiTargetsBtn.addEventListener("click", async () => {
+      const currentCity = state.cities.find(c => c.id === state.currentSelectedCityId);
+      if (!currentCity) return;
 
-  const coords = await getCoordinates(currentCity.name, currentCity.department);
-  if (!coords) return alert("Position introuvable");
+      const lists = { work: "workSuggestionsList", sport: "sportSuggestionsList", study: "studySuggestionsList" };
+      Object.values(lists).forEach(id => document.getElementById(id).innerHTML = "<li>Recherche...</li>");
 
-  // Requête : On garde les shops/crafts et sports, mais pour les études on filtre sur university/college
-  const query = `[out:json][timeout:15];(
-    node["shop"](around:3000,${coords[0]},${coords[1]});
-    node["craft"](around:3000,${coords[0]},${coords[1]});
-    node["leisure"~"fitness_centre|sports_centre|pitch|dance"](around:3000,${coords[0]},${coords[1]});
-    node["sport"="wakeboarding"](around:3000,${coords[0]},${coords[1]});
-    node["amenity"~"university|college"](around:3000,${coords[0]},${coords[1]});
-    );out center 100;`;
+      const coords = await getCoordinates(currentCity.name, currentCity.department);
+      if (!coords) return alert("Position introuvable");
 
-  try {
-    const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
-    const data = await res.json();
-    const all = data.elements.filter(e => e.tags?.name);
+      const query = `[out:json][timeout:15];(
+        node["shop"](around:3000,${coords[0]},${coords[1]});
+        node["craft"](around:3000,${coords[0]},${coords[1]});
+        node["leisure"~"fitness_centre|sports_centre|pitch|dance"](around:3000,${coords[0]},${coords[1]});
+        node["sport"="wakeboarding"](around:3000,${coords[0]},${coords[1]});
+        node["amenity"~"university|college"](around:3000,${coords[0]},${coords[1]});
+        );out center 100;`;
 
-    // Remplissage @work
-    document.getElementById(lists.work).innerHTML = all.filter(e => e.tags.shop || e.tags.craft).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
+      try {
+        const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
+        const data = await res.json();
+        const all = data.elements.filter(e => e.tags?.name);
 
-    // Remplissage @sport (Exclusion Basic Fit)
-    document.getElementById(lists.sport).innerHTML = all.filter(e => 
-        (["fitness_centre", "sports_centre", "pitch", "dance"].includes(e.tags.leisure) || e.tags.sport === "wakeboarding") 
-        && !e.tags.name.toLowerCase().includes("basic")
-    ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
+        document.getElementById(lists.work).innerHTML = all.filter(e => e.tags.shop || e.tags.craft).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
 
-    // Remplissage @study : On ne garde que university ou college (exclut school/primaire/collège/lycée)
-    document.getElementById(lists.study).innerHTML = all.filter(e => 
-        ["university", "college"].includes(e.tags.amenity)
-    ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
+        document.getElementById(lists.sport).innerHTML = all.filter(e => 
+            (["fitness_centre", "sports_centre", "pitch", "dance"].includes(e.tags.leisure) || e.tags.sport === "wakeboarding") 
+            && !e.tags.name.toLowerCase().includes("basic")
+        ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
 
-  } catch (e) { alert("Erreur lors de la recherche"); }
-});
+        document.getElementById(lists.study).innerHTML = all.filter(e => 
+            ["university", "college"].includes(e.tags.amenity)
+        ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
 
-// 4. Appel final unique
-initApp();
+      } catch (e) { alert("Erreur lors de la recherche"); }
+    });
+
+    initApp();
   </script>
 </body>
 </html>
-
