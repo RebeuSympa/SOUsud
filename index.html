@@ -408,14 +408,13 @@
             <button class="btn secondary" id="backFromToulouseMapBtn">← Retour au tableau général</button>
           </header>
 
-          <!-- CARTE INTERACTIVE DES SECTEURS / QUARTIERS -->
           <div style="height: 550px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); position: relative; margin-bottom: 24px;">
             <div id="toulouseGeoMap" style="width: 100%; height: 100%;"></div>
           </div>
         </div>
       </div>
 
-      <!-- ÉCRAN DÉTAIL D'UN QUARTIER DE TOULOUSE CLIQUE -->
+      <!-- ÉCRAN DÉTAIL D'UN QUARTIER DE TOULOUSE CLIQUÉ -->
       <div id="districtDetailScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
@@ -515,7 +514,6 @@
     async function loadDistrictsFromDB() {
       const { data, error } = await db.from('toulouse_districts').select('*');
       if (error) {
-        // Liste par défaut si la table distante n'est pas encore créée
         return [
           { id: 'sec1', name: 'Secteur 1 : Capitole / Patte d\'Oie / Les Arènes', visitedPlaces: [], noGo: [] },
           { id: 'sec2', name: 'Secteur 2 : Rive Gauche (Saint-Cyprien / Cartoucherie)', visitedPlaces: [], noGo: [] },
@@ -649,7 +647,6 @@
       if (els.mapWrapper && els.mapWrapper.style.display === "block") updateMap();
     }
 
-    // --- NAVIGATION ÉCRANS ---
     function switchScreen(screenName) {
       els.mainScreen.classList.remove("active");
       els.detailScreen.classList.remove("active");
@@ -683,7 +680,6 @@
       els.nogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
     }
 
-    // --- CARTE GÉOGRAPHIQUE DE TOULOUSE (SECTEURS / QUARTIERS) ---
     let toulouseGeoMap = null;
     let geoJsonLayer = null;
 
@@ -701,28 +697,23 @@
         toulouseGeoMap.removeLayer(geoJsonLayer);
       }
 
-      // Récupération des contours officiels des secteurs/quartiers de Toulouse depuis l'API open-data de Toulouse Métropole
       try {
         const res = await fetch('https://data.toulouse-metropole.fr/api/explore/v2.1/catalog/datasets/pole-territorial/exports/geojson');
-        // Si l'API renvoie des secteurs territoriaux ou des limites administratives
         const data = await res.json();
 
         geoJsonLayer = L.geoJSON(data, {
-          style: (feature) => {
-            return {
-              color: '#0d9488',
-              weight: 2,
-              fillColor: '#14b8a6',
-              fillOpacity: 0.25
-            };
-          },
+          style: () => ({
+            color: '#0d9488',
+            weight: 2,
+            fillColor: '#14b8a6',
+            fillOpacity: 0.25
+          }),
           onEachFeature: (feature, layer) => {
             const districtName = feature.properties.nom || feature.properties.name || "Secteur de Toulouse";
             
             layer.on({
               mouseover: (e) => {
-                const l = e.target;
-                l.setStyle({ weight: 3, fillOpacity: 0.5, color: '#0f766e' });
+                e.target.setStyle({ weight: 3, fillOpacity: 0.5, color: '#0f766e' });
               },
               mouseout: (e) => {
                 geoJsonLayer.resetStyle(e.target);
@@ -732,13 +723,12 @@
               }
             });
 
-            layer.bindPopup(`<b>${districtName}</b><br><span style="color: var(--accent); font-weight: 600; cursor:pointer;">Cliquer pour gérer le quartier →</span>`);
+            layer.bindPopup(`<b>${districtName}</b><br><span style="color: var(--accent); font-weight: 600;">Cliquer pour gérer le quartier →</span>`);
           }
         }).addTo(toulouseGeoMap);
 
       } catch (e) {
         console.error("Erreur de chargement du GeoJSON de Toulouse:", e);
-        // Fallback avec des polygones ou une grille visuelle si le réseau échoue
       }
     }
 
@@ -761,13 +751,11 @@
       els.districtNogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="d-nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
     }
 
-    // Événements boutons Toulouse
     els.openToulouseBtn.addEventListener("click", () => switchScreen('toulouseMap'));
     els.backFromToulouseMapBtn.addEventListener("click", () => switchScreen('main'));
     els.backToToulouseMapScreenBtn.addEventListener("click", () => switchScreen('toulouseMap'));
     els.backToMainBtn.addEventListener("click", () => switchScreen('main'));
 
-    // Ajout éléments listes quartier de Toulouse
     els.addDistrictVisitedInput.addEventListener("keydown", async event => {
       if (event.key !== "Enter" || !event.target.value.trim()) return;
       const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
@@ -808,7 +796,6 @@
       });
     });
 
-    // --- ÉVÉNEMENTS GLOBAUX ---
     els.search.addEventListener("input", e => { state.search = e.target.value; render(); });
     els.departmentFilter.addEventListener("change", e => { state.department = e.target.value; render(); });
     els.sortMode.addEventListener("change", e => { state.sortMode = e.target.value; render(); });
@@ -839,7 +826,6 @@
       await updateCityInDB(cityId, { lastVisit: event.target.value });
     });
 
-    // --- CARTOGRAPHIE PRINCIPALE ---
     let map = null, markersLayer = null, cityCoordinates = {};
     async function getCoordinates(cityName, dept) {
       if (cityCoordinates[cityName]) return cityCoordinates[cityName];
@@ -893,7 +879,6 @@
       if (isHidden) { if (!map) updateMap(); else { updateMap(); setTimeout(() => map.invalidateSize(), 100); } }
     });
 
-    // INITIALISATION
     async function initApp() {
       els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Chargement...</td></tr>';
       [state.cities, state.districts] = await Promise.all([loadCitiesFromDB(), loadDistrictsFromDB()]);
