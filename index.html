@@ -515,12 +515,12 @@
       const { data, error } = await db.from('toulouse_districts').select('*');
       if (error) {
         return [
-          { id: 'sec1', name: 'Secteur 1 : Capitole / Patte d\'Oie / Les Arènes', visitedPlaces: [], noGo: [] },
-          { id: 'sec2', name: 'Secteur 2 : Rive Gauche (Saint-Cyprien / Cartoucherie)', visitedPlaces: [], noGo: [] },
-          { id: 'sec3', name: 'Secteur 3 : Toulouse Nord (Boulbonne / Barrière de Paris)', visitedPlaces: [], noGo: [] },
-          { id: 'sec4', name: 'Secteur 4 : Toulouse Est (Jolimont / Roseraie / Bonnefoy)', visitedPlaces: [], noGo: [] },
-          { id: 'sec5', name: 'Secteur 5 : Toulouse Sud-Est (Rangueil / Saint-Agne / Le Palays)', visitedPlaces: [], noGo: [] },
-          { id: 'sec6', name: 'Secteur 6 : Toulouse Ouest (Lardenne / St-Martin du Touch)', visitedPlaces: [], noGo: [] }
+          { id: 'sec1', name: 'Capitole / Hypercentre', visitedPlaces: [], noGo: [] },
+          { id: 'sec2', name: 'Saint-Cyprien / Rive Gauche', visitedPlaces: [], noGo: [] },
+          { id: 'sec3', name: 'Minimes / Barrière de Paris', visitedPlaces: [], noGo: [] },
+          { id: 'sec4', name: 'Jolimont / Roseraie / Bonnefoy', visitedPlaces: [], noGo: [] },
+          { id: 'sec5', name: 'Rangueil / Saint-Agne / Le Palays', visitedPlaces: [], noGo: [] },
+          { id: 'sec6', name: 'Lardenne / St-Martin du Touch', visitedPlaces: [], noGo: [] }
         ];
       }
       return data || [];
@@ -681,55 +681,50 @@
     }
 
     let toulouseGeoMap = null;
-    let geoJsonLayer = null;
+    let districtLayerGroup = null;
 
-    async function initToulouseGeoMap() {
+    function initToulouseGeoMap() {
       if (!toulouseGeoMap) {
-        toulouseGeoMap = L.map('toulouseGeoMap').setView([43.6047, 1.4442], 12);
+        toulouseGeoMap = L.map('toulouseGeoMap').setView([43.6047, 1.4442], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors'
         }).addTo(toulouseGeoMap);
+        districtLayerGroup = L.layerGroup().addTo(toulouseGeoMap);
       } else {
         toulouseGeoMap.invalidateSize();
       }
 
-      if (geoJsonLayer) {
-        toulouseGeoMap.removeLayer(geoJsonLayer);
-      }
+      districtLayerGroup.clearLayers();
 
-      try {
-        const res = await fetch('https://data.toulouse-metropole.fr/api/explore/v2.1/catalog/datasets/pole-territorial/exports/geojson');
-        const data = await res.json();
+      // Utilisation de cercles/zones cliquables de référence pour les quartiers clés de Toulouse
+      const toulouseDistrictsCoords = [
+        { name: 'Capitole / Hypercentre', center: [43.6047, 1.4442], radius: 1000 },
+        { name: 'Saint-Cyprien / Rive Gauche', center: [43.5980, 1.4320], radius: 1100 },
+        { name: 'Carmes / Saint-Étienne', center: [43.5975, 1.4485], radius: 900 },
+        { name: 'Compans-Caffarelli / Les Chalets', center: [43.6130, 1.4420], radius: 1000 },
+        { name: 'Saint-Michel / Empalot', center: [43.5850, 1.4460], radius: 1200 },
+        { name: 'Minimes / Barrière de Paris', center: [43.6210, 1.4390], radius: 1200 },
+        { name: 'Jolimont / Roseraie / Bonnefoy', center: [43.6150, 1.4620], radius: 1300 },
+        { name: 'Rangueil / Saouzelong', center: [43.5730, 1.4590], radius: 1300 }
+      ];
 
-        geoJsonLayer = L.geoJSON(data, {
-          style: () => ({
-            color: '#0d9488',
-            weight: 2,
-            fillColor: '#14b8a6',
-            fillOpacity: 0.25
-          }),
-          onEachFeature: (feature, layer) => {
-            const districtName = feature.properties.nom || feature.properties.name || "Secteur de Toulouse";
-            
-            layer.on({
-              mouseover: (e) => {
-                e.target.setStyle({ weight: 3, fillOpacity: 0.5, color: '#0f766e' });
-              },
-              mouseout: (e) => {
-                geoJsonLayer.resetStyle(e.target);
-              },
-              click: () => {
-                openDistrictByName(districtName);
-              }
-            });
+      toulouseDistrictsCoords.forEach(d => {
+        const circle = L.circle(d.center, {
+          color: '#0d9488',
+          fillColor: '#14b8a6',
+          fillOpacity: 0.35,
+          radius: d.radius,
+          weight: 2
+        });
 
-            layer.bindPopup(`<b>${districtName}</b><br><span style="color: var(--accent); font-weight: 600;">Cliquer pour gérer le quartier →</span>`);
-          }
-        }).addTo(toulouseGeoMap);
+        circle.bindPopup(`<b>${d.name}</b><br><span style="color: var(--accent); font-weight: 600; cursor:pointer;">Cliquer pour gérer le quartier →</span>`);
+        
+        circle.on('click', () => {
+          openDistrictByName(d.name);
+        });
 
-      } catch (e) {
-        console.error("Erreur de chargement du GeoJSON de Toulouse:", e);
-      }
+        circle.addTo(districtLayerGroup);
+      });
     }
 
     window.openDistrictByName = function(name) {
