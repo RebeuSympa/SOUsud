@@ -7,242 +7,431 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Aide pour RM - Quartiers Précis & Environs</title>
+  <title>Aide pour RM</title>
   
   <style>
     :root {
-      --bg: #f8fafc;
-      --ink: #0f172a;
-      --muted: #64748b;
-      --line: #e2e8f0;
+      --bg: #f5f6f4;
+      --ink: #1d2526;
+      --muted: #65706d;
+      --line: #d8ded8;
       --panel: #ffffff;
-      --accent: #0d9488;
-      --accent-hover: #0f766e;
-      --accent-2: #ef4444;
-      --soft: #f1f5f9;
-      --shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
-      --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+      --accent: #1f7a6d;
+      --accent-2: #c5462d;
+      --warn: #c78116;
+      --good: #2f8b57;
+      --soft: #edf4f0;
+      --shadow: 0 16px 36px rgba(28, 42, 39, .10);
       color-scheme: light;
-      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      background-color: var(--bg);
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.04) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.02) 0px, transparent 50%);
+      background:
+        linear-gradient(180deg, rgba(31, 122, 109, .08), transparent 320px),
+        var(--bg);
       color: var(--ink);
-      -webkit-font-smoothing: antialiased;
     }
 
-    button, input, select { font: inherit; }
-    button { border: 0; cursor: pointer; transition: all 0.2s ease; }
+    button, input, select {
+      font: inherit;
+    }
 
-    .app { min-height: 100vh; padding: 32px 20px; }
-    .shell { max-width: 1280px; margin: 0 auto; }
+    button {
+      border: 0;
+      cursor: pointer;
+    }
 
-    .screen { display: none; }
-    .screen.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+    .app {
+      min-height: 100vh;
+      padding: 24px;
+    }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
+    .shell {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .screen {
+      display: none;
+    }
+    .screen.active {
+      display: block;
     }
 
     .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 18px;
     }
 
     .eyebrow {
       color: var(--accent);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .1em;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
       text-transform: uppercase;
-      margin: 0 0 6px;
+      margin: 0 0 8px;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(26px, 3vw, 40px);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--ink);
+      font-size: clamp(30px, 4vw, 54px);
+      line-height: .98;
+      letter-spacing: 0;
+      max-width: 760px;
     }
 
-    .toolbar { display: flex; gap: 10px; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
 
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      height: 42px;
-      padding: 0 16px;
-      border-radius: 10px;
-      background: var(--accent);
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 8px;
+      background: var(--ink);
       color: white;
-      font-weight: 600;
-      font-size: 14px;
-      box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2);
+      font-weight: 750;
+      white-space: nowrap;
     }
-    .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
 
     .btn.secondary {
       background: white;
       color: var(--ink);
       border: 1px solid var(--line);
-      box-shadow: var(--shadow);
     }
-    .btn.secondary:hover { background: var(--soft); }
 
     .btn.toulouse-special {
-      background: linear-gradient(135deg, #0d9488, #0f766e);
+      background: linear-gradient(135deg, #1f7a6d, #14554b);
       color: white;
-      border: 1px solid rgba(255,255,255,0.2);
     }
 
     .grid {
       display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 24px;
+      grid-template-columns: minmax(240px, 330px) 1fr;
+      gap: 18px;
       align-items: start;
     }
 
     .panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 8px;
       box-shadow: var(--shadow);
     }
 
-    .controls { padding: 20px; position: sticky; top: 24px; }
-    .field { display: grid; gap: 6px; margin-bottom: 16px; }
+    .controls {
+      padding: 16px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
 
     label {
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 800;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: .05em;
+      letter-spacing: .04em;
     }
 
     input, select {
       width: 100%;
-      height: 44px;
+      min-height: 42px;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: 8px;
       background: #fff;
       color: var(--ink);
-      padding: 0 14px;
+      padding: 0 12px;
       outline: none;
-      font-size: 14px;
-      transition: all 0.2s;
     }
+
     input:focus, select:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+      box-shadow: 0 0 0 3px rgba(31, 122, 109, .14);
     }
 
     .metric-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
     .metric {
       background: var(--soft);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 14px;
+      border: 1px solid #dce8e2;
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 78px;
     }
+
     .metric b {
-      display: block; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 4px; color: var(--ink);
+      display: block;
+      font-size: 24px;
+      line-height: 1;
+      margin-bottom: 6px;
     }
-    .metric span { color: var(--muted); font-size: 12px; font-weight: 500; }
 
-    .add-form { border-top: 1px solid var(--line); padding-top: 20px; margin-top: 20px; }
-    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
 
-    .table-panel { overflow: hidden; }
+    .add-form {
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .table-panel {
+      overflow: hidden;
+    }
+
     .table-head {
-      display: flex; justify-content: space-between; align-items: center; padding: 18px 20px;
-      border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.72);
     }
-    .table-head strong { font-size: 16px; font-weight: 700; }
 
-    .legend { display: flex; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 11px; font-weight: 600; }
-    .dot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; margin-right: 6px; vertical-align: middle; }
+    .table-head strong {
+      font-size: 16px;
+    }
 
-    .table-wrap { overflow: auto; max-height: calc(100vh - 180px); }
-    table { border-collapse: collapse; width: 100%; min-width: 800px; background: white; }
-    th, td { padding: 14px 16px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; font-size: 14px; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-right: 5px;
+      vertical-align: -1px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: calc(100vh - 160px);
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      min-width: 800px;
+      background: white;
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
     th {
-      position: sticky; top: 0; z-index: 2; background: #f8fafc; color: var(--muted);
-      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #fbfcfb;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      white-space: nowrap;
     }
 
-    tbody tr { transition: background 0.15s; }
-    tbody tr:hover { background: #f8fafc; }
+    tbody tr:hover {
+      background: #f8fbf8;
+    }
 
-    .rank { width: 50px; font-weight: 700; color: var(--muted); }
-    .priority { width: 6px; min-width: 6px; padding: 0; }
-    .priority div { width: 6px; height: 100%; min-height: 50px; border-radius: 0 4px 4px 0; }
+    .rank {
+      width: 56px;
+      font-weight: 900;
+      font-size: 18px;
+    }
 
-    .p-hot { background: #ef4444; }
-    .p-warm { background: #f59e0b; }
-    .p-mid { background: #eab308; }
-    .p-cool { background: #10b981; }
+    .priority {
+      width: 10px;
+      min-width: 10px;
+      padding: 0;
+    }
 
-    .city { font-weight: 700; font-size: 14px; color: var(--ink); }
-    .sub { color: var(--muted); display: block; font-size: 12px; margin-top: 2px; }
+    .priority div {
+      width: 10px;
+      min-height: 56px;
+    }
 
-    .date-cell { display: flex; gap: 6px; align-items: center; }
-    .date-cell input { height: 36px; max-width: 135px; font-size: 13px; }
+    .p-hot { background: #d13f2f; }
+    .p-warm { background: #e39423; }
+    .p-mid { background: #d0b936; }
+    .p-cool { background: #3f9b70; }
 
-    .mini { height: 36px; width: 36px; border-radius: 8px; background: var(--soft); color: var(--ink); font-weight: 700; border: 1px solid var(--line); }
-    .mini:hover { background: var(--line); }
+    .city {
+      font-weight: 850;
+      font-size: 15px;
+    }
+
+    .sub {
+      color: var(--muted);
+      display: block;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .date-cell {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .date-cell input {
+      min-height: 36px;
+      max-width: 140px;
+    }
+
+    .mini {
+      min-height: 36px;
+      width: 36px;
+      border-radius: 8px;
+      background: #edf1ef;
+      color: var(--ink);
+      font-weight: 900;
+    }
 
     .btn-link {
-      background: var(--soft); color: var(--accent); border: 1px solid transparent;
-      padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 8px; transition: all 0.2s;
+      background: var(--soft);
+      color: var(--accent);
+      border: 1px solid #dce8e2;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 6px;
     }
-    .btn-link:hover { background: rgba(13, 148, 136, 0.1); border-color: rgba(13, 148, 136, 0.2); }
+    .btn-link:hover {
+      background: #dbeae2;
+    }
 
-    .empty { padding: 40px 20px; color: var(--muted); text-align: center; font-size: 14px; }
+    .empty {
+      padding: 34px 18px;
+      color: var(--muted);
+      text-align: center;
+    }
 
     .detail-container {
-      background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 28px; box-shadow: var(--shadow-lg);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-top: 10px;
     }
+
     .detail-header {
-      display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
     }
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-    .list-box { background: #f8fafc; border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
-    .list-box h3 { margin-top: 0; margin-bottom: 14px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .list-box.nogo-box h3 { color: var(--accent-2); }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
 
-    .list-items { list-style: none; padding: 0; margin: 0 0 14px 0; display: flex; flex-direction: column; gap: 8px; }
+    .list-box {
+      background: #fbfcfb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .list-box h3 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .list-box.nogo-box h3 {
+      color: var(--accent-2);
+    }
+
+    .list-items {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 14px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
     .list-items li {
-      background: white; border: 1px solid var(--line); padding: 10px 14px; border-radius: 8px;
-      display: flex; justify-content: space-between; align-items: center; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+      background: white;
+      border: 1px solid var(--line);
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
     }
 
-    .delete-item { background: transparent; color: var(--muted); font-size: 16px; font-weight: bold; padding: 0 4px; border-radius: 4px; }
-    .delete-item:hover { color: var(--accent-2); background: rgba(239, 68, 68, 0.08); }
+    .delete-item {
+      background: transparent;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: bold;
+      padding: 0 4px;
+    }
+    .delete-item:hover {
+      color: var(--accent-2);
+    }
 
     @media (max-width: 980px) {
-      .app { padding: 16px; }
+      .app { padding: 14px; }
       .topbar, .grid, .detail-grid { grid-template-columns: 1fr; }
       .toolbar { justify-content: flex-start; }
       .controls { position: static; }
@@ -262,12 +451,12 @@
             <h1>Aide pour RM</h1>
           </div>
           <div class="toolbar">
-            <button id="openToulouseDistrictsBtn" class="btn toulouse-special">🗺️ Carte & Suivi des Quartiers</button>
-            <button id="toggleMapBtn" class="btn secondary">🗺️ Vue Carte Générale</button>
+            <button id="openToulouseDistrictsBtn" class="btn toulouse-special">🏙️ Quartiers Précis de Toulouse</button>
+            <button id="toggleMapBtn" class="btn secondary">🗺️ Vue Carte</button>
           </div>
        </header>
 
-        <div id="mapWrapper" style="display: none; height: 450px; margin-bottom: 24px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow);">
+        <div id="mapWrapper" style="display: none; height: 450px; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); z-index: 1;">
           <div id="map" style="width: 100%; height: 100%;"></div>
         </div>
 
@@ -279,8 +468,8 @@
             </div>
 
             <div class="field">
-              <label for="search">Recherche (@study, @work, @sport...)</label>
-              <input id="search" type="search" placeholder="Albi, @study, @work...">
+              <label for="search">Recherche</label>
+              <input id="search" type="search" placeholder="Albi, 31, @study...">
             </div>
 
             <div class="two">
@@ -324,7 +513,7 @@
                   <input id="newDate" type="date">
                 </div>
               </div>
-              <button class="btn" type="submit" style="width: 100%; margin-top: 6px;">Ajouter la commune</button>
+              <button class="btn" type="submit">Ajouter</button>
             </form>
           </aside>
 
@@ -360,28 +549,28 @@
         </section>
       </div>
 
-      <!-- ÉCRAN DÉTAIL VILLE CLASSIQUE (AVEC CARTE ENVIRONS 30 MIN) -->
+      <!-- ÉCRAN DÉTAIL VILLE CLASSIQUE -->
       <div id="detailScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
             <div>
               <p class="eyebrow" id="detailDept">Département --</p>
-              <h1 id="detailCityName" title="Cliquez pour trouver les villes à proximité (~30 min)" style="cursor: pointer; position: relative;">Nom de la Ville</h1>
-              <div id="nearbyCitiesContainer" style="margin-top: 8px; font-size: 13px; color: var(--muted);"></div>
+              <h1 id="detailCityName" title="Cliquez pour trouver les villes à proximité" style="cursor: pointer; position: relative;">Nom de la Ville</h1>
+              <div id="nearbyCitiesContainer" style="margin-top: 10px; font-size: 13px; color: var(--muted);"></div>
             </div>
            <button class="btn secondary" id="backToMainBtn">← Retour au tableau</button>
           </header>
 
-          <div id="detailMapWrapper" style="display: none; height: 320px; margin-bottom: 24px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow);">
+          <div id="detailMapWrapper" style="display: none; height: 300px; margin-bottom: 24px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line);">
             <div id="detailMap" style="width: 100%; height: 100%;"></div>
           </div>
 
           <div class="detail-grid">
             <div class="list-box">
-              <h3>✓ Lieux visités (Fait / ex: @study, @work, @sport)</h3>
+              <h3>✓ Lieux visités (Fait)</h3>
               <ul class="list-items" id="visitedList"></ul>
               <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addVisitedInput" placeholder="Ajouter un lieu ou tag (@study)... (Entrée)">
+                <input type="text" id="addVisitedInput" placeholder="Ajouter un lieu visité... (Entrée)">
               </div>
             </div>
 
@@ -393,22 +582,53 @@
               </div>
             </div>
           </div>
+
+          <div class="strategy-section" style="margin-top: 32px; border-top: 1px solid var(--line); padding-top: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h2>🎯 Opportunités de consommation</h2>
+              <button id="generateAiTargetsBtn" class="btn">#giiiveyouwings</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+              <div class="list-box">
+                <h3 style="color: #2c3e50;">💼 @work </h3>
+                <ul class="list-items" id="workSuggestionsList">
+                  <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
+                </ul>
+              </div>
+
+              <div class="list-box">
+                <h3 style="color: #e67e22;">🏋️ @sport</h3>
+                <ul class="list-items" id="sportSuggestionsList">
+                  <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
+                </ul>
+              </div>
+
+              <div class="list-box">
+                <h3 style="color: #8e44ad;">📚 @study </h3>
+                <ul class="list-items" id="studySuggestionsList">
+                  <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <!-- ÉCRAN CARTE & SUIVI DES QUARTIERS DE TOULOUSE -->
+      <!-- ÉCRAN CARTE & SUIVI DES MICRO-QUARTIERS DE TOULOUSE -->
       <div id="toulouseDistrictsScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
             <div>
               <p class="eyebrow">Haute-Garonne (31) - Échantillonnage Précis</p>
               <h1>Carte & Suivi des Quartiers de Toulouse</h1>
-              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Modifiez vos dates de passage ci-dessous (Jolimont et La Roseraie sont bien séparés).</div>
+              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Jolimont et La Roseraie sont bien séparés. Triez par dernière visite ou gérez vos lieux.</div>
             </div>
             <button class="btn secondary" id="backFromToulouseDistrictsBtn">← Retour au tableau général</button>
           </header>
 
-          <div style="height: 480px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); position: relative; margin-bottom: 24px;">
+          <div style="height: 480px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); position: relative; margin-bottom: 24px;">
             <div id="toulouseDistrictsMap" style="width: 100%; height: 100%;"></div>
           </div>
 
@@ -441,7 +661,7 @@
         </div>
       </div>
 
-      <!-- ÉCRAN DÉTAIL D'UN QUARTIER PRÉCIS -->
+      <!-- ÉCRAN DÉTAIL D'UN QUARTIER DE TOULOUSE -->
       <div id="districtDetailScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
@@ -454,10 +674,10 @@
 
           <div class="detail-grid">
             <div class="list-box">
-              <h3>✓ Lieux visités (Fait / ex: @study, @work, @sport)</h3>
+              <h3>✓ Lieux visités (Fait)</h3>
               <ul class="list-items" id="districtVisitedList"></ul>
               <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addDistrictVisitedInput" placeholder="Ajouter un lieu ou tag (@study)... (Entrée)">
+                <input type="text" id="addDistrictVisitedInput" placeholder="Ajouter un lieu... (Entrée)">
               </div>
             </div>
 
@@ -484,7 +704,7 @@
 
     const state = {
       cities: [],
-      districts: [], 
+      districts: [],
       search: "",
       department: "all",
       sortMode: "date",
@@ -520,11 +740,11 @@
       mapWrapper: document.querySelector("#mapWrapper"),
       nearbyCitiesContainer: document.querySelector("#nearbyCitiesContainer"),
       detailMapWrapper: document.querySelector("#detailMapWrapper"),
+      generateAiTargetsBtn: document.querySelector("#generateAiTargetsBtn"),
       
       openToulouseDistrictsBtn: document.querySelector("#openToulouseDistrictsBtn"),
       backFromToulouseDistrictsBtn: document.querySelector("#backFromToulouseDistrictsBtn"),
       backToToulouseDistrictsBtn: document.querySelector("#backToToulouseDistrictsBtn"),
-      
       districtsRows: document.querySelector("#districtsRows"),
       districtDetailName: document.querySelector("#districtDetailName"),
       districtVisitedList: document.querySelector("#districtVisitedList"),
@@ -535,7 +755,7 @@
 
     async function loadCitiesFromDB() {
       const { data, error } = await db.from('cities').select('*');
-      if (error) { console.error("Erreur chargement:", error); return []; }
+      if (error) { console.error("Erreur de chargement:", error); return []; }
       return data || [];
     }
 
@@ -574,11 +794,24 @@
     }
 
     async function updateCityInDB(cityId, updates) {
-      await db.from('cities').update(updates).eq('id', cityId);
+      const { error } = await db.from('cities').update(updates).eq('id', cityId);
+      if (error) console.error("Erreur de mise à jour:", error);
     }
 
     async function updateDistrictInDB(districtId, updates) {
-      await db.from('toulouse_districts').update(updates).eq('id', districtId);
+      const { error } = await db.from('toulouse_districts').update(updates).eq('id', districtId);
+      if (error) console.error("Erreur de mise à jour quartier:", error);
+    }
+
+    async function deleteCityFromDB(cityId) {
+      const { error } = await db.from('cities').delete().eq('id', cityId);
+      if (error) console.error("Erreur de suppression:", error);
+    }
+
+    async function addCityToDB(newCity) {
+      const { data, error } = await db.from('cities').insert([newCity]).select();
+      if (error) { console.error("Erreur d'ajout:", error); return null; }
+      return data[0];
     }
 
     function daysSince(dateString) {
@@ -588,19 +821,26 @@
       return Math.max(0, Math.round((now - date) / 86400000));
     }
 
-    function formatNumber(value) { return new Intl.NumberFormat("fr-FR").format(value); }
+    function formatMinutes(minutes) {
+      if (minutes < 60) return `${minutes} min`;
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+    }
 
-    function priorityClassByAge(age) {
-      if (age === 9999 || age > 365) return "p-hot";
-      if (age >= 183) return "p-warm";
-      if (age >= 61) return "p-mid";
-      return "p-cool";
+    function formatNumber(value) {
+      return new Intl.NumberFormat("fr-FR").format(value);
     }
 
     function enrichedCities() {
+      const maxAge = Math.max(...state.cities.map(city => daysSince(city.lastVisit)), 1);
+      const maxPop = Math.max(...state.cities.map(city => Number(city.population)), 1);
       return state.cities.map(city => {
         const age = daysSince(city.lastVisit);
-        return { ...city, age };
+        const dateScore = age / maxAge;
+        const populationScore = Number(city.population) / maxPop;
+        const score = Math.round(((dateScore * state.dateWeight) + (populationScore * state.populationWeight)) * 100 / (state.dateWeight + state.populationWeight));
+        return { ...city, age, score };
       });
     }
 
@@ -632,6 +872,13 @@
       return list.sort(sorters[state.sortMode]);
     }
 
+    function priorityClassByAge(age) {
+      if (age === 9999 || age > 365) return "p-hot";
+      if (age >= 183) return "p-warm";
+      if (age >= 61) return "p-mid";
+      return "p-cool";
+    }
+
     function renderDepartmentFilter() {
       const selected = state.department;
       const departments = [...new Set(state.cities.map(city => city.department))].sort((a, b) => a.localeCompare(b, "fr", { numeric: true }));
@@ -643,27 +890,28 @@
     function render() {
       renderDepartmentFilter();
       const list = filteredCities();
-      const avg = list.length ? Math.round(list.reduce((sum, city) => sum + daysSince(city.lastVisit), 0) / list.length) : 0;
+      const avg = list.length ? Math.round(list.reduce((sum, city) => sum + city.age, 0) / list.length) : 0;
       els.cityCount.textContent = list.length;
       els.avgAge.textContent = `${avg} j`;
       els.resultTitle.textContent = `${list.length} commune${list.length > 1 ? "s" : ""}`;
       els.emptyState.hidden = list.length !== 0;
       
       els.rows.innerHTML = list.map((city, index) => {
-        const age = daysSince(city.lastVisit);
         const countVisited = (city.visitedPlaces || []).length;
         const countNogo = (city.noGo || []).length;
-        const labelContent = (countVisited || countNogo) ? `${countVisited} Fait / ${countNogo} No Go` : "Vide";
+        const labelContent = (countVisited || countNogo) 
+          ? `${countVisited} Fait / ${countNogo} No Go` 
+          : "Vide";
 
         return `
           <tr>
-            <td class="priority"><div class="${priorityClassByAge(age)}"></div></td>
+            <td class="priority"><div class="${priorityClassByAge(city.age)}"></div></td>
             <td class="rank">${index + 1}</td>
             <td>
               <span class="city">${city.name}</span>
               <span class="sub">Département ${city.department}</span>
             </td>
-            <td>${city.minutes} min</td>
+            <td>${formatMinutes(Number(city.minutes))}</td>
             <td>${formatNumber(Number(city.population))}</td>
             <td>
               <div class="date-cell">
@@ -671,7 +919,7 @@
                 <button class="mini" title="Marquer aujourd'hui" data-action="today" data-id="${city.id}">✓</button>
               </div>
             </td>
-            <td>${age === 9999 ? "Jamais" : formatNumber(age)}</td>
+            <td>${city.age === 9999 ? "Jamais" : formatNumber(city.age)}</td>
             <td>
               <button class="btn-link" data-action="open-details" data-id="${city.id}">
                 Détails (${labelContent}) →
@@ -699,47 +947,55 @@
       if (screenName === 'districtDetail') els.districtDetailScreen.classList.add("active");
     }
 
-    let detailMap = null;
+    let dMap = null;
+    let dMarkersLayer = null;
+
     async function openCityDetails(cityId) {
       const city = state.cities.find(c => c.id === cityId);
       if (!city) return;
+      
       state.currentSelectedCityId = cityId;
       els.detailCityName.textContent = city.name;
       els.detailDept.textContent = `Département ${city.department}`;
+
+      els.nearbyCitiesContainer.innerHTML = "<i>💡 Cliquez sur le nom de la ville pour voir les communes à ~30 min.</i>";
       
       renderDetailLists(city);
       switchScreen('detail');
-
-      // Recherche des communes à proximité (~30 min)
-      const nearby = state.cities.filter(c => c.id !== city.id && Math.abs(Number(c.minutes) - Number(city.minutes)) <= 15);
-      if (nearby.length > 0) {
-        els.nearbyCitiesContainer.innerHTML = `Communes proches (~30 min) : <b>` + nearby.map(c => c.name).slice(0, 4).join(", ") + `</b>`;
-      } else {
-        els.nearbyCitiesContainer.innerHTML = `<i>Aucune autre commune enregistrée dans ce rayon pour le moment.</i>`;
-      }
-
-      // Affichage de la carte de détail des environs
-      const coords = await getCoordinates(city.name, city.department);
-      if (coords) {
-        els.detailMapWrapper.style.display = "block";
-        if (!detailMap) {
-          detailMap = L.map('detailMap').setView(coords, 11);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(detailMap);
-        } else {
-          detailMap.setView(coords, 11);
-          detailMap.invalidateSize();
-        }
-        L.marker(coords).addTo(detailMap).bindPopup(`<b>${city.name}</b>`).openPopup();
-      } else {
-        els.detailMapWrapper.style.display = "none";
-      }
     }
 
     function renderDetailLists(city) {
       const vp = city.visitedPlaces || [];
       const ng = city.noGo || [];
-      els.visitedList.innerHTML = vp.length ? vp.map((place, i) => `<li><span>${place}</span><button class="delete-item" data-list="visited" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucun lieu enregistré</li>`;
-      els.nogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
+
+      els.visitedList.innerHTML = vp.length 
+        ? vp.map((place, i) => `
+            <li>
+              <span>${place}</span>
+              <button class="delete-item" data-list="visited" data-index="${i}">×</button>
+            </li>`).join("")
+        : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucun lieu enregistré</li>`;
+
+      els.nogoList.innerHTML = ng.length 
+        ? ng.map((item, i) => `
+            <li>
+              <span>${item}</span>
+              <button class="delete-item" data-list="nogo" data-index="${i}">×</button>
+            </li>`).join("")
+        : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucune zone No Go</li>`;
+    }
+
+    function closeDetails() {
+      state.currentSelectedCityId = null;
+      els.detailMapWrapper.style.display = "none"; 
+      els.nearbyCitiesContainer.innerHTML = "";
+      
+      document.getElementById("workSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
+      document.getElementById("sportSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
+      document.getElementById("studySuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
+
+      switchScreen('main');
+      render();
     }
 
     // --- CARTE & TABLEAU DES QUARTIERS DE TOULOUSE ---
@@ -769,19 +1025,16 @@
         const age = daysSince(d.lastVisit);
         const pClass = priorityClassByAge(age);
         
-        let color = "#10b981";
-        if (pClass === "p-hot") color = "#ef4444";
-        if (pClass === "p-warm") color = "#f59e0b";
-        if (pClass === "p-mid") color = "#eab308";
+        let color = "#3f9b70";
+        if (pClass === "p-hot") color = "#d13f2f";
+        if (pClass === "p-warm") color = "#e39423";
+        if (pClass === "p-mid") color = "#d0b936";
 
-        const markerHtml = `<div style="background-color: ${color}; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; border: 2px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.2);">${age === 9999 ? '?' : age + 'j'}</div>`;
+        const markerHtml = `<div style="background-color: ${color}; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 11px; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);">${age === 9999 ? '?' : age + 'j'}</div>`;
         const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [28, 28], iconAnchor: [14, 14] });
 
-        const vCount = (d.visitedPlaces || []).length;
-        const nCount = (d.noGo || []).length;
-
         const popupDiv = document.createElement("div");
-        popupDiv.innerHTML = `<b style="font-size: 14px; color: var(--ink);">${d.name}</b><br><span style="color: var(--muted); font-size: 12px;">Dernier passage : ${d.lastVisit || 'Jamais'} (${age === 9999 ? 'Jamais' : age + ' jours'})</span><br>`;
+        popupDiv.innerHTML = `<b>${d.name}</b><br>Dernier passage : ${d.lastVisit || 'Jamais'}<br>`;
         
         const btn = document.createElement("button");
         btn.className = "btn-link";
@@ -840,8 +1093,8 @@
     function renderDistrictLists(district) {
       const vp = district.visitedPlaces || [];
       const ng = district.noGo || [];
-      els.districtVisitedList.innerHTML = vp.length ? vp.map((p, i) => `<li><span>${p}</span><button class="delete-item" data-list="d-visited" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucun lieu enregistré</li>`;
-      els.districtNogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="d-nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed; background: transparent;">Aucune zone No Go</li>`;
+      els.districtVisitedList.innerHTML = vp.length ? vp.map((p, i) => `<li><span>${p}</span><button class="delete-item" data-list="d-visited" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucun lieu enregistré</li>`;
+      els.districtNogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="d-nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucune zone No Go</li>`;
     }
 
     els.districtsRows.addEventListener("click", async event => {
@@ -856,7 +1109,7 @@
         district.lastVisit = today;
         renderDistrictsTable();
         updateDistrictsMapMarkers();
-        try { await updateDistrictInDB(dId, { lastVisit: today }); } catch(e){}
+        await updateDistrictInDB(dId, { lastVisit: today });
       }
     });
 
@@ -868,93 +1121,13 @@
       district.lastVisit = event.target.value;
       renderDistrictsTable();
       updateDistrictsMapMarkers();
-      try { await updateDistrictInDB(dId, { lastVisit: event.target.value }); } catch(e){}
+      await updateDistrictInDB(dId, { lastVisit: event.target.value });
     });
 
     els.openToulouseDistrictsBtn.addEventListener("click", () => switchScreen('toulouseDistricts'));
     els.backFromToulouseDistrictsBtn.addEventListener("click", () => switchScreen('main'));
     els.backToToulouseDistrictsBtn.addEventListener("click", () => switchScreen('toulouseDistricts'));
-    els.backToMainBtn.addEventListener("click", () => switchScreen('main'));
-
-    els.addVisitedInput.addEventListener("keydown", async event => {
-      if (event.key !== "Enter" || !event.target.value.trim()) return;
-      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
-      if (city) {
-        if (!city.visitedPlaces) city.visitedPlaces = [];
-        city.visitedPlaces.push(event.target.value.trim());
-        event.target.value = "";
-        renderDetailLists(city);
-        try { await updateCityInDB(city.id, { visitedPlaces: city.visitedPlaces }); } catch(e){}
-      }
-    });
-
-    els.addNogoInput.addEventListener("keydown", async event => {
-      if (event.key !== "Enter" || !event.target.value.trim()) return;
-      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
-      if (city) {
-        if (!city.noGo) city.noGo = [];
-        city.noGo.push(event.target.value.trim());
-        event.target.value = "";
-        renderDetailLists(city);
-        try { await updateCityInDB(city.id, { noGo: city.noGo }); } catch(e){}
-      }
-    });
-
-    els.addDistrictVisitedInput.addEventListener("keydown", async event => {
-      if (event.key !== "Enter" || !event.target.value.trim()) return;
-      const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
-      if (district) {
-        if (!district.visitedPlaces) district.visitedPlaces = [];
-        district.visitedPlaces.push(event.target.value.trim());
-        event.target.value = "";
-        renderDistrictLists(district);
-        try { await updateDistrictInDB(district.id, { visitedPlaces: district.visitedPlaces }); } catch(e){}
-      }
-    });
-
-    els.addDistrictNogoInput.addEventListener("keydown", async event => {
-      if (event.key !== "Enter" || !event.target.value.trim()) return;
-      const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
-      if (district) {
-        if (!district.noGo) district.noGo = [];
-        district.noGo.push(event.target.value.trim());
-        event.target.value = "";
-        renderDistrictLists(district);
-        try { await updateDistrictInDB(district.id, { noGo: district.noGo }); } catch(e){}
-      }
-    });
-
-    document.querySelectorAll("#visitedList, #nogoList").forEach(ul => {
-      ul.addEventListener("click", async event => {
-        const btn = event.target.closest(".delete-item");
-        if (!btn) return;
-        const index = parseInt(btn.dataset.index, 10);
-        const listType = btn.dataset.list;
-        const city = state.cities.find(c => c.id === state.currentSelectedCityId);
-        if (city) {
-          if (listType === "visited") city.visitedPlaces.splice(index, 1);
-          if (listType === "nogo") city.noGo.splice(index, 1);
-          renderDetailLists(city);
-          try { await updateCityInDB(city.id, { visitedPlaces: city.visitedPlaces, noGo: city.noGo }); } catch(e){}
-        }
-      });
-    });
-
-    document.querySelectorAll("#districtVisitedList, #districtNogoList").forEach(ul => {
-      ul.addEventListener("click", async event => {
-        const btn = event.target.closest(".delete-item");
-        if (!btn) return;
-        const index = parseInt(btn.dataset.index, 10);
-        const listType = btn.dataset.list;
-        const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
-        if (district) {
-          if (listType === "d-visited") district.visitedPlaces.splice(index, 1);
-          if (listType === "d-nogo") district.noGo.splice(index, 1);
-          renderDistrictLists(district);
-          try { await updateDistrictInDB(district.id, { visitedPlaces: district.visitedPlaces, noGo: district.noGo }); } catch(e){}
-        }
-      });
-    });
+    els.backToMainBtn.addEventListener("click", closeDetails);
 
     els.search.addEventListener("input", e => { state.search = e.target.value; render(); });
     els.departmentFilter.addEventListener("change", e => { state.department = e.target.value; render(); });
@@ -967,7 +1140,9 @@
       const city = state.cities.find(item => item.id === cityId);
       if (!city) return;
 
-      if (target.dataset.action === "open-details") openCityDetails(cityId);
+      if (target.dataset.action === "open-details") {
+        openCityDetails(cityId);
+      }
       if (target.dataset.action === "today") {
         const today = todayIso();
         city.lastVisit = today;
@@ -977,16 +1152,233 @@
     });
 
     els.rows.addEventListener("change", async event => {
-      if (event.target.dataset.action !== "date") return;
+      const action = event.target.dataset.action;
+      if (action !== "date") return;
       const cityId = event.target.dataset.id;
       const city = state.cities.find(item => item.id === cityId);
       if (!city) return;
-      city.lastVisit = event.target.value;
+      
+      const newDate = event.target.value;
+      city.lastVisit = newDate;
       render();
-      await updateCityInDB(cityId, { lastVisit: event.target.value });
+      await updateCityInDB(cityId, { lastVisit: newDate });
     });
 
-    let map = null, markersLayer = null, cityCoordinates = {};
+    els.addVisitedInput.addEventListener("keydown", async event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+      if (city) {
+        if (!city.visitedPlaces) city.visitedPlaces = [];
+        city.visitedPlaces.push(event.target.value.trim());
+        event.target.value = "";
+        renderDetailLists(city);
+        await updateCityInDB(city.id, { visitedPlaces: city.visitedPlaces });
+      }
+    });
+
+    els.addNogoInput.addEventListener("keydown", async event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+      if (city) {
+        if (!city.noGo) city.noGo = [];
+        city.noGo.push(event.target.value.trim());
+        event.target.value = "";
+        renderDetailLists(city);
+        await updateCityInDB(city.id, { noGo: city.noGo });
+      }
+    });
+
+    els.addDistrictVisitedInput.addEventListener("keydown", async event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
+      if (district) {
+        if (!district.visitedPlaces) district.visitedPlaces = [];
+        district.visitedPlaces.push(event.target.value.trim());
+        event.target.value = "";
+        renderDistrictLists(district);
+        await updateDistrictInDB(district.id, { visitedPlaces: district.visitedPlaces });
+      }
+    });
+
+    els.addDistrictNogoInput.addEventListener("keydown", async event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
+      if (district) {
+        if (!district.noGo) district.noGo = [];
+        district.noGo.push(event.target.value.trim());
+        event.target.value = "";
+        renderDistrictLists(district);
+        await updateDistrictInDB(district.id, { noGo: district.noGo });
+      }
+    });
+
+    document.querySelectorAll("#visitedList, #nogoList").forEach(ul => {
+      ul.addEventListener("click", async event => {
+        const btn = event.target.closest(".delete-item");
+        if (!btn) return;
+        const index = parseInt(btn.dataset.index, 10);
+        const listType = btn.dataset.list;
+        const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+        
+        if (city) {
+          if (listType === "visited") {
+            city.visitedPlaces.splice(index, 1);
+            renderDetailLists(city);
+            await updateCityInDB(city.id, { visitedPlaces: city.visitedPlaces });
+          }
+          if (listType === "nogo") {
+            city.noGo.splice(index, 1);
+            renderDetailLists(city);
+            await updateCityInDB(city.id, { noGo: city.noGo });
+          }
+        }
+      });
+    });
+
+    document.querySelectorAll("#districtVisitedList, #districtNogoList").forEach(ul => {
+      ul.addEventListener("click", async event => {
+        const btn = event.target.closest(".delete-item");
+        if (!btn) return;
+        const index = parseInt(btn.dataset.index, 10);
+        const listType = btn.dataset.list;
+        const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
+        
+        if (district) {
+          if (listType === "d-visited") {
+            district.visitedPlaces.splice(index, 1);
+            renderDistrictLists(district);
+            await updateDistrictInDB(district.id, { visitedPlaces: district.visitedPlaces });
+          }
+          if (listType === "d-nogo") {
+            district.noGo.splice(index, 1);
+            renderDistrictLists(district);
+            await updateDistrictInDB(district.id, { noGo: district.noGo });
+          }
+        }
+      });
+    });
+
+    els.addForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const newCity = {
+        name: document.querySelector("#newName").value.trim(),
+        department: document.querySelector("#newDepartment").value.trim(),
+        population: Number(document.querySelector("#newPopulation").value),
+        minutes: Number(document.querySelector("#newTime").value),
+        lastVisit: document.querySelector("#newDate").value || null,
+        visitedPlaces: [],
+        noGo: []
+      };
+      
+      event.currentTarget.reset();
+      
+      const savedCity = await addCityToDB(newCity);
+      if (savedCity) {
+        state.cities.push(savedCity);
+        render();
+      }
+    });
+
+    function getDistanceKm(lat1, lon1, lat2, lon2) {
+      const R = 6371; 
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    els.detailCityName.addEventListener("click", async () => {
+      const currentCityId = state.currentSelectedCityId;
+      if (!currentCityId) return;
+
+      const currentCity = state.cities.find(c => c.id === currentCityId);
+      els.nearbyCitiesContainer.innerHTML = "<i>⏳ Création de la carte en cours...</i>";
+      
+      els.detailMapWrapper.style.display = "block";
+
+      if (!dMap) {
+        dMap = L.map('detailMap');
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(dMap);
+        dMarkersLayer = L.layerGroup().addTo(dMap);
+      }
+      
+      setTimeout(() => dMap.invalidateSize(), 100);
+      dMarkersLayer.clearLayers();
+
+      const currentCoords = await getCoordinates(currentCity.name, currentCity.department);
+      if (!currentCoords) {
+        els.nearbyCitiesContainer.innerHTML = "<span style='color: var(--accent-2)'>Impossible de localiser cette commune.</span>";
+        return;
+      }
+
+      let nearby = [];
+      await Promise.all(state.cities.map(async (otherCity) => {
+        if (otherCity.id === currentCity.id) return;
+        const coords = await getCoordinates(otherCity.name, otherCity.department);
+        if (coords) {
+          const dist = getDistanceKm(currentCoords[0], currentCoords[1], coords[0], coords[1]);
+          if (dist <= 25) nearby.push({ city: otherCity, distance: dist, coords: coords });
+        }
+      }));
+
+      const currentHtml = `<div style="background-color: var(--ink); width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5);"></div>`;
+      const currentIcon = L.divIcon({ html: currentHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
+      L.marker(currentCoords, { icon: currentIcon, zIndexOffset: 1000 })
+        .bindPopup(`<b>${currentCity.name}</b><br>📍 Ville sélectionnée`)
+        .addTo(dMarkersLayer);
+
+      let bounds = L.latLngBounds([currentCoords]);
+
+      nearby.forEach(item => {
+        const pClass = priorityClassByAge(item.city.age);
+        let color = "#3f9b70"; 
+        if (pClass === "p-hot") color = "#d13f2f"; 
+        if (pClass === "p-warm") color = "#e39423"; 
+        if (pClass === "p-mid") color = "#d0b936"; 
+
+        const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
+        const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
+
+        const popupDiv = document.createElement("div");
+        popupDiv.innerHTML = `<b>${item.city.name}</b><br>🚗 ~${Math.round(item.distance)} km`;
+        
+        const btn = document.createElement("button");
+        btn.className = "btn-link";
+        btn.style.marginTop = "8px";
+        btn.innerText = "Voir détails →";
+        
+        btn.onclick = () => {
+            closeDetails();            
+            openCityDetails(item.city.id); 
+        };
+        
+        popupDiv.appendChild(btn);
+
+        L.marker(item.coords, { icon: customIcon })
+          .bindPopup(popupDiv)
+          .addTo(dMarkersLayer);
+        
+        bounds.extend(item.coords);
+      });
+
+      if (nearby.length > 0) {
+        dMap.fitBounds(bounds, { padding: [40, 40] });
+        els.nearbyCitiesContainer.innerHTML = `<span style="color: var(--accent); font-weight: 800;">📍 ${nearby.length} communes à ~30 min affichées sur la carte.</span>`;
+      } else {
+        dMap.setView(currentCoords, 11);
+        els.nearbyCitiesContainer.innerHTML = "Aucune autre commune de votre liste n'est à moins de 30 min.";
+      }
+    });
+
+    let map = null;
+    let markersLayer = null;
+    let cityCoordinates = {}; 
+    let mapUpdateId = 0;
+
     async function getCoordinates(cityName, dept) {
       if (cityCoordinates[cityName]) return cityCoordinates[cityName];
       try {
@@ -997,39 +1389,55 @@
           cityCoordinates[cityName] = coords;
           return coords;
         }
-      } catch (e) {}
+      } catch (e) { console.error("Erreur géolocalisation pour", cityName); }
       return null;
     }
 
     async function updateMap() {
       if (!map) {
-        map = L.map('map').setView([43.6047, 1.4442], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+        map = L.map('map').setView([43.6047, 1.4442], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
         markersLayer = L.layerGroup().addTo(map);
       }
+      
+      const currentUpdateId = ++mapUpdateId; 
       markersLayer.clearLayers();
-      for (const city of filteredCities()) {
+      const list = filteredCities(); 
+
+      for (const city of list) {
+        if (currentUpdateId !== mapUpdateId) return; 
+        
         const coords = await getCoordinates(city.name, city.department);
         if (coords) {
-          const age = daysSince(city.lastVisit);
-          const pClass = priorityClassByAge(age);
-          let color = "#10b981";
-          if (pClass === "p-hot") color = "#ef4444";
-          if (pClass === "p-warm") color = "#f59e0b";
-          if (pClass === "p-mid") color = "#eab308";
+          const pClass = priorityClassByAge(city.age);
+          let color = "#3f9b70"; 
+          if (pClass === "p-hot") color = "#d13f2f"; 
+          if (pClass === "p-warm") color = "#e39423"; 
+          if (pClass === "p-mid") color = "#d0b936"; 
+
           const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
           const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
-          
+
           const popupDiv = document.createElement("div");
-          popupDiv.innerHTML = `<b>${city.name}</b> (${city.department})<br>Passage : ${age === 9999 ? "Jamais" : age + " jours"}<br>`;
+          popupDiv.innerHTML = `<b>${city.name}</b> (${city.department})<br>Passage : ${city.age === 9999 ? "Jamais" : city.age + " jours"}<br>`;
+          
           const detailBtn = document.createElement("button");
           detailBtn.className = "btn-link";
           detailBtn.style.marginTop = "8px";
           detailBtn.innerText = "Voir détails →";
-          detailBtn.onclick = () => { map.closePopup(); openCityDetails(city.id); };
+          
+          detailBtn.onclick = () => {
+             map.closePopup(); 
+             openCityDetails(city.id); 
+          };
+          
           popupDiv.appendChild(detailBtn);
 
-          L.marker(coords, { icon: customIcon }).bindPopup(popupDiv).addTo(markersLayer);
+          L.marker(coords, { icon: customIcon })
+            .bindPopup(popupDiv)
+            .addTo(markersLayer);
         }
       }
     }
@@ -1037,18 +1445,62 @@
     els.toggleMapBtn.addEventListener("click", () => {
       const isHidden = els.mapWrapper.style.display === "none";
       els.mapWrapper.style.display = isHidden ? "block" : "none";
-      if (isHidden) { if (!map) updateMap(); else { updateMap(); setTimeout(() => map.invalidateSize(), 100); } }
+      if (isHidden) {
+        if (!map) updateMap();
+        else {
+          updateMap();
+          setTimeout(() => map.invalidateSize(), 100); 
+        }
+      }
     });
 
     async function initApp() {
-      els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Chargement...</td></tr>';
+      els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Chargement depuis Supabase...</td></tr>';
       [state.cities, state.districts] = await Promise.all([loadCitiesFromDB(), loadDistrictsFromDB()]);
+      
       if (state.cities.length === 0) {
-        els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Base de données vide.</td></tr>';
+          els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">La base de données est vide.</td></tr>';
       } else {
-        render();
+          render();
       }
     }
+
+    els.generateAiTargetsBtn.addEventListener("click", async () => {
+      const currentCity = state.cities.find(c => c.id === state.currentSelectedCityId);
+      if (!currentCity) return;
+
+      const lists = { work: "workSuggestionsList", sport: "sportSuggestionsList", study: "studySuggestionsList" };
+      Object.values(lists).forEach(id => document.getElementById(id).innerHTML = "<li>Recherche...</li>");
+
+      const coords = await getCoordinates(currentCity.name, currentCity.department);
+      if (!coords) return alert("Position introuvable");
+
+      const query = `[out:json][timeout:15];(
+        node["shop"](around:3000,${coords[0]},${coords[1]});
+        node["craft"](around:3000,${coords[0]},${coords[1]});
+        node["leisure"~"fitness_centre|sports_centre|pitch|dance"](around:3000,${coords[0]},${coords[1]});
+        node["sport"="wakeboarding"](around:3000,${coords[0]},${coords[1]});
+        node["amenity"~"university|college"](around:3000,${coords[0]},${coords[1]});
+        );out center 100;`;
+
+      try {
+        const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
+        const data = await res.json();
+        const all = data.elements.filter(e => e.tags?.name);
+
+        document.getElementById(lists.work).innerHTML = all.filter(e => e.tags.shop || e.tags.craft).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
+
+        document.getElementById(lists.sport).innerHTML = all.filter(e => 
+            (["fitness_centre", "sports_centre", "pitch", "dance"].includes(e.tags.leisure) || e.tags.sport === "wakeboarding") 
+            && !e.tags.name.toLowerCase().includes("basic")
+        ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
+
+        document.getElementById(lists.study).innerHTML = all.filter(e => 
+            ["university", "college"].includes(e.tags.amenity)
+        ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
+
+      } catch (e) { alert("Erreur lors de la recherche"); }
+    });
 
     initApp();
   </script>
