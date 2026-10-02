@@ -555,7 +555,7 @@
           <header class="detail-header">
             <div>
               <p class="eyebrow" id="detailDept">Département --</p>
-              <h1 id="detailCityName" title="Cliquez pour trouver les villes à proximité" style="cursor: pointer; position: relative;">Nom de la Ville</h1>
+              <h1 id="detailCityName" title="Cliquez pour trouver les villes à proximité (~30 min)" style="cursor: pointer; position: relative;">Nom de la Ville</h1>
               <div id="nearbyCitiesContainer" style="margin-top: 10px; font-size: 13px; color: var(--muted);"></div>
             </div>
            <button class="btn secondary" id="backToMainBtn">← Retour au tableau</button>
@@ -570,7 +570,7 @@
               <h3>✓ Lieux visités (Fait)</h3>
               <ul class="list-items" id="visitedList"></ul>
               <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addVisitedInput" placeholder="Ajouter un lieu visité... (Entrée)">
+                <input type="text" id="addVisitedInput" placeholder="Ajouter un lieu ou tag (@study)... (Entrée)">
               </div>
             </div>
 
@@ -677,7 +677,7 @@
               <h3>✓ Lieux visités (Fait)</h3>
               <ul class="list-items" id="districtVisitedList"></ul>
               <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addDistrictVisitedInput" placeholder="Ajouter un lieu... (Entrée)">
+                <input type="text" id="addDistrictVisitedInput" placeholder="Ajouter un lieu ou tag (@study)... (Entrée)">
               </div>
             </div>
 
@@ -801,11 +801,6 @@
     async function updateDistrictInDB(districtId, updates) {
       const { error } = await db.from('toulouse_districts').update(updates).eq('id', districtId);
       if (error) console.error("Erreur de mise à jour quartier:", error);
-    }
-
-    async function deleteCityFromDB(cityId) {
-      const { error } = await db.from('cities').delete().eq('id', cityId);
-      if (error) console.error("Erreur de suppression:", error);
     }
 
     async function addCityToDB(newCity) {
@@ -946,9 +941,6 @@
       }
       if (screenName === 'districtDetail') els.districtDetailScreen.classList.add("active");
     }
-
-    let dMap = null;
-    let dMarkersLayer = null;
 
     async function openCityDetails(cityId) {
       const city = state.cities.find(c => c.id === cityId);
@@ -1288,6 +1280,9 @@
                 Math.sin(dLon/2) * Math.sin(dLon/2);
       return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
+
+    let dMap = null;
+    let dMarkersLayer = null;
 
     els.detailCityName.addEventListener("click", async () => {
       const currentCityId = state.currentSelectedCityId;
