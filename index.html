@@ -7,7 +7,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Aide pour RM - Quartiers Précis de Toulouse</title>
+  <title>Aide pour RM - Quartiers Précis & Environs</title>
   
   <style>
     :root {
@@ -279,8 +279,8 @@
             </div>
 
             <div class="field">
-              <label for="search">Recherche</label>
-              <input id="search" type="search" placeholder="Albi, 31, Tarn...">
+              <label for="search">Recherche (@study, @work, @sport...)</label>
+              <input id="search" type="search" placeholder="Albi, @study, @work...">
             </div>
 
             <div class="two">
@@ -360,13 +360,13 @@
         </section>
       </div>
 
-      <!-- ÉCRAN DÉTAIL VILLE CLASSIQUE -->
+      <!-- ÉCRAN DÉTAIL VILLE CLASSIQUE (AVEC CARTE ENVIRONS 30 MIN) -->
       <div id="detailScreen" class="screen">
         <div class="detail-container">
           <header class="detail-header">
             <div>
               <p class="eyebrow" id="detailDept">Département --</p>
-              <h1 id="detailCityName" title="Cliquez pour trouver les villes à proximité" style="cursor: pointer; position: relative;">Nom de la Ville</h1>
+              <h1 id="detailCityName" title="Cliquez pour trouver les villes à proximité (~30 min)" style="cursor: pointer; position: relative;">Nom de la Ville</h1>
               <div id="nearbyCitiesContainer" style="margin-top: 8px; font-size: 13px; color: var(--muted);"></div>
             </div>
            <button class="btn secondary" id="backToMainBtn">← Retour au tableau</button>
@@ -378,10 +378,10 @@
 
           <div class="detail-grid">
             <div class="list-box">
-              <h3>✓ Lieux visités (Fait)</h3>
+              <h3>✓ Lieux visités (Fait / ex: @study, @work, @sport)</h3>
               <ul class="list-items" id="visitedList"></ul>
               <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addVisitedInput" placeholder="Ajouter un lieu... (Entrée)">
+                <input type="text" id="addVisitedInput" placeholder="Ajouter un lieu ou tag (@study)... (Entrée)">
               </div>
             </div>
 
@@ -454,10 +454,10 @@
 
           <div class="detail-grid">
             <div class="list-box">
-              <h3>✓ Lieux visités (Fait)</h3>
+              <h3>✓ Lieux visités (Fait / ex: @study, @work, @sport)</h3>
               <ul class="list-items" id="districtVisitedList"></ul>
               <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addDistrictVisitedInput" placeholder="Ajouter un lieu... (Entrée)">
+                <input type="text" id="addDistrictVisitedInput" placeholder="Ajouter un lieu ou tag (@study)... (Entrée)">
               </div>
             </div>
 
@@ -519,6 +519,7 @@
       toggleMapBtn: document.querySelector("#toggleMapBtn"),
       mapWrapper: document.querySelector("#mapWrapper"),
       nearbyCitiesContainer: document.querySelector("#nearbyCitiesContainer"),
+      detailMapWrapper: document.querySelector("#detailMapWrapper"),
       
       openToulouseDistrictsBtn: document.querySelector("#openToulouseDistrictsBtn"),
       backFromToulouseDistrictsBtn: document.querySelector("#backFromToulouseDistrictsBtn"),
@@ -597,8 +598,6 @@
     }
 
     function enrichedCities() {
-      const maxAge = Math.max(...state.cities.map(city => daysSince(city.lastVisit)), 1);
-      const maxPop = Math.max(...state.cities.map(city => Number(city.population)), 1);
       return state.cities.map(city => {
         const age = daysSince(city.lastVisit);
         return { ...city, age };
@@ -700,15 +699,40 @@
       if (screenName === 'districtDetail') els.districtDetailScreen.classList.add("active");
     }
 
-    function openCityDetails(cityId) {
+    let detailMap = null;
+    async function openCityDetails(cityId) {
       const city = state.cities.find(c => c.id === cityId);
       if (!city) return;
       state.currentSelectedCityId = cityId;
       els.detailCityName.textContent = city.name;
       els.detailDept.textContent = `Département ${city.department}`;
-      els.nearbyCitiesContainer.innerHTML = "<i>💡 Cliquez sur le nom de la ville pour voir les communes à ~30 min.</i>";
+      
       renderDetailLists(city);
       switchScreen('detail');
+
+      // Recherche des communes à proximité (~30 min)
+      const nearby = state.cities.filter(c => c.id !== city.id && Math.abs(Number(c.minutes) - Number(city.minutes)) <= 15);
+      if (nearby.length > 0) {
+        els.nearbyCitiesContainer.innerHTML = `Communes proches (~30 min) : <b>` + nearby.map(c => c.name).slice(0, 4).join(", ") + `</b>`;
+      } else {
+        els.nearbyCitiesContainer.innerHTML = `<i>Aucune autre commune enregistrée dans ce rayon pour le moment.</i>`;
+      }
+
+      // Affichage de la carte de détail des environs
+      const coords = await getCoordinates(city.name, city.department);
+      if (coords) {
+        els.detailMapWrapper.style.display = "block";
+        if (!detailMap) {
+          detailMap = L.map('detailMap').setView(coords, 11);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(detailMap);
+        } else {
+          detailMap.setView(coords, 11);
+          detailMap.invalidateSize();
+        }
+        L.marker(coords).addTo(detailMap).bindPopup(`<b>${city.name}</b>`).openPopup();
+      } else {
+        els.detailMapWrapper.style.display = "none";
+      }
     }
 
     function renderDetailLists(city) {
@@ -725,7 +749,6 @@
     function initToulouseDistrictsMap() {
       if (!districtsMap) {
         districtsMap = L.map('toulouseDistrictsMap').setView([43.6047, 1.4442], 13);
-        // Fond OpenStreetMap standard 100% gratuit
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors'
         }).addTo(districtsMap);
@@ -777,7 +800,6 @@
     }
 
     function renderDistrictsTable() {
-      // Tri automatique par ancienneté du dernier passage (du plus ancien / jamais visité au plus récent)
       const sortedDistricts = [...state.districts].sort((a, b) => daysSince(b.lastVisit) - daysSince(a.lastVisit));
 
       els.districtsRows.innerHTML = sortedDistricts.map(d => {
@@ -854,6 +876,30 @@
     els.backToToulouseDistrictsBtn.addEventListener("click", () => switchScreen('toulouseDistricts'));
     els.backToMainBtn.addEventListener("click", () => switchScreen('main'));
 
+    els.addVisitedInput.addEventListener("keydown", async event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+      if (city) {
+        if (!city.visitedPlaces) city.visitedPlaces = [];
+        city.visitedPlaces.push(event.target.value.trim());
+        event.target.value = "";
+        renderDetailLists(city);
+        try { await updateCityInDB(city.id, { visitedPlaces: city.visitedPlaces }); } catch(e){}
+      }
+    });
+
+    els.addNogoInput.addEventListener("keydown", async event => {
+      if (event.key !== "Enter" || !event.target.value.trim()) return;
+      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+      if (city) {
+        if (!city.noGo) city.noGo = [];
+        city.noGo.push(event.target.value.trim());
+        event.target.value = "";
+        renderDetailLists(city);
+        try { await updateCityInDB(city.id, { noGo: city.noGo }); } catch(e){}
+      }
+    });
+
     els.addDistrictVisitedInput.addEventListener("keydown", async event => {
       if (event.key !== "Enter" || !event.target.value.trim()) return;
       const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
@@ -876,6 +922,22 @@
         renderDistrictLists(district);
         try { await updateDistrictInDB(district.id, { noGo: district.noGo }); } catch(e){}
       }
+    });
+
+    document.querySelectorAll("#visitedList, #nogoList").forEach(ul => {
+      ul.addEventListener("click", async event => {
+        const btn = event.target.closest(".delete-item");
+        if (!btn) return;
+        const index = parseInt(btn.dataset.index, 10);
+        const listType = btn.dataset.list;
+        const city = state.cities.find(c => c.id === state.currentSelectedCityId);
+        if (city) {
+          if (listType === "visited") city.visitedPlaces.splice(index, 1);
+          if (listType === "nogo") city.noGo.splice(index, 1);
+          renderDetailLists(city);
+          try { await updateCityInDB(city.id, { visitedPlaces: city.visitedPlaces, noGo: city.noGo }); } catch(e){}
+        }
+      });
     });
 
     document.querySelectorAll("#districtVisitedList, #districtNogoList").forEach(ul => {
