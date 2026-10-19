@@ -120,6 +120,11 @@
     .s-mid { color: var(--mid); background: var(--mid-soft); }
     .s-cool { color: var(--cool); background: var(--cool-soft); }
 
+    .sync-line { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 13px; color: var(--muted); font-weight: 500; }
+    .sync-line:hover { color: var(--ink); }
+    .sync-line i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+    .sync-line b { color: var(--ink); font-weight: 700; }
+
     /* ---------- Communes : KPI ---------- */
     .page-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
     .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
@@ -327,6 +332,7 @@
         <div>
           <p class="eyebrow">Où passer en priorité</p>
           <h1>Communes</h1>
+          <a class="sync-line" id="syncInfo" href="https://rbu.redbull.com/calendar" target="_blank" rel="noopener" hidden></a>
         </div>
         <button class="btn primary" id="openAdd"><span data-icon="plus"></span><span>Ajouter<span class="long"> une commune</span></span></button>
       </div>
@@ -703,6 +709,30 @@
       return data;
     }
 
+    // Dernière synchro RBU (écrite par le favori "Synchro RBU" dans la table app_meta)
+    async function loadSyncInfo() {
+      const { data, error } = await db.from("app_meta").select("value").eq("key", "rbu_sync").maybeSingle();
+      if (error) return undefined; // table absente : on n'affiche rien
+      return data?.value ?? null;
+    }
+
+    function renderSyncInfo() {
+      const el = $("#syncInfo");
+      if (state.sync === undefined) { el.hidden = true; return; }
+      el.hidden = false;
+      if (!state.sync?.at) {
+        el.innerHTML = `<i style="background:var(--hot)"></i>Jamais synchronisé avec RBU · lance <b>🔄 Synchro RBU</b>`;
+        return;
+      }
+      const mins = Math.max(0, Math.round((Date.now() - new Date(state.sync.at)) / 60000));
+      const ago = mins < 2 ? "à l'instant" : mins < 60 ? `il y a ${mins} min` : mins < 1440 ? `il y a ${Math.round(mins / 60)} h`
+        : `il y a ${Math.round(mins / 1440)} j`;
+      const color = mins < 3 * 1440 ? "var(--cool)" : mins < 7 * 1440 ? "var(--warm)" : "var(--hot)";
+      const n = state.sync.updated ?? 0;
+      el.title = `${state.sync.missions ?? "?"} missions lues, ${state.sync.visites ?? "?"} visites — ouvrir RBU pour relancer la synchro`;
+      el.innerHTML = `<i style="background:${color}"></i>Synchro RBU <b>${ago}</b> · ${n} mise${n > 1 ? "s" : ""} à jour`;
+    }
+
     async function save(table, id, updates) {
       const { error } = await db.from(table).update(updates).eq("id", id);
       if (error) { console.error(error); toast("Échec de l'enregistrement", true); return false; }
@@ -824,6 +854,7 @@
         return;
       }
       renderKpis();
+      renderSyncInfo();
       renderDepartmentFilter();
       const list = filteredCities();
       $("#resultTitle").textContent = `${list.length} commune${list.length > 1 ? "s" : ""}`;
@@ -1250,7 +1281,7 @@
 
     async function initApp() {
       route();
-      [state.cities, state.districts] = await Promise.all([loadCities(), loadDistricts()]);
+      [state.cities, state.districts, state.sync] = await Promise.all([loadCities(), loadDistricts(), loadSyncInfo()]);
       state.loaded = true;
       route();
     }
