@@ -1,834 +1,531 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f7a6d">
+  <title>Aide pour RM</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Aide pour RM</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --bg: #f5f6f4;
-      --ink: #1d2526;
-      --muted: #65706d;
-      --line: #d8ded8;
-      --panel: #ffffff;
+      --bg: #f4f6f5;
+      --surface: #ffffff;
+      --surface-2: #f7f9f8;
+      --ink: #17201f;
+      --muted: #67736f;
+      --line: #e2e7e4;
       --accent: #1f7a6d;
-      --accent-2: #c5462d;
-      --warn: #c78116;
-      --good: #2f8b57;
-      --soft: #edf4f0;
-      --shadow: 0 16px 36px rgba(28, 42, 39, .10);
+      --accent-ink: #ffffff;
+      --accent-soft: #e6f2ef;
+      --hot: #d64532;
+      --warm: #e08a1e;
+      --mid: #c4a514;
+      --cool: #2f9468;
+      --hot-soft: #fbe9e6;
+      --warm-soft: #fdf1e2;
+      --mid-soft: #faf5dc;
+      --cool-soft: #e5f4ec;
+      --shadow: 0 1px 2px rgba(20, 32, 30, .05), 0 8px 24px rgba(20, 32, 30, .06);
+      --radius: 14px;
+      --nav-h: 64px;
       color-scheme: light;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0f1514; --surface: #172020; --surface-2: #1c2726; --ink: #e8efed; --muted: #93a29e;
+        --line: #2a3735; --accent: #3fb3a1; --accent-ink: #06201c; --accent-soft: #173431;
+        --hot-soft: #3a1c18; --warm-soft: #3a2a14; --mid-soft: #35301a; --cool-soft: #15322a;
+        --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #0f1514; --surface: #172020; --surface-2: #1c2726; --ink: #e8efed; --muted: #93a29e;
+      --line: #2a3735; --accent: #3fb3a1; --accent-ink: #06201c; --accent-soft: #173431;
+      --hot-soft: #3a1c18; --warm-soft: #3a2a14; --mid-soft: #35301a; --cool-soft: #15322a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+      color-scheme: dark;
     }
 
     * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body { background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+    button, input, select { font: inherit; color: inherit; }
+    button { cursor: pointer; border: 0; background: none; }
+    a { color: inherit; text-decoration: none; }
+    svg.i { width: 18px; height: 18px; flex: none; }
+    [hidden] { display: none !important; }
 
-    body {
-      margin: 0;
-      background:
-        linear-gradient(180deg, rgba(31, 122, 109, .08), transparent 320px),
-        var(--bg);
-      color: var(--ink);
-    }
-
-    button, input, select {
-      font: inherit;
-    }
-
-    button {
-      border: 0;
-      cursor: pointer;
-    }
-
-    .app {
-      min-height: 100vh;
-      padding: 24px;
-    }
-
-    .shell {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .screen {
-      display: none;
-    }
-    .screen.active {
-      display: block;
-    }
-
+    /* ---------- Structure ---------- */
     .topbar {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 20px;
-      align-items: end;
-      margin-bottom: 18px;
+      position: sticky; top: 0; z-index: 1000;
+      background: color-mix(in srgb, var(--bg) 86%, transparent);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
     }
+    .topbar-inner { max-width: 1100px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 16px; }
+    .brand { display: flex; flex-direction: column; line-height: 1.1; margin-right: auto; }
+    .brand small { color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .brand b { font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
 
-    .eyebrow {
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin: 0 0 8px;
-    }
+    .tabs { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--line); padding: 4px; border-radius: 12px; }
+    .tab { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 9px; color: var(--muted); font-weight: 600; font-size: 14px; }
+    .tab.active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+    .tab:hover:not(.active) { color: var(--ink); }
 
-    h1 {
-      margin: 0;
-      font-size: clamp(30px, 4vw, 54px);
-      line-height: .98;
-      letter-spacing: 0;
-      max-width: 760px;
-    }
+    main { max-width: 1100px; margin: 0 auto; padding: 20px 20px 40px; }
+    .view { display: none; }
+    .view.active { display: block; animation: fade .18s ease-out; }
+    @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: flex-end;
-    }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .card.pad { padding: 18px; }
+    h1 { font-size: clamp(26px, 4vw, 38px); line-height: 1.05; letter-spacing: -.02em; margin: 0; font-weight: 800; }
+    h2 { font-size: 15px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .muted { color: var(--muted); }
+    .eyebrow { margin: 0 0 6px; color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 40px;
-      padding: 0 14px;
-      border-radius: 8px;
-      background: var(--ink);
-      color: white;
-      font-weight: 750;
-      white-space: nowrap;
-    }
-
-    .btn.secondary {
-      background: white;
-      color: var(--ink);
-      border: 1px solid var(--line);
-    }
-
-    .btn.toulouse-special {
-      background: linear-gradient(135deg, #1f7a6d, #14554b);
-      color: white;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: minmax(240px, 330px) 1fr;
-      gap: 18px;
-      align-items: start;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-    }
-
-    .controls {
-      padding: 16px;
-      position: sticky;
-      top: 18px;
-    }
-
-    .field {
-      display: grid;
-      gap: 7px;
-      margin-bottom: 14px;
-    }
-
-    label {
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .04em;
-    }
+    /* ---------- Boutons & champs ---------- */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 16px; border-radius: 10px; font-weight: 700; font-size: 14px; white-space: nowrap; transition: transform .06s, background .15s; }
+    .btn:active { transform: scale(.98); }
+    .btn.primary { background: var(--accent); color: var(--accent-ink); }
+    .btn.primary:hover { filter: brightness(1.06); }
+    .btn.ghost { background: var(--surface); border: 1px solid var(--line); }
+    .btn.ghost:hover { background: var(--surface-2); }
+    .btn.dark { background: var(--ink); color: var(--bg); }
+    .btn:disabled { opacity: .6; cursor: progress; }
+    .icon-btn { width: 38px; height: 38px; display: inline-grid; place-items: center; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
+    .icon-btn:hover { color: var(--accent); border-color: var(--accent); }
 
     input, select {
-      width: 100%;
-      min-height: 42px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      color: var(--ink);
-      padding: 0 12px;
-      outline: none;
+      width: 100%; min-height: 42px; padding: 0 12px; border-radius: 10px;
+      border: 1px solid var(--line); background: var(--surface); outline: none;
     }
+    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
 
-    input:focus, select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(31, 122, 109, .14);
-    }
+    /* ---------- Statuts ---------- */
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+    .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .s-hot { color: var(--hot); background: var(--hot-soft); }
+    .s-warm { color: var(--warm); background: var(--warm-soft); }
+    .s-mid { color: var(--mid); background: var(--mid-soft); }
+    .s-cool { color: var(--cool); background: var(--cool-soft); }
 
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 14px;
-    }
+    /* ---------- Communes : KPI ---------- */
+    .page-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+    .kpi { text-align: left; padding: 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); transition: border-color .15s, background .15s; }
+    .kpi b { display: block; font-size: 26px; font-weight: 800; line-height: 1; margin-bottom: 6px; letter-spacing: -.02em; }
+    .kpi span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+    .kpi.active { border-color: var(--accent); background: var(--accent-soft); }
+    .kpi[data-status="never"] b { color: var(--hot); }
+    .kpi[data-status="todo"] b { color: var(--warm); }
+    .kpi[data-status="recent"] b { color: var(--cool); }
 
-    .metric {
-      background: var(--soft);
-      border: 1px solid #dce8e2;
-      border-radius: 8px;
-      padding: 12px;
-      min-height: 78px;
-    }
+    .toolbar { display: grid; grid-template-columns: 1fr 170px 210px; gap: 10px; margin-bottom: 12px; }
+    .search { position: relative; }
+    .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+    .search input { padding-left: 38px; }
+    .result-line { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 13px; margin: 0 4px 8px; }
+    .legend { display: flex; gap: 10px; flex-wrap: wrap; }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
-    .metric b {
-      display: block;
-      font-size: 24px;
-      line-height: 1;
-      margin-bottom: 6px;
-    }
+    /* ---------- Liste ---------- */
+    .list { list-style: none; margin: 0; padding: 0; overflow: hidden; }
+    .list li + li { border-top: 1px solid var(--line); }
+    .row { display: grid; grid-template-columns: 4px 1fr auto auto 18px; align-items: center; gap: 14px; padding: 12px 14px 12px 0; min-height: 64px; }
+    .row:hover { background: var(--surface-2); }
+    .row .bar { align-self: stretch; border-radius: 0 4px 4px 0; }
+    .bar.s-hot { background: var(--hot); } .bar.s-warm { background: var(--warm); } .bar.s-mid { background: var(--mid); } .bar.s-cool { background: var(--cool); }
+    .row-main { min-width: 0; }
+    .row-main b { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row-main span { display: block; font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row .chev { color: var(--muted); }
+    .empty { padding: 40px 16px; text-align: center; color: var(--muted); }
+    .skeleton { height: 64px; background: linear-gradient(90deg, var(--surface-2), var(--line), var(--surface-2)); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+    @keyframes shimmer { to { background-position: -200% 0; } }
 
-    .metric span {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-    }
+    /* ---------- Cartes ---------- */
+    .map { width: 100%; height: 100%; min-height: 0; z-index: 0; }
+    .map.small { height: 340px; border-radius: var(--radius); overflow: hidden; }
+    .map-head { display: flex; justify-content: space-between; align-items: end; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .map-layout { display: grid; grid-template-columns: 1fr 330px; gap: 12px; height: calc(100vh - 200px); min-height: 460px; }
+    .map-wrap { position: relative; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); background: var(--surface-2); min-height: 0; }
+    .map-wrap.tall { height: 52vh; min-height: 380px; margin-bottom: 12px; }
+    .map-wrap.mid { height: 400px; }
+    .map-wrap.full { position: fixed; inset: 0; z-index: 2500; border-radius: 0; height: auto; margin: 0; }
 
-    .add-form {
-      border-top: 1px solid var(--line);
-      padding-top: 16px;
-      margin-top: 16px;
-    }
+    /* Panneaux posés sur la carte */
+    .map-overlay { position: absolute; z-index: 600; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(8px);
+      border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+    .map-legend { left: 12px; bottom: 12px; padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+    .map-legend button { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600; text-align: left; }
+    .map-legend button:hover { background: var(--surface-2); }
+    .map-legend button.off { opacity: .4; text-decoration: line-through; }
+    .map-legend i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+    .map-legend b { margin-left: auto; padding-left: 10px; font-variant-numeric: tabular-nums; }
+    .map-tools { right: 12px; top: 12px; display: flex; flex-direction: column; padding: 4px; gap: 2px; }
+    .map-tools button { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px; color: var(--ink); }
+    .map-tools button:hover, .map-tools button.on { background: var(--accent-soft); color: var(--accent); }
+    .map-note { left: 50%; top: 12px; transform: translateX(-50%); padding: 6px 12px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
 
-    .two {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+    /* Liste à côté de la carte */
+    .map-side { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+    .map-side-head { padding: 14px 14px 10px; border-bottom: 1px solid var(--line); }
+    .map-side-head b { display: block; font-size: 15px; }
+    .map-side-head span { font-size: 12.5px; color: var(--muted); }
+    .map-side ul { list-style: none; margin: 0; padding: 6px; overflow: hidden auto; flex: 1; }
+    .map-side li button > span { min-width: 0; }
+    .map-side li button { width: 100%; display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 10px; align-items: center; text-align: left; padding: 9px 10px; border-radius: 10px; }
+    .map-side li button:hover { background: var(--surface-2); }
+    .map-side li i { width: 10px; height: 10px; border-radius: 50%; }
+    .map-side li b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .map-side li small { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .map-side li em { font-style: normal; font-size: 12px; font-weight: 700; white-space: nowrap; }
 
-    .table-panel {
-      overflow: hidden;
-    }
+    /* Marqueurs */
+    .marker { border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.35); display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 10.5px; transition: transform .12s; }
+    .marker:hover { transform: scale(1.25); }
+    .marker.never { box-shadow: 0 0 0 3px color-mix(in srgb, var(--hot) 35%, transparent), 0 1px 4px rgba(0,0,0,.35); }
+    .me-dot { width: 16px; height: 16px; border-radius: 50%; background: #2f7cf6; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(47,124,246,.25); }
+    .lbl.leaflet-tooltip { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px;
+      font: 600 11.5px Inter, system-ui, sans-serif; box-shadow: var(--shadow); display: none; }
+    .lbl.leaflet-tooltip::before { display: none; }
+    .show-labels .lbl.leaflet-tooltip { display: block; }
+    .district-lbl { display: flex; flex-direction: column; align-items: center; width: max-content; transform: translate(-50%, -50%); pointer-events: none; }
+    .compact .district-lbl span { display: none; }
+    .district-lbl span { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; font: 700 11.5px Inter, system-ui, sans-serif; white-space: nowrap; box-shadow: var(--shadow); }
+    .district-lbl em { font-style: normal; font: 800 10.5px Inter, system-ui, sans-serif; color: #fff; border-radius: 999px; padding: 1px 6px; margin-top: 2px; }
 
-    .table-head {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255,255,255,.72);
+    /* Leaflet aux couleurs de l'appli */
+    .leaflet-container { background: var(--surface-2); font-family: Inter, system-ui, sans-serif; }
+    /* Fond IGN adouci pour que les points de couleur ressortent ; inversé en mode sombre */
+    .leaflet-tile-pane { filter: saturate(.45) brightness(1.04) contrast(.95); }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) saturate(.35) brightness(.85) contrast(.9); }
     }
+    :root[data-theme="dark"] .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) saturate(.35) brightness(.85) contrast(.9); }
+    .leaflet-bar { border: 1px solid var(--line) !important; border-radius: 10px !important; overflow: hidden; box-shadow: var(--shadow) !important; }
+    .leaflet-bar a { background: var(--surface) !important; color: var(--ink) !important; border-color: var(--line) !important; }
+    .leaflet-control-attribution { background: color-mix(in srgb, var(--surface) 80%, transparent) !important; color: var(--muted) !important; font-size: 10px; }
+    .leaflet-control-attribution a { color: var(--muted) !important; }
+    .leaflet-popup-content-wrapper { background: var(--surface); color: var(--ink); border-radius: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.2); padding: 0; }
+    .leaflet-popup-tip { background: var(--surface); }
+    .leaflet-popup-content { margin: 14px 16px; font-size: 13.5px; line-height: 1.4; min-width: 220px; }
+    .leaflet-container a.leaflet-popup-close-button { color: var(--muted); top: 6px; right: 6px; }
+    .pop-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; padding-right: 14px; }
+    .pop-head b { font-size: 15px; }
+    .pop-meta { color: var(--muted); font-size: 12.5px; }
+    .pop-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .pop-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 700; border: 1px solid var(--line); background: var(--surface); color: var(--ink) !important; }
+    .pop-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink) !important; }
+    .pop-btn svg.i { width: 14px; height: 14px; }
 
-    .table-head strong {
-      font-size: 16px;
-    }
+    /* ---------- Fiche ---------- */
+    .back { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 600; margin-bottom: 12px; }
+    .back:hover { color: var(--ink); }
+    .detail-head { padding: 20px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .detail-head .meta { margin: 8px 0 0; color: var(--muted); }
+    .visit-card { padding: 14px; display: flex; align-items: end; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+    .visit-card .date-field { min-width: 170px; }
+    .visit-card .spacer { flex: 1; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .chips { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { display: inline-flex; align-items: center; gap: 4px; padding: 5px 6px 5px 12px; border-radius: 999px; background: var(--accent-soft); font-size: 13.5px; font-weight: 600; }
+    .chip.nogo { background: var(--hot-soft); color: var(--hot); }
+    .chip button { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; color: inherit; opacity: .6; }
+    .chip button:hover { opacity: 1; background: rgba(0,0,0,.08); }
+    .chip button svg { width: 14px; height: 14px; }
+    .chips .none { color: var(--muted); font-style: italic; font-size: 13.5px; }
+    .nogo-card h2 { color: var(--hot); }
 
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 750;
-    }
+    .opps-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+    .opps-head h2 { margin: 0; font-size: 17px; }
+    .opps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .opp-col { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-width: 0; }
+    .opp-col h3 { margin: 0 0 10px; font-size: 14px; display: flex; align-items: center; gap: 7px; }
+    .opp-col.work h3 { color: #3d6fb6; } .opp-col.sport h3 { color: #d9731c; } .opp-col.study h3 { color: #8a4bb0; }
+    .opp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .opp-list li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 14px; }
+    .opp-list li.note { color: var(--muted); font-style: italic; border-style: dashed; background: transparent; }
+    .opp-list li.err { color: var(--hot); }
+    .opp-list li.done { opacity: .55; }
+    .opp-list a { font-weight: 700; }
+    .opp-list a:hover { color: var(--accent); text-decoration: underline; }
+    .opp-list .sub { display: block; color: var(--muted); font-size: 12px; margin-top: 1px; }
+    .opp-list .meta { color: var(--muted); font-size: 12px; white-space: nowrap; }
 
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      display: inline-block;
-      margin-right: 5px;
-      vertical-align: -1px;
-    }
+    /* ---------- Dialog & toast ---------- */
+    dialog { border: 0; padding: 0; border-radius: 16px; width: min(440px, calc(100vw - 32px)); background: var(--surface); color: var(--ink); box-shadow: 0 24px 64px rgba(0,0,0,.25); }
+    dialog::backdrop { background: rgba(10, 16, 15, .45); backdrop-filter: blur(2px); }
+    dialog form { padding: 20px; display: grid; gap: 12px; }
+    dialog h2 { font-size: 18px; margin: 0 0 4px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
 
-    .table-wrap {
-      overflow: auto;
-      max-height: calc(100vh - 160px);
-    }
+    #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 3000;
+      background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 14px; display: flex; gap: 8px; align-items: center; transition: .2s; box-shadow: var(--shadow); }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
+    #toast.error { background: var(--hot); color: #fff; }
 
-    table {
-      border-collapse: separate;
-      border-spacing: 0;
-      width: 100%;
-      min-width: 800px;
-      background: white;
-    }
-
-    th, td {
-      padding: 11px 12px;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-      vertical-align: middle;
-      font-size: 14px;
-    }
-
-    th {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      background: #fbfcfb;
-      color: var(--muted);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-      white-space: nowrap;
-    }
-
-    tbody tr:hover {
-      background: #f8fbf8;
-    }
-
-    .rank {
-      width: 56px;
-      font-weight: 900;
-      font-size: 18px;
-    }
-
-    .priority {
-      width: 10px;
-      min-width: 10px;
-      padding: 0;
-    }
-
-    .priority div {
-      width: 10px;
-      min-height: 56px;
-    }
-
-    .p-hot { background: #d13f2f; }
-    .p-warm { background: #e39423; }
-    .p-mid { background: #d0b936; }
-    .p-cool { background: #3f9b70; }
-
-    .city {
-      font-weight: 850;
-      font-size: 15px;
-    }
-
-    .sub {
-      color: var(--muted);
-      display: block;
-      font-size: 12px;
-      margin-top: 2px;
-    }
-
-    .date-cell {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .date-cell input {
-      min-height: 36px;
-      max-width: 140px;
-    }
-
-    .mini {
-      min-height: 36px;
-      width: 36px;
-      border-radius: 8px;
-      background: #edf1ef;
-      color: var(--ink);
-      font-weight: 900;
-    }
-
-    .btn-link {
-      background: var(--soft);
-      color: var(--accent);
-      border: 1px solid #dce8e2;
-      padding: 6px 12px;
-      font-size: 13px;
-      font-weight: 700;
-      border-radius: 6px;
-    }
-    .btn-link:hover {
-      background: #dbeae2;
-    }
-
-    .empty {
-      padding: 34px 18px;
-      color: var(--muted);
-      text-align: center;
-    }
-
-    .detail-container {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 24px;
-      box-shadow: var(--shadow);
-      margin-top: 10px;
-    }
-
-    .detail-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 16px;
-      margin-bottom: 24px;
-    }
-
-    .detail-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-
-    .list-box {
-      background: #fbfcfb;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 16px;
-    }
-
-    .list-box h3 {
-      margin-top: 0;
-      margin-bottom: 14px;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .list-box.nogo-box h3 {
-      color: var(--accent-2);
-    }
-
-    .list-items {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 14px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .list-items li {
-      background: white;
-      border: 1px solid var(--line);
-      padding: 8px 12px;
-      border-radius: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
-    }
-
-    .delete-item {
-      background: transparent;
-      color: var(--muted);
-      font-size: 16px;
-      font-weight: bold;
-      padding: 0 4px;
-    }
-    .delete-item:hover {
-      color: var(--accent-2);
-    }
-
-    .place-item {
-      gap: 10px;
-    }
-    .place-item a {
-      color: var(--ink);
-      font-weight: 700;
-      text-decoration: none;
-    }
-    .place-item a:hover {
-      color: var(--accent);
-      text-decoration: underline;
-    }
-    .place-item.done {
-      opacity: .55;
-    }
-    .place-meta {
-      color: var(--muted);
-      font-size: 12px;
-      white-space: nowrap;
-    }
-
-    @media (max-width: 980px) {
-      .app { padding: 14px; }
-      .topbar, .grid, .detail-grid { grid-template-columns: 1fr; }
-      .toolbar { justify-content: flex-start; }
-      .controls { position: static; }
-      .table-wrap { max-height: none; }
+    /* ---------- Mobile ---------- */
+    @media (max-width: 760px) {
+      body { font-size: 15px; }
+      /* backdrop-filter piégerait la barre d'onglets "fixed" dans l'en-tête */
+      .topbar { backdrop-filter: none; background: var(--bg); }
+      .topbar-inner { padding: 10px 16px; }
+      .result-line .legend { display: none; }
+      main { padding: 14px 16px calc(var(--nav-h) + 24px + env(safe-area-inset-bottom)); }
+      .tabs { position: fixed; left: 0; right: 0; bottom: 0; border-radius: 0; border-width: 1px 0 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+        background: var(--surface); justify-content: space-around; z-index: 1500; }
+      .tab { flex-direction: column; gap: 3px; font-size: 11.5px; padding: 6px 10px; flex: 1; }
+      .tab.active { box-shadow: none; background: var(--accent-soft); color: var(--accent); }
+      .tab svg.i { width: 22px; height: 22px; }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .toolbar { grid-template-columns: 1fr 1fr; }
+      .toolbar .search { grid-column: 1 / -1; }
+      .row { grid-template-columns: 4px 1fr auto 38px; gap: 10px; }
+      .row .chev { display: none; }
+      .two-col, .opps-grid { grid-template-columns: 1fr; }
+      .map-layout { grid-template-columns: 1fr; height: auto; }
+      .map-layout .map-wrap { height: 58vh; min-height: 340px; }
+      .map-side { max-height: 46vh; }
+      .map-legend { bottom: 8px; left: 8px; }
+      .map-legend button { padding: 4px 8px; font-size: 11.5px; }
+      .map-note { display: none; }
+      .page-head .btn span.long { display: none; }
+      #toast { bottom: calc(var(--nav-h) + 16px); }
     }
   </style>
 </head>
 <body>
-  <main class="app">
-    <div class="shell">
-
-      <!-- ÉCRAN PRINCIPAL -->
-      <div id="mainScreen" class="screen active">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">#OneTeam</p>
-            <h1>Aide pour RM</h1>
-          </div>
-          <div class="toolbar">
-            <button id="openToulouseDistrictsBtn" class="btn toulouse-special">🏙️ Quartiers Précis de Toulouse</button>
-            <button id="toggleMapBtn" class="btn secondary">🗺️ Vue Carte</button>
-          </div>
-       </header>
-
-        <div id="mapWrapper" style="display: none; height: 450px; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); z-index: 1;">
-          <div id="map" style="width: 100%; height: 100%;"></div>
-        </div>
-
-        <section class="grid">
-          <aside class="panel controls">
-            <div class="metric-grid">
-              <div class="metric"><b id="cityCount">0</b><span>communes</span></div>
-              <div class="metric"><b id="avgAge">0 j</b><span>moy. sans passage</span></div>
-            </div>
-
-            <div class="field">
-              <label for="search">Recherche</label>
-              <input id="search" type="search" placeholder="Albi, 31, @study...">
-            </div>
-
-            <div class="two">
-              <div class="field">
-                <label for="departmentFilter">Département</label>
-                <select id="departmentFilter"></select>
-              </div>
-              <div class="field">
-                <label for="sortMode">Tri</label>
-                <select id="sortMode">
-                  <option value="date">Plus ancien passage</option>
-                  <option value="population">Population</option>
-                  <option value="time">Temps depuis Toulouse</option>
-                  <option value="name">Nom</option>
-                </select>
-              </div>
-            </div>
-
-            <form class="add-form" id="addForm">
-              <div class="field">
-                <label for="newName">Commune</label>
-                <input id="newName" required placeholder="Nom">
-              </div>
-              <div class="two">
-                <div class="field">
-                  <label for="newDepartment">Dépt.</label>
-                  <input id="newDepartment" required placeholder="31">
-                </div>
-                <div class="field">
-                  <label for="newPopulation">Population</label>
-                  <input id="newPopulation" required type="number" min="1" step="1" placeholder="12000">
-                </div>
-              </div>
-              <div class="two">
-                <div class="field">
-                  <label for="newTime">Minutes</label>
-                  <input id="newTime" required type="number" min="1" max="180" step="1" placeholder="75">
-                </div>
-                <div class="field">
-                  <label for="newDate">Dernier passage</label>
-                  <input id="newDate" type="date">
-                </div>
-              </div>
-              <button class="btn" type="submit">Ajouter</button>
-            </form>
-          </aside>
-
-          <section class="panel table-panel">
-            <div class="table-head">
-              <strong id="resultTitle">Classement</strong>
-              <div class="legend">
-                <span><i class="dot p-hot"></i>Jamais / > 1 an</span>
-                <span><i class="dot p-warm"></i>6 mois - 1 an</span>
-                <span><i class="dot p-mid"></i>2 - 6 mois</span>
-                <span><i class="dot p-cool"></i>< 2 mois</span>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>#</th>
-                    <th>Commune</th>
-                    <th>Temps</th>
-                    <th>Population</th>
-                    <th>Dernier passage</th>
-                    <th>Jours</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody id="rows"></tbody>
-              </table>
-              <div class="empty" id="emptyState" hidden>Aucune commune trouvée.</div>
-            </div>
-          </section>
-        </section>
-      </div>
-
-      <!-- ÉCRAN DÉTAIL VILLE CLASSIQUE -->
-      <div id="detailScreen" class="screen">
-        <div class="detail-container">
-          <header class="detail-header">
-            <div>
-              <p class="eyebrow" id="detailDept">Département --</p>
-              <h1 id="detailCityName" title="Cliquez pour trouver les villes à proximité (~30 min)" style="cursor: pointer; position: relative;">Nom de la Ville</h1>
-              <div id="nearbyCitiesContainer" style="margin-top: 10px; font-size: 13px; color: var(--muted);"></div>
-            </div>
-           <button class="btn secondary" id="backToMainBtn">← Retour au tableau</button>
-          </header>
-
-          <div id="detailMapWrapper" style="display: none; height: 300px; margin-bottom: 24px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line);">
-            <div id="detailMap" style="width: 100%; height: 100%;"></div>
-          </div>
-
-          <div class="detail-grid">
-            <div class="list-box">
-              <h3>✓ Lieux visités (Fait)</h3>
-              <ul class="list-items" id="visitedList"></ul>
-              <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addVisitedInput" placeholder="Ajouter un lieu ou tag (@study)... (Entrée)">
-              </div>
-            </div>
-
-            <div class="list-box nogo-box">
-              <h3>⚠ Zones ou Établissements No Go</h3>
-              <ul class="list-items" id="nogoList"></ul>
-              <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addNogoInput" placeholder="Ajouter un élément No Go... (Entrée)">
-              </div>
-            </div>
-          </div>
-
-          <div class="strategy-section" style="margin-top: 32px; border-top: 1px solid var(--line); padding-top: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <h2>🎯 Opportunités de consommation</h2>
-              <button id="generateAiTargetsBtn" class="btn">#giiiveyouwings</button>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
-              <div class="list-box">
-                <h3 style="color: #2c3e50;">💼 @work </h3>
-                <ul class="list-items" id="workSuggestionsList">
-                  <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
-                </ul>
-              </div>
-
-              <div class="list-box">
-                <h3 style="color: #e67e22;">🏋️ @sport</h3>
-                <ul class="list-items" id="sportSuggestionsList">
-                  <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
-                </ul>
-              </div>
-
-              <div class="list-box">
-                <h3 style="color: #8e44ad;">📚 @study </h3>
-                <ul class="list-items" id="studySuggestionsList">
-                  <li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- ÉCRAN CARTE & SUIVI DES MICRO-QUARTIERS DE TOULOUSE -->
-      <div id="toulouseDistrictsScreen" class="screen">
-        <div class="detail-container">
-          <header class="detail-header">
-            <div>
-              <p class="eyebrow">Haute-Garonne (31) - Échantillonnage Précis</p>
-              <h1>Carte & Suivi des Quartiers de Toulouse</h1>
-              <div style="margin-top: 6px; font-size: 13px; color: var(--muted);">Jolimont et La Roseraie sont bien séparés. Triez par dernière visite ou gérez vos lieux.</div>
-            </div>
-            <button class="btn secondary" id="backFromToulouseDistrictsBtn">← Retour au tableau général</button>
-          </header>
-
-          <div style="height: 480px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); position: relative; margin-bottom: 24px;">
-            <div id="toulouseDistrictsMap" style="width: 100%; height: 100%;"></div>
-          </div>
-
-          <div class="table-panel panel">
-            <div class="table-head">
-              <strong>Classement des micro-quartiers par dernière visite</strong>
-              <div class="legend">
-                <span><i class="dot p-hot"></i>Jamais / > 1 an</span>
-                <span><i class="dot p-warm"></i>6 mois - 1 an</span>
-                <span><i class="dot p-mid"></i>2 - 6 mois</span>
-                <span><i class="dot p-cool"></i>< 2 mois</span>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Quartier</th>
-                    <th>Dernier passage</th>
-                    <th>Jours</th>
-                    <th>Lieux / No Go</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody id="districtsRows"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ÉCRAN DÉTAIL D'UN QUARTIER DE TOULOUSE -->
-      <div id="districtDetailScreen" class="screen">
-        <div class="detail-container">
-          <header class="detail-header">
-            <div>
-              <p class="eyebrow">Toulouse - Micro-Quartier</p>
-              <h1 id="districtDetailName">Nom du Quartier</h1>
-            </div>
-            <button class="btn secondary" id="backToToulouseDistrictsBtn">← Retour à la carte des quartiers</button>
-          </header>
-
-          <div class="detail-grid">
-            <div class="list-box">
-              <h3>✓ Lieux visités (Fait)</h3>
-              <ul class="list-items" id="districtVisitedList"></ul>
-              <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addDistrictVisitedInput" placeholder="Ajouter un lieu ou tag (@study)... (Entrée)">
-              </div>
-            </div>
-
-            <div class="list-box nogo-box">
-              <h3>⚠ Zones ou Établissements No Go</h3>
-              <ul class="list-items" id="districtNogoList"></ul>
-              <div class="field" style="margin-bottom:0;">
-                <input type="text" id="addDistrictNogoInput" placeholder="Ajouter un élément No Go... (Entrée)">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><small>#OneTeam</small><b>Aide pour RM</b></div>
+      <nav class="tabs" aria-label="Navigation">
+        <a class="tab" href="#/communes" data-tab="communes"><span data-icon="list"></span>Communes</a>
+        <a class="tab" href="#/carte" data-tab="carte"><span data-icon="map"></span>Carte</a>
+        <a class="tab" href="#/toulouse" data-tab="toulouse"><span data-icon="building"></span>Toulouse</a>
+      </nav>
     </div>
+  </header>
+
+  <main>
+    <!-- COMMUNES -->
+    <section class="view" id="view-communes">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">Où passer en priorité</p>
+          <h1>Communes</h1>
+        </div>
+        <button class="btn primary" id="openAdd"><span data-icon="plus"></span><span>Ajouter<span class="long"> une commune</span></span></button>
+      </div>
+
+      <div class="kpis" id="kpis"></div>
+
+      <div class="toolbar">
+        <div class="search">
+          <span data-icon="search"></span>
+          <input id="search" type="search" placeholder="Commune, département, lieu, @study…" aria-label="Rechercher">
+        </div>
+        <select id="departmentFilter" aria-label="Département"></select>
+        <select id="sortMode" aria-label="Tri">
+          <option value="date">Priorité (plus ancien)</option>
+          <option value="population">Population</option>
+          <option value="time">Temps depuis Toulouse</option>
+          <option value="name">Nom</option>
+        </select>
+      </div>
+
+      <div class="result-line">
+        <span id="resultTitle"></span>
+        <span class="legend">
+          <span><i style="background:var(--hot)"></i>Jamais / &gt; 1 an</span>
+          <span><i style="background:var(--warm)"></i>6–12 mois</span>
+          <span><i style="background:var(--mid)"></i>2–6 mois</span>
+          <span><i style="background:var(--cool)"></i>&lt; 2 mois</span>
+        </span>
+      </div>
+      <ul class="list card" id="rows"></ul>
+    </section>
+
+    <!-- CARTE -->
+    <section class="view" id="view-carte">
+      <div class="map-head">
+        <div>
+          <p class="eyebrow">Vue d'ensemble</p>
+          <h1>Carte</h1>
+        </div>
+        <span class="muted" id="mapInfo"></span>
+      </div>
+      <div class="map-layout">
+        <div class="map-wrap" id="mapWrap">
+          <div id="map" class="map"></div>
+          <div class="map-overlay map-legend" id="mapLegend"></div>
+          <div class="map-overlay map-tools">
+            <button id="locateBtn" title="Me localiser" aria-label="Me localiser"><span data-icon="locate"></span></button>
+            <button id="fitBtn" title="Tout afficher" aria-label="Tout afficher"><span data-icon="fit"></span></button>
+            <button data-full="mapWrap" title="Plein écran" aria-label="Plein écran"><span data-icon="expand"></span></button>
+          </div>
+          <div class="map-overlay map-note">Zoome pour voir les noms · clique sur un point pour agir</div>
+        </div>
+        <aside class="card map-side">
+          <div class="map-side-head"><b id="sideTitle">Dans la zone visible</b><span id="sideSub">Triées par priorité</span></div>
+          <ul id="sideList"></ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- TOULOUSE -->
+    <section class="view" id="view-toulouse">
+      <div class="map-head">
+        <div>
+          <p class="eyebrow">Haute-Garonne · micro-quartiers</p>
+          <h1>Toulouse</h1>
+        </div>
+        <span class="muted">Triés du plus ancien passage au plus récent</span>
+      </div>
+      <div class="map-wrap tall" id="toulouseWrap">
+        <div id="toulouseMap" class="map"></div>
+        <div class="map-overlay map-legend" id="toulouseLegend"></div>
+        <div class="map-overlay map-tools">
+          <button data-full="toulouseWrap" title="Plein écran" aria-label="Plein écran"><span data-icon="expand"></span></button>
+        </div>
+      </div>
+      <ul class="list card" id="districtRows"></ul>
+    </section>
+
+    <!-- FICHE (commune ou quartier) -->
+    <section class="view" id="view-detail">
+      <a class="back" id="detailBack" href="#/communes"><span data-icon="back"></span><span id="detailBackLabel">Communes</span></a>
+
+      <header class="card detail-head">
+        <div>
+          <p class="eyebrow" id="dEyebrow"></p>
+          <h1 id="dName"></h1>
+          <p class="meta" id="dMeta"></p>
+        </div>
+        <span class="pill" id="dPill"></span>
+      </header>
+
+      <div class="card visit-card">
+        <div class="date-field">
+          <label for="dDate">Dernier passage</label>
+          <input type="date" id="dDate">
+        </div>
+        <button class="btn primary" id="dToday"><span data-icon="check"></span>Visité aujourd'hui</button>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="dNearbyBtn"><span data-icon="compass"></span>Communes à ~30 min</button>
+      </div>
+
+      <div class="card pad" id="dNearbyCard" hidden style="margin-bottom:12px">
+        <p class="muted" id="dNearbyInfo" style="margin:0 0 10px"></p>
+        <div class="map-wrap mid" id="detailWrap">
+          <div id="detailMap" class="map"></div>
+          <div class="map-overlay map-tools">
+            <button data-full="detailWrap" title="Plein écran" aria-label="Plein écran"><span data-icon="expand"></span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card pad">
+          <h2><span data-icon="pin"></span>Lieux visités</h2>
+          <ul class="chips" id="dVisited"></ul>
+          <input id="dVisitedInput" placeholder="Ajouter un lieu ou un tag (@study)… puis Entrée">
+        </div>
+        <div class="card pad nogo-card">
+          <h2><span data-icon="ban"></span>No Go</h2>
+          <ul class="chips" id="dNogo"></ul>
+          <input id="dNogoInput" placeholder="Ajouter une zone ou un établissement… puis Entrée">
+        </div>
+      </div>
+
+      <section class="card pad" id="dOpps">
+        <div class="opps-head">
+          <h2><span data-icon="target"></span>Opportunités de consommation</h2>
+          <button class="btn dark" id="generateAiTargetsBtn"><span data-icon="zap"></span>#giiiveyouwings</button>
+        </div>
+        <div class="opps-grid">
+          <div class="opp-col work"><h3><span data-icon="briefcase"></span>@work</h3><ul class="opp-list" id="workSuggestionsList"></ul></div>
+          <div class="opp-col sport"><h3><span data-icon="dumbbell"></span>@sport</h3><ul class="opp-list" id="sportSuggestionsList"></ul></div>
+          <div class="opp-col study"><h3><span data-icon="cap"></span>@study</h3><ul class="opp-list" id="studySuggestionsList"></ul></div>
+        </div>
+      </section>
+    </section>
   </main>
+
+  <!-- AJOUT D'UNE COMMUNE -->
+  <dialog id="addDialog">
+    <form id="addForm" method="dialog">
+      <h2>Ajouter une commune</h2>
+      <div><label for="newName">Commune</label><input id="newName" required placeholder="Ex. Gaillac"></div>
+      <div class="grid2">
+        <div><label for="newDepartment">Département</label><input id="newDepartment" required placeholder="81" inputmode="numeric"></div>
+        <div><label for="newPopulation">Population</label><input id="newPopulation" required type="number" min="1" step="1" placeholder="15000"></div>
+      </div>
+      <div class="grid2">
+        <div><label for="newTime">Minutes depuis Toulouse</label><input id="newTime" required type="number" min="1" max="600" step="1" placeholder="45"></div>
+        <div><label for="newDate">Dernier passage</label><input id="newDate" type="date"></div>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn ghost" type="button" id="cancelAdd">Annuler</button>
+        <button class="btn primary" type="submit">Ajouter</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
 
   <script>
     const supabaseUrl = 'https://teeuganjefwegazhoubj.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlZXVnYW5qZWZ3ZWdhemhvdWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMjA4MjEsImV4cCI6MjA5ODU5NjgyMX0.bLlpaeGA39NA3FWpQrsCSo1xHjxQG1Yv_5gbEgVdWZU';
-
     const db = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // ---------- Icônes (Lucide) ----------
+    const ICONS = {
+      list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+      map: '<path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15M9 3.236v15"/>',
+      building: '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2M10 6h4M10 10h4M10 14h4M10 18h4"/>',
+      plus: '<path d="M5 12h14M12 5v14"/>',
+      search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+      check: '<path d="M20 6 9 17l-5-5"/>',
+      chev: '<path d="m9 18 6-6-6-6"/>',
+      back: '<path d="m12 19-7-7 7-7M19 12H5"/>',
+      x: '<path d="M18 6 6 18M6 6l12 12"/>',
+      compass: '<circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/>',
+      pin: '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+      ban: '<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
+      target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+      zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+      briefcase: '<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/>',
+      dumbbell: '<path d="M14.4 14.4 9.6 9.6M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829zM21.5 21.5l-1.4-1.4M3.9 3.9 2.5 2.5M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>',
+      locate: '<path d="M2 12h3M19 12h3M12 2v3M12 19v3"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/>',
+      fit: '<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>',
+      expand: '<path d="m15 15 6 6M15 9l6-6M21 16v5h-5M21 8V3h-5M3 16v5h5M3 8V3h5M9 9 3 3M9 15l-6 6"/>',
+      route: '<path d="M3 11 22 2l-9 19-2-8z"/>',
+      cap: '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0zM22 10v6M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>'
+    };
+    const icon = name => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+    document.querySelectorAll("[data-icon]").forEach(el => { el.outerHTML = icon(el.dataset.icon); });
+
+    // ---------- Utilitaires ----------
+    const $ = sel => document.querySelector(sel);
     const todayIso = () => new Date().toISOString().slice(0, 10);
-
-    const state = {
-      cities: [],
-      districts: [],
-      search: "",
-      department: "all",
-      sortMode: "date",
-      dateWeight: 100,
-      populationWeight: 0,
-      currentSelectedCityId: null,
-      currentSelectedDistrictId: null
-    };
-
-    const els = {
-      mainScreen: document.querySelector("#mainScreen"),
-      detailScreen: document.querySelector("#detailScreen"),
-      toulouseDistrictsScreen: document.querySelector("#toulouseDistrictsScreen"),
-      districtDetailScreen: document.querySelector("#districtDetailScreen"),
-      rows: document.querySelector("#rows"),
-      emptyState: document.querySelector("#emptyState"),
-      search: document.querySelector("#search"),
-      departmentFilter: document.querySelector("#departmentFilter"),
-      sortMode: document.querySelector("#sortMode"),
-      cityCount: document.querySelector("#cityCount"),
-      avgAge: document.querySelector("#avgAge"),
-      resultTitle: document.querySelector("#resultTitle"),
-      addForm: document.querySelector("#addForm"),
-
-      detailCityName: document.querySelector("#detailCityName"),
-      detailDept: document.querySelector("#detailDept"),
-      visitedList: document.querySelector("#visitedList"),
-      nogoList: document.querySelector("#nogoList"),
-      addVisitedInput: document.querySelector("#addVisitedInput"),
-      addNogoInput: document.querySelector("#addNogoInput"),
-      backToMainBtn: document.querySelector("#backToMainBtn"),
-      toggleMapBtn: document.querySelector("#toggleMapBtn"),
-      mapWrapper: document.querySelector("#mapWrapper"),
-      nearbyCitiesContainer: document.querySelector("#nearbyCitiesContainer"),
-      detailMapWrapper: document.querySelector("#detailMapWrapper"),
-      generateAiTargetsBtn: document.querySelector("#generateAiTargetsBtn"),
-
-      openToulouseDistrictsBtn: document.querySelector("#openToulouseDistrictsBtn"),
-      backFromToulouseDistrictsBtn: document.querySelector("#backFromToulouseDistrictsBtn"),
-      backToToulouseDistrictsBtn: document.querySelector("#backToToulouseDistrictsBtn"),
-      districtsRows: document.querySelector("#districtsRows"),
-      districtDetailName: document.querySelector("#districtDetailName"),
-      districtVisitedList: document.querySelector("#districtVisitedList"),
-      districtNogoList: document.querySelector("#districtNogoList"),
-      addDistrictVisitedInput: document.querySelector("#addDistrictVisitedInput"),
-      addDistrictNogoInput: document.querySelector("#addDistrictNogoInput")
-    };
-
-    async function loadCitiesFromDB() {
-      const { data, error } = await db.from('cities').select('*');
-      if (error) { console.error("Erreur de chargement:", error); return []; }
-      return data || [];
-    }
-
-    async function loadDistrictsFromDB() {
-      const { data, error } = await db.from('toulouse_districts').select('*');
-      if (error || !data || data.length === 0) {
-        return [
-          { id: 'd1', name: 'Capitole / Hypercentre', coords: [43.6047, 1.4442], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd2', name: 'Carmes', coords: [43.5975, 1.4485], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd3', name: 'Saint-Étienne', coords: [43.5990, 1.4530], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd4', name: 'Saint-Cyprien', coords: [43.5980, 1.4320], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd5', name: 'Patte d\'Oie', coords: [43.5950, 1.4230], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd6', name: 'Arènes', coords: [43.5890, 1.4220], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd7', name: 'Cartoucherie', coords: [43.5990, 1.4150], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd8', name: 'Compans-Caffarelli', coords: [43.6130, 1.4420], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd9', name: 'Les Chalets', coords: [43.6110, 1.4470], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd10', name: 'Bayard / Matabiau', coords: [43.6080, 1.4530], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd11', name: 'Bonnefoy', coords: [43.6160, 1.4540], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd12', name: 'Jolimont', coords: [43.6100, 1.4640], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd13', name: 'La Roseraie', coords: [43.6190, 1.4680], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd14', name: 'Minimes', coords: [43.6210, 1.4390], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd15', name: 'Barrière de Paris', coords: [43.6280, 1.4350], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd16', name: 'Sept-Deniers', coords: [43.6240, 1.4190], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd17', name: 'Saint-Michel', coords: [43.5870, 1.4460], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd18', name: 'Saint-Agne', coords: [43.5780, 1.4510], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd19', name: 'Rangueil', coords: [43.5670, 1.4580], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd20', name: 'Empalot', coords: [43.5790, 1.4390], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd21', name: 'Saouzelong', coords: [43.5750, 1.4550], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd22', name: 'Montaudran', coords: [43.5820, 1.4720], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd23', name: 'Lardenne', coords: [43.5980, 1.3980], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd24', name: 'Saint-Martin du Touch', coords: [43.6070, 1.3890], lastVisit: '', visitedPlaces: [], noGo: [] },
-          { id: 'd25', name: 'Mirail / Reynerie', coords: [43.5770, 1.4100], lastVisit: '', visitedPlaces: [], noGo: [] }
-        ];
-      }
-      return data || [];
-    }
-
-    async function updateCityInDB(cityId, updates) {
-      const { error } = await db.from('cities').update(updates).eq('id', cityId);
-      if (error) console.error("Erreur de mise à jour:", error);
-    }
-
-    async function updateDistrictInDB(districtId, updates) {
-      const { error } = await db.from('toulouse_districts').update(updates).eq('id', districtId);
-      if (error) console.error("Erreur de mise à jour quartier:", error);
-    }
-
-    async function addCityToDB(newCity) {
-      const { data, error } = await db.from('cities').insert([newCity]).select();
-      if (error) { console.error("Erreur d'ajout:", error); return null; }
-      return data[0];
-    }
+    const formatNumber = v => new Intl.NumberFormat("fr-FR").format(v);
+    const escapeHtml = v => String(v ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    const STATUS_COLORS = { hot: "#d64532", warm: "#e08a1e", mid: "#c4a514", cool: "#2f9468" };
+    const STATUS_RANK = { hot: 4, warm: 3, mid: 2, cool: 1 };
 
     function daysSince(dateString) {
       if (!dateString) return 9999;
@@ -837,731 +534,726 @@
       return Math.max(0, Math.round((now - date) / 86400000));
     }
 
+    function statusFor(age) {
+      if (age === 9999) return { cls: "hot", label: "Jamais" };
+      const cls = age > 365 ? "hot" : age >= 183 ? "warm" : age >= 61 ? "mid" : "cool";
+      let label;
+      if (age === 0) label = "Aujourd'hui";
+      else if (age === 1) label = "Hier";
+      else if (age < 45) label = `il y a ${age} j`;
+      else if (age < 365) label = `il y a ${Math.round(age / 30.4)} mois`;
+      else { const y = Math.floor(age / 365); label = `il y a ${y} an${y > 1 ? "s" : ""}`; }
+      return { cls, label };
+    }
+
     function formatMinutes(minutes) {
+      minutes = Number(minutes);
+      if (!minutes) return "";
       if (minutes < 60) return `${minutes} min`;
-      const h = Math.floor(minutes / 60);
-      const m = minutes % 60;
+      const h = Math.floor(minutes / 60), m = minutes % 60;
       return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
     }
 
-    function formatNumber(value) {
-      return new Intl.NumberFormat("fr-FR").format(value);
+    function getDistanceKm(lat1, lon1, lat2, lon2) {
+      const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    function escapeHtml(value) {
-      return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    let toastTimer;
+    function toast(message, isError = false) {
+      const el = $("#toast");
+      el.innerHTML = (isError ? "" : icon("check")) + escapeHtml(message);
+      el.className = "show" + (isError ? " error" : "");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.className = "", isError ? 4000 : 1800);
     }
 
-    function enrichedCities() {
-      const maxAge = Math.max(...state.cities.map(city => daysSince(city.lastVisit)), 1);
-      const maxPop = Math.max(...state.cities.map(city => Number(city.population)), 1);
-      return state.cities.map(city => {
-        const age = daysSince(city.lastVisit);
-        const dateScore = age / maxAge;
-        const populationScore = Number(city.population) / maxPop;
-        const score = Math.round(((dateScore * state.dateWeight) + (populationScore * state.populationWeight)) * 100 / (state.dateWeight + state.populationWeight));
-        return { ...city, age, score };
+    // ---------- Cartes : outils communs ----------
+    function markerIcon(cls, size = 14, text = "", extraClass = "") {
+      return L.divIcon({
+        html: `<div class="marker ${extraClass}" style="background:${STATUS_COLORS[cls]};width:${size}px;height:${size}px">${text}</div>`,
+        className: "", iconSize: [size, size], iconAnchor: [size / 2, size / 2]
       });
     }
+
+    // Taille du point selon la population (12 px pour un village, 30 px max)
+    const sizeFor = population => Math.round(Math.min(30, 11 + Math.sqrt(Math.max(Number(population) || 0, 0)) / 14));
+
+    // Fond de carte : Plan IGN (Géoplateforme de l'État, gratuit, sans clé). Adouci en clair, inversé en sombre (CSS).
+    const IGN_PLAN = "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2" +
+      "&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/png&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
+
+    function createMap(id) {
+      const m = L.map(id, { zoomControl: false });
+      L.control.zoom({ position: "bottomright" }).addTo(m);
+      L.tileLayer(IGN_PLAN, {
+        attribution: '&copy; <a href="https://www.ign.fr/" target="_blank" rel="noopener">IGN</a> · Géoplateforme',
+        minZoom: 3, maxZoom: 19
+      }).addTo(m);
+      // Bouton "Visité" dans les popups
+      m.on("popupopen", e => {
+        const btn = e.popup.getElement()?.querySelector("[data-pop-today]");
+        if (!btn) return;
+        btn.addEventListener("click", async () => {
+          const table = btn.dataset.table;
+          const item = (table === "cities" ? state.cities : state.districts).find(x => String(x.id) === btn.dataset.id);
+          if (!item) return;
+          item.lastVisit = todayIso();
+          m.closePopup();
+          refreshCurrentView();
+          await save(table, item.id, { lastVisit: item.lastVisit });
+        });
+      });
+      return m;
+    }
+
+    function popupHtml(raw, table, { coords = null, distanceKm = null } = {}) {
+      const it = withAge(raw);
+      const isCity = table === "cities";
+      const meta1 = isCity
+        ? [`Dépt. ${it.department}`, it.minutes && `${formatMinutes(it.minutes)} depuis Toulouse`, it.population && `${formatNumber(Number(it.population))} hab.`].filter(Boolean).join(" · ")
+        : "Toulouse · micro-quartier";
+      const v = (it.visitedPlaces || []).length, n = (it.noGo || []).length;
+      const last = it.lastVisit ? `Passage le ${new Date(it.lastVisit + "T00:00:00").toLocaleDateString("fr-FR")}` : "Jamais visité";
+      const meta2 = [last, `${v} lieu${v > 1 ? "x" : ""}`, n ? `${n} No Go` : "", distanceKm != null ? `à ${Math.round(distanceKm)} km` : ""].filter(Boolean).join(" · ");
+      const href = `#/${isCity ? "commune" : "quartier"}/${encodeURIComponent(it.id)}`;
+      const route = coords
+        ? `<a class="pop-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${coords[0]},${coords[1]}">${icon("route")}Itinéraire</a>`
+        : "";
+      return `
+        <div class="pop-head"><b>${escapeHtml(it.name)}</b><span class="pill s-${it.status.cls}">${it.status.label}</span></div>
+        <div class="pop-meta">${escapeHtml(meta1)}</div>
+        <div class="pop-meta">${escapeHtml(meta2)}</div>
+        <div class="pop-actions">
+          <a class="pop-btn primary" href="${href}">Fiche</a>
+          <button class="pop-btn" data-pop-today data-table="${table}" data-id="${escapeHtml(it.id)}">${icon("check")}Visité</button>
+          ${route}
+        </div>`;
+    }
+
+    // Légende cliquable : affiche le nombre par statut et masque/affiche une couleur
+    const LEGEND = [["hot", "Jamais / > 1 an"], ["warm", "6–12 mois"], ["mid", "2–6 mois"], ["cool", "< 2 mois"]];
+    function renderLegend(el, items, hidden, onToggle) {
+      const counts = { hot: 0, warm: 0, mid: 0, cool: 0 };
+      items.forEach(i => counts[i.status.cls]++);
+      el.innerHTML = LEGEND.map(([k, label]) => `
+        <button data-cls="${k}" class="${hidden.has(k) ? "off" : ""}" aria-pressed="${!hidden.has(k)}">
+          <i style="background:${STATUS_COLORS[k]}"></i>${label}<b>${counts[k]}</b>
+        </button>`).join("");
+      el.onclick = e => {
+        const b = e.target.closest("[data-cls]");
+        if (!b) return;
+        hidden.has(b.dataset.cls) ? hidden.delete(b.dataset.cls) : hidden.add(b.dataset.cls);
+        onToggle();
+      };
+    }
+
+    // Plein écran
+    const MAPS_BY_WRAP = { mapWrap: () => map, toulouseWrap: () => toulouseMap, detailWrap: () => dMap };
+    document.addEventListener("click", e => {
+      const btn = e.target.closest("[data-full]");
+      if (!btn) return;
+      const wrap = document.getElementById(btn.dataset.full);
+      wrap.classList.toggle("full");
+      btn.classList.toggle("on", wrap.classList.contains("full"));
+      setTimeout(() => MAPS_BY_WRAP[wrap.id]?.()?.invalidateSize(), 60);
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key !== "Escape") return;
+      document.querySelectorAll(".map-wrap.full").forEach(w => {
+        w.classList.remove("full");
+        setTimeout(() => MAPS_BY_WRAP[w.id]?.()?.invalidateSize(), 60);
+      });
+    });
+
+    // ---------- Données ----------
+    const state = {
+      cities: [],
+      districts: [],
+      loaded: false,
+      search: "",
+      department: "all",
+      sortMode: "date",
+      status: "all",
+      current: null // { table: "cities" | "toulouse_districts", id }
+    };
+
+    const FALLBACK_DISTRICTS = [
+      ["d1", "Capitole / Hypercentre", 43.6047, 1.4442], ["d2", "Carmes", 43.5975, 1.4485], ["d3", "Saint-Étienne", 43.5990, 1.4530],
+      ["d4", "Saint-Cyprien", 43.5980, 1.4320], ["d5", "Patte d'Oie", 43.5950, 1.4230], ["d6", "Arènes", 43.5890, 1.4220],
+      ["d7", "Cartoucherie", 43.5990, 1.4150], ["d8", "Compans-Caffarelli", 43.6130, 1.4420], ["d9", "Les Chalets", 43.6110, 1.4470],
+      ["d10", "Bayard / Matabiau", 43.6080, 1.4530], ["d11", "Bonnefoy", 43.6160, 1.4540], ["d12", "Jolimont", 43.6100, 1.4640],
+      ["d13", "La Roseraie", 43.6190, 1.4680], ["d14", "Minimes", 43.6210, 1.4390], ["d15", "Barrière de Paris", 43.6280, 1.4350],
+      ["d16", "Sept-Deniers", 43.6240, 1.4190], ["d17", "Saint-Michel", 43.5870, 1.4460], ["d18", "Saint-Agne", 43.5780, 1.4510],
+      ["d19", "Rangueil", 43.5670, 1.4580], ["d20", "Empalot", 43.5790, 1.4390], ["d21", "Saouzelong", 43.5750, 1.4550],
+      ["d22", "Montaudran", 43.5820, 1.4720], ["d23", "Lardenne", 43.5980, 1.3980], ["d24", "Saint-Martin du Touch", 43.6070, 1.3890],
+      ["d25", "Mirail / Reynerie", 43.5770, 1.4100]
+    ].map(([id, name, lat, lng]) => ({ id, name, coords: [lat, lng], lastVisit: "", visitedPlaces: [], noGo: [] }));
+
+    async function loadCities() {
+      const { data, error } = await db.from("cities").select("*");
+      if (error) { console.error(error); toast("Impossible de charger les communes", true); return []; }
+      return data || [];
+    }
+
+    async function loadDistricts() {
+      const { data, error } = await db.from("toulouse_districts").select("*");
+      if (error || !data || !data.length) return FALLBACK_DISTRICTS;
+      return data;
+    }
+
+    async function save(table, id, updates) {
+      const { error } = await db.from(table).update(updates).eq("id", id);
+      if (error) { console.error(error); toast("Échec de l'enregistrement", true); return false; }
+      toast("Enregistré");
+      return true;
+    }
+
+    // Géocodage des communes, mis en cache dans le navigateur
+    const COORDS_KEY = "rm.coords.v1";
+    let coordsCache = {};
+    try { coordsCache = JSON.parse(localStorage.getItem(COORDS_KEY)) || {}; } catch { coordsCache = {}; }
+
+    async function getCoordinates(name, dept) {
+      const key = `${name}|${dept}`;
+      if (coordsCache[key]) return coordsCache[key];
+      try {
+        const res = await fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(name)}&codeDepartement=${encodeURIComponent(dept)}&fields=centre&format=json&geometry=centre`);
+        const data = await res.json();
+        if (data?.[0]?.centre) {
+          const coords = [data[0].centre.coordinates[1], data[0].centre.coordinates[0]];
+          coordsCache[key] = coords;
+          try { localStorage.setItem(COORDS_KEY, JSON.stringify(coordsCache)); } catch {}
+          return coords;
+        }
+      } catch (e) { console.error("Géolocalisation impossible pour", name); }
+      return null;
+    }
+
+    async function mapLimit(items, limit, fn) {
+      const out = new Array(items.length);
+      let next = 0;
+      await Promise.all(Array.from({ length: Math.min(limit, items.length) }, async () => {
+        while (next < items.length) { const i = next++; out[i] = await fn(items[i], i); }
+      }));
+      return out;
+    }
+
+    function withAge(item) {
+      const age = daysSince(item.lastVisit);
+      return { ...item, age, status: statusFor(age) };
+    }
+
+    function baseFilteredCities() {
+      const query = state.search.trim().toLowerCase();
+      return state.cities.map(withAge).filter(city => {
+        if (state.department !== "all" && city.department !== state.department) return false;
+        if (!query) return true;
+        const haystack = `${city.name} ${city.department} ${(city.visitedPlaces || []).join(" ")} ${(city.noGo || []).join(" ")}`.toLowerCase();
+        return haystack.includes(query);
+      });
+    }
+
+    const STATUS_FILTERS = {
+      all: () => true,
+      never: c => c.age === 9999,
+      todo: c => c.age >= 183,
+      recent: c => c.age < 61
+    };
 
     function filteredCities() {
-      const query = state.search.trim().toLowerCase();
-      let list = enrichedCities().filter(city => {
-        const matchesDepartment = state.department === "all" || city.department === state.department;
-        const visitedStr = (city.visitedPlaces || []).join(" ");
-        const nogoStr = (city.noGo || []).join(" ");
-        const haystack = `${city.name} ${city.department} ${visitedStr} ${nogoStr}`.toLowerCase();
-        return matchesDepartment && (!query || haystack.includes(query));
-      });
-
       const byName = (a, b) => a.name.localeCompare(b.name, "fr");
-      const getCategoryRank = (age) => {
-        if (age === 9999 || age > 365) return 4;
-        if (age >= 183) return 3;
-        if (age >= 61) return 2;
-        return 1;
-      };
-
       const sorters = {
-        date: (a, b) => getCategoryRank(b.age) - getCategoryRank(a.age) || b.population - a.population || byName(a, b),
+        date: (a, b) => STATUS_RANK[b.status.cls] - STATUS_RANK[a.status.cls] || b.population - a.population || byName(a, b),
         population: (a, b) => b.population - a.population || byName(a, b),
         time: (a, b) => a.minutes - b.minutes || byName(a, b),
         name: byName
       };
-
-      return list.sort(sorters[state.sortMode]);
+      return baseFilteredCities().filter(STATUS_FILTERS[state.status]).sort(sorters[state.sortMode]);
     }
 
-    function priorityClassByAge(age) {
-      if (age === 9999 || age > 365) return "p-hot";
-      if (age >= 183) return "p-warm";
-      if (age >= 61) return "p-mid";
-      return "p-cool";
+    // ---------- Vue Communes ----------
+    function renderKpis() {
+      const base = baseFilteredCities();
+      const tiles = [
+        ["all", base.length, "communes"],
+        ["never", base.filter(STATUS_FILTERS.never).length, "jamais visitées"],
+        ["todo", base.filter(STATUS_FILTERS.todo).length, "à relancer (+6 mois)"],
+        ["recent", base.filter(STATUS_FILTERS.recent).length, "visitées < 2 mois"]
+      ];
+      $("#kpis").innerHTML = tiles.map(([key, n, label]) => `
+        <button class="kpi${state.status === key ? " active" : ""}" data-status="${key}" aria-pressed="${state.status === key}">
+          <b>${n}</b><span>${label}</span>
+        </button>`).join("");
     }
 
     function renderDepartmentFilter() {
-      const selected = state.department;
-      const departments = [...new Set(state.cities.map(city => city.department))].sort((a, b) => a.localeCompare(b, "fr", { numeric: true }));
-      els.departmentFilter.innerHTML = `<option value="all">Tous</option>` + departments.map(dep => `<option value="${dep}">${dep}</option>`).join("");
-      els.departmentFilter.value = departments.includes(selected) ? selected : "all";
-      state.department = els.departmentFilter.value;
+      const departments = [...new Set(state.cities.map(c => c.department))].sort((a, b) => a.localeCompare(b, "fr", { numeric: true }));
+      $("#departmentFilter").innerHTML = `<option value="all">Tous les dépts</option>` +
+        departments.map(d => `<option value="${escapeHtml(d)}">Dépt. ${escapeHtml(d)}</option>`).join("");
+      if (!departments.includes(state.department)) state.department = "all";
+      $("#departmentFilter").value = state.department;
     }
 
-    function render() {
+    function cityMeta(city) {
+      const parts = [`Dépt. ${city.department}`];
+      if (city.minutes) parts.push(formatMinutes(city.minutes));
+      if (city.population) parts.push(`${formatNumber(Number(city.population))} hab.`);
+      const v = (city.visitedPlaces || []).length, n = (city.noGo || []).length;
+      if (v || n) parts.push(`${v} lieu${v > 1 ? "x" : ""}${n ? ` · ${n} No Go` : ""}`);
+      return parts.join(" · ");
+    }
+
+    function rowHtml(item, href, meta) {
+      return `
+        <li>
+          <a class="row" href="${href}">
+            <span class="bar s-${item.status.cls}"></span>
+            <span class="row-main"><b>${escapeHtml(item.name)}</b><span>${escapeHtml(meta)}</span></span>
+            <span class="pill s-${item.status.cls}">${item.status.label}</span>
+            <button class="icon-btn" data-today="${escapeHtml(item.id)}" title="Visité aujourd'hui" aria-label="Marquer ${escapeHtml(item.name)} visité aujourd'hui">${icon("check")}</button>
+            <span class="chev">${icon("chev")}</span>
+          </a>
+        </li>`;
+    }
+
+    function renderCommunes() {
+      if (!state.loaded) {
+        $("#rows").innerHTML = Array.from({ length: 6 }, () => `<li class="skeleton"></li>`).join("");
+        return;
+      }
+      renderKpis();
       renderDepartmentFilter();
       const list = filteredCities();
-      const avg = list.length ? Math.round(list.reduce((sum, city) => sum + city.age, 0) / list.length) : 0;
-      els.cityCount.textContent = list.length;
-      els.avgAge.textContent = `${avg} j`;
-      els.resultTitle.textContent = `${list.length} commune${list.length > 1 ? "s" : ""}`;
-      els.emptyState.hidden = list.length !== 0;
-
-      els.rows.innerHTML = list.map((city, index) => {
-        const countVisited = (city.visitedPlaces || []).length;
-        const countNogo = (city.noGo || []).length;
-        const labelContent = (countVisited || countNogo)
-          ? `${countVisited} Fait / ${countNogo} No Go`
-          : "Vide";
-
-        return `
-          <tr>
-            <td class="priority"><div class="${priorityClassByAge(city.age)}"></div></td>
-            <td class="rank">${index + 1}</td>
-            <td>
-              <span class="city">${city.name}</span>
-              <span class="sub">Département ${city.department}</span>
-            </td>
-            <td>${formatMinutes(Number(city.minutes))}</td>
-            <td>${formatNumber(Number(city.population))}</td>
-            <td>
-              <div class="date-cell">
-                <input type="date" value="${city.lastVisit || ""}" data-action="date" data-id="${city.id}">
-                <button class="mini" title="Marquer aujourd'hui" data-action="today" data-id="${city.id}">✓</button>
-              </div>
-            </td>
-            <td>${city.age === 9999 ? "Jamais" : formatNumber(city.age)}</td>
-            <td>
-              <button class="btn-link" data-action="open-details" data-id="${city.id}">
-                Détails (${labelContent}) →
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join("");
-      if (els.mapWrapper && els.mapWrapper.style.display === "block") updateMap();
+      $("#resultTitle").textContent = `${list.length} commune${list.length > 1 ? "s" : ""}`;
+      $("#rows").innerHTML = list.length
+        ? list.map(c => rowHtml(c, `#/commune/${encodeURIComponent(c.id)}`, cityMeta(c))).join("")
+        : `<li class="empty">${state.cities.length ? "Aucune commune ne correspond à ces filtres." : "La base de données est vide."}</li>`;
     }
 
-    function switchScreen(screenName) {
-      els.mainScreen.classList.remove("active");
-      els.detailScreen.classList.remove("active");
-      els.toulouseDistrictsScreen.classList.remove("active");
-      els.districtDetailScreen.classList.remove("active");
+    $("#kpis").addEventListener("click", e => {
+      const btn = e.target.closest("[data-status]");
+      if (!btn) return;
+      state.status = state.status === btn.dataset.status ? "all" : btn.dataset.status;
+      renderCommunes();
+    });
+    $("#search").addEventListener("input", e => { state.search = e.target.value; renderCommunes(); });
+    $("#departmentFilter").addEventListener("change", e => { state.department = e.target.value; renderCommunes(); });
+    $("#sortMode").addEventListener("change", e => { state.sortMode = e.target.value; renderCommunes(); });
 
-      if (screenName === 'main') els.mainScreen.classList.add("active");
-      if (screenName === 'detail') els.detailScreen.classList.add("active");
-      if (screenName === 'toulouseDistricts') {
-        els.toulouseDistrictsScreen.classList.add("active");
-        setTimeout(() => initToulouseDistrictsMap(), 100);
-        renderDistrictsTable();
-      }
-      if (screenName === 'districtDetail') els.districtDetailScreen.classList.add("active");
+    // Bouton ✓ dans une ligne (communes ou quartiers)
+    async function markTodayFromRow(e, table) {
+      const btn = e.target.closest("[data-today]");
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const items = table === "cities" ? state.cities : state.districts;
+      const item = items.find(x => String(x.id) === btn.dataset.today);
+      if (!item) return;
+      item.lastVisit = todayIso();
+      table === "cities" ? renderCommunes() : renderToulouse();
+      await save(table, item.id, { lastVisit: item.lastVisit });
     }
+    $("#rows").addEventListener("click", e => markTodayFromRow(e, "cities"));
+    $("#districtRows").addEventListener("click", e => markTodayFromRow(e, "toulouse_districts"));
 
-    async function openCityDetails(cityId) {
-      const city = state.cities.find(c => c.id === cityId);
-      if (!city) return;
-
-      state.currentSelectedCityId = cityId;
-      els.detailCityName.textContent = city.name;
-      els.detailDept.textContent = `Département ${city.department}`;
-
-      els.nearbyCitiesContainer.innerHTML = "<i>💡 Cliquez sur le nom de la ville pour voir les communes à ~30 min.</i>";
-
-      renderDetailLists(city);
-      switchScreen('detail');
-    }
-
-    function renderDetailLists(city) {
-      const vp = city.visitedPlaces || [];
-      const ng = city.noGo || [];
-
-      els.visitedList.innerHTML = vp.length
-        ? vp.map((place, i) => `
-            <li>
-              <span>${place}</span>
-              <button class="delete-item" data-list="visited" data-index="${i}">×</button>
-            </li>`).join("")
-        : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucun lieu enregistré</li>`;
-
-      els.nogoList.innerHTML = ng.length
-        ? ng.map((item, i) => `
-            <li>
-              <span>${item}</span>
-              <button class="delete-item" data-list="nogo" data-index="${i}">×</button>
-            </li>`).join("")
-        : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucune zone No Go</li>`;
-    }
-
-    function closeDetails() {
-      state.currentSelectedCityId = null;
-      els.detailMapWrapper.style.display = "none";
-      els.nearbyCitiesContainer.innerHTML = "";
-
-      document.getElementById("workSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
-      document.getElementById("sportSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
-      document.getElementById("studySuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
-
-      switchScreen('main');
-      render();
-    }
-
-    // --- CARTE & TABLEAU DES QUARTIERS DE TOULOUSE ---
-    let districtsMap = null;
-    let districtsMarkersLayer = null;
-
-    function initToulouseDistrictsMap() {
-      if (!districtsMap) {
-        districtsMap = L.map('toulouseDistrictsMap').setView([43.6047, 1.4442], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(districtsMap);
-        districtsMarkersLayer = L.layerGroup().addTo(districtsMap);
-      } else {
-        districtsMap.invalidateSize();
-      }
-
-      updateDistrictsMapMarkers();
-    }
-
-    function updateDistrictsMapMarkers() {
-      if (!districtsMarkersLayer) return;
-      districtsMarkersLayer.clearLayers();
-
-      state.districts.forEach(d => {
-        if (!d.coords) return;
-        const age = daysSince(d.lastVisit);
-        const pClass = priorityClassByAge(age);
-
-        let color = "#3f9b70";
-        if (pClass === "p-hot") color = "#d13f2f";
-        if (pClass === "p-warm") color = "#e39423";
-        if (pClass === "p-mid") color = "#d0b936";
-
-        const markerHtml = `<div style="background-color: ${color}; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 11px; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);">${age === 9999 ? '?' : age + 'j'}</div>`;
-        const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [28, 28], iconAnchor: [14, 14] });
-
-        const popupDiv = document.createElement("div");
-        popupDiv.innerHTML = `<b>${d.name}</b><br>Dernier passage : ${d.lastVisit || 'Jamais'}<br>`;
-
-        const btn = document.createElement("button");
-        btn.className = "btn-link";
-        btn.style.marginTop = "8px";
-        btn.innerText = "Gérer le quartier →";
-        btn.onclick = () => {
-          districtsMap.closePopup();
-          openDistrict(d.id);
-        };
-        popupDiv.appendChild(btn);
-
-        L.marker(d.coords, { icon: customIcon })
-          .bindPopup(popupDiv)
-          .addTo(districtsMarkersLayer);
-      });
-    }
-
-    function renderDistrictsTable() {
-      const sortedDistricts = [...state.districts].sort((a, b) => daysSince(b.lastVisit) - daysSince(a.lastVisit));
-
-      els.districtsRows.innerHTML = sortedDistricts.map(d => {
-        const age = daysSince(d.lastVisit);
-        const vCount = (d.visitedPlaces || []).length;
-        const nCount = (d.noGo || []).length;
-        const labelContent = (vCount || nCount) ? `${vCount} Fait / ${nCount} No Go` : "Vide";
-
-        return `
-          <tr>
-            <td class="priority"><div class="${priorityClassByAge(age)}"></div></td>
-            <td><strong style="color: var(--ink);">${d.name}</strong></td>
-            <td>
-              <div class="date-cell">
-                <input type="date" value="${d.lastVisit || ""}" data-action="district-date" data-id="${d.id}">
-                <button class="mini" title="Marquer aujourd'hui" data-action="district-today" data-id="${d.id}">✓</button>
-              </div>
-            </td>
-            <td>${age === 9999 ? "Jamais" : formatNumber(age) + " j"}</td>
-            <td>${labelContent}</td>
-            <td>
-              <button class="btn-link" onclick="openDistrict('${d.id}')">Détails →</button>
-            </td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    window.openDistrict = function(districtId) {
-      const district = state.districts.find(d => d.id === districtId);
-      if (!district) return;
-      state.currentSelectedDistrictId = districtId;
-      els.districtDetailName.textContent = district.name;
-      renderDistrictLists(district);
-      switchScreen('districtDetail');
-    };
-
-    function renderDistrictLists(district) {
-      const vp = district.visitedPlaces || [];
-      const ng = district.noGo || [];
-      els.districtVisitedList.innerHTML = vp.length ? vp.map((p, i) => `<li><span>${p}</span><button class="delete-item" data-list="d-visited" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucun lieu enregistré</li>`;
-      els.districtNogoList.innerHTML = ng.length ? ng.map((item, i) => `<li><span>${item}</span><button class="delete-item" data-list="d-nogo" data-index="${i}">×</button></li>`).join("") : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucune zone No Go</li>`;
-    }
-
-    els.districtsRows.addEventListener("click", async event => {
-      const target = event.target.closest("[data-action]");
-      if (!target) return;
-      const dId = target.dataset.id;
-      const district = state.districts.find(d => d.id === dId);
-      if (!district) return;
-
-      if (target.dataset.action === "district-today") {
-        const today = todayIso();
-        district.lastVisit = today;
-        renderDistrictsTable();
-        updateDistrictsMapMarkers();
-        await updateDistrictInDB(dId, { lastVisit: today });
-      }
-    });
-
-    els.districtsRows.addEventListener("change", async event => {
-      if (event.target.dataset.action !== "district-date") return;
-      const dId = event.target.dataset.id;
-      const district = state.districts.find(d => d.id === dId);
-      if (!district) return;
-      district.lastVisit = event.target.value;
-      renderDistrictsTable();
-      updateDistrictsMapMarkers();
-      await updateDistrictInDB(dId, { lastVisit: event.target.value });
-    });
-
-    els.openToulouseDistrictsBtn.addEventListener("click", () => switchScreen('toulouseDistricts'));
-    els.backFromToulouseDistrictsBtn.addEventListener("click", () => switchScreen('main'));
-    els.backToToulouseDistrictsBtn.addEventListener("click", () => switchScreen('toulouseDistricts'));
-    els.backToMainBtn.addEventListener("click", closeDetails);
-
-    els.search.addEventListener("input", e => { state.search = e.target.value; render(); });
-    els.departmentFilter.addEventListener("change", e => { state.department = e.target.value; render(); });
-    els.sortMode.addEventListener("change", e => { state.sortMode = e.target.value; render(); });
-
-    els.rows.addEventListener("click", async event => {
-      const target = event.target.closest("[data-action]");
-      if (!target) return;
-      const cityId = target.dataset.id;
-      const city = state.cities.find(item => item.id === cityId);
-      if (!city) return;
-
-      if (target.dataset.action === "open-details") {
-        openCityDetails(cityId);
-      }
-      if (target.dataset.action === "today") {
-        const today = todayIso();
-        city.lastVisit = today;
-        render();
-        await updateCityInDB(cityId, { lastVisit: today });
-      }
-    });
-
-    els.rows.addEventListener("change", async event => {
-      const action = event.target.dataset.action;
-      if (action !== "date") return;
-      const cityId = event.target.dataset.id;
-      const city = state.cities.find(item => item.id === cityId);
-      if (!city) return;
-
-      const newDate = event.target.value;
-      city.lastVisit = newDate;
-      render();
-      await updateCityInDB(cityId, { lastVisit: newDate });
-    });
-
-    els.addVisitedInput.addEventListener("keydown", async event => {
-      if (event.key !== "Enter" || !event.target.value.trim()) return;
-      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
-      if (city) {
-        if (!city.visitedPlaces) city.visitedPlaces = [];
-        city.visitedPlaces.push(event.target.value.trim());
-        event.target.value = "";
-        renderDetailLists(city);
-        await updateCityInDB(city.id, { visitedPlaces: city.visitedPlaces });
-      }
-    });
-
-    els.addNogoInput.addEventListener("keydown", async event => {
-      if (event.key !== "Enter" || !event.target.value.trim()) return;
-      const city = state.cities.find(c => c.id === state.currentSelectedCityId);
-      if (city) {
-        if (!city.noGo) city.noGo = [];
-        city.noGo.push(event.target.value.trim());
-        event.target.value = "";
-        renderDetailLists(city);
-        await updateCityInDB(city.id, { noGo: city.noGo });
-      }
-    });
-
-    els.addDistrictVisitedInput.addEventListener("keydown", async event => {
-      if (event.key !== "Enter" || !event.target.value.trim()) return;
-      const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
-      if (district) {
-        if (!district.visitedPlaces) district.visitedPlaces = [];
-        district.visitedPlaces.push(event.target.value.trim());
-        event.target.value = "";
-        renderDistrictLists(district);
-        await updateDistrictInDB(district.id, { visitedPlaces: district.visitedPlaces });
-      }
-    });
-
-    els.addDistrictNogoInput.addEventListener("keydown", async event => {
-      if (event.key !== "Enter" || !event.target.value.trim()) return;
-      const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
-      if (district) {
-        if (!district.noGo) district.noGo = [];
-        district.noGo.push(event.target.value.trim());
-        event.target.value = "";
-        renderDistrictLists(district);
-        await updateDistrictInDB(district.id, { noGo: district.noGo });
-      }
-    });
-
-    document.querySelectorAll("#visitedList, #nogoList").forEach(ul => {
-      ul.addEventListener("click", async event => {
-        const btn = event.target.closest(".delete-item");
-        if (!btn) return;
-        const index = parseInt(btn.dataset.index, 10);
-        const listType = btn.dataset.list;
-        const city = state.cities.find(c => c.id === state.currentSelectedCityId);
-
-        if (city) {
-          if (listType === "visited") {
-            city.visitedPlaces.splice(index, 1);
-            renderDetailLists(city);
-            await updateCityInDB(city.id, { visitedPlaces: city.visitedPlaces });
-          }
-          if (listType === "nogo") {
-            city.noGo.splice(index, 1);
-            renderDetailLists(city);
-            await updateCityInDB(city.id, { noGo: city.noGo });
-          }
-        }
-      });
-    });
-
-    document.querySelectorAll("#districtVisitedList, #districtNogoList").forEach(ul => {
-      ul.addEventListener("click", async event => {
-        const btn = event.target.closest(".delete-item");
-        if (!btn) return;
-        const index = parseInt(btn.dataset.index, 10);
-        const listType = btn.dataset.list;
-        const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
-
-        if (district) {
-          if (listType === "d-visited") {
-            district.visitedPlaces.splice(index, 1);
-            renderDistrictLists(district);
-            await updateDistrictInDB(district.id, { visitedPlaces: district.visitedPlaces });
-          }
-          if (listType === "d-nogo") {
-            district.noGo.splice(index, 1);
-            renderDistrictLists(district);
-            await updateDistrictInDB(district.id, { noGo: district.noGo });
-          }
-        }
-      });
-    });
-
-    els.addForm.addEventListener("submit", async event => {
-      event.preventDefault();
+    // Ajout
+    const addDialog = $("#addDialog");
+    $("#openAdd").addEventListener("click", () => addDialog.showModal());
+    $("#cancelAdd").addEventListener("click", () => addDialog.close());
+    $("#addForm").addEventListener("submit", async e => {
+      e.preventDefault();
       const newCity = {
-        name: document.querySelector("#newName").value.trim(),
-        department: document.querySelector("#newDepartment").value.trim(),
-        population: Number(document.querySelector("#newPopulation").value),
-        minutes: Number(document.querySelector("#newTime").value),
-        lastVisit: document.querySelector("#newDate").value || null,
+        name: $("#newName").value.trim(),
+        department: $("#newDepartment").value.trim(),
+        population: Number($("#newPopulation").value),
+        minutes: Number($("#newTime").value),
+        lastVisit: $("#newDate").value || null,
         visitedPlaces: [],
         noGo: []
       };
-
-      event.currentTarget.reset();
-
-      const savedCity = await addCityToDB(newCity);
-      if (savedCity) {
-        state.cities.push(savedCity);
-        render();
-      }
+      const { data, error } = await db.from("cities").insert([newCity]).select();
+      if (error) { console.error(error); toast("Échec de l'ajout", true); return; }
+      state.cities.push(data[0]);
+      e.target.reset();
+      addDialog.close();
+      toast(`${newCity.name} ajoutée`);
+      renderCommunes();
     });
 
-    function getDistanceKm(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    // ---------- Vue Carte ----------
+    let map = null, markersLayer = null, meLayer = null, mapUpdateId = 0, carteFitted = false;
+    let carteItems = [];            // [{ city, coords }] affichés
+    const carteMarkers = new Map(); // id -> marker
+    const mapHidden = new Set();    // statuts masqués via la légende
+    let me = null;                  // ma position [lat, lng]
+
+    const LABEL_ZOOM = 10;
+
+    async function renderCarte() {
+      if (!map) {
+        map = createMap("map").setView([43.6047, 1.4442], 8);
+        markersLayer = L.layerGroup().addTo(map);
+        meLayer = L.layerGroup().addTo(map);
+        map.on("zoomend", () => map.getContainer().classList.toggle("show-labels", map.getZoom() >= LABEL_ZOOM));
+        map.on("moveend", renderSideList);
+      }
+      setTimeout(() => map.invalidateSize(), 50);
+      const updateId = ++mapUpdateId;
+      const list = filteredCities();
+      const filtered = state.search || state.department !== "all" || state.status !== "all";
+      $("#mapInfo").textContent = `${list.length} commune${list.length > 1 ? "s" : ""}${filtered ? " · filtres de l'onglet Communes appliqués" : ""}`;
+      renderLegend($("#mapLegend"), list, mapHidden, renderCarte);
+
+      const coords = await mapLimit(list, 6, c => getCoordinates(c.name, c.department));
+      if (updateId !== mapUpdateId) return;
+      markersLayer.clearLayers();
+      carteMarkers.clear();
+      carteItems = [];
+      list.forEach((city, i) => {
+        const c = coords[i];
+        if (!c || mapHidden.has(city.status.cls)) return;
+        const size = sizeFor(city.population);
+        const marker = L.marker(c, {
+          icon: markerIcon(city.status.cls, size, "", city.age === 9999 ? "never" : ""),
+          // Les communes prioritaires passent au-dessus des autres
+          zIndexOffset: STATUS_RANK[city.status.cls] * 100 + size,
+          riseOnHover: true
+        })
+          .bindPopup(() => popupHtml(city, "cities", { coords: c, distanceKm: me ? getDistanceKm(me[0], me[1], c[0], c[1]) : null }))
+          .bindTooltip(escapeHtml(city.name), { permanent: true, direction: "right", offset: [size / 2 + 2, 0], className: "lbl" })
+          .addTo(markersLayer);
+        carteMarkers.set(String(city.id), marker);
+        carteItems.push({ city, coords: c });
+      });
+      if (!carteFitted && carteItems.length) { fitCarte(); carteFitted = true; }
+      map.getContainer().classList.toggle("show-labels", map.getZoom() >= LABEL_ZOOM);
+      renderSideList();
     }
 
-    let dMap = null;
-    let dMarkersLayer = null;
+    function fitCarte() {
+      if (carteItems.length) map.fitBounds(L.latLngBounds(carteItems.map(x => x.coords)), { padding: [30, 30] });
+    }
 
-    els.detailCityName.addEventListener("click", async () => {
-      const currentCityId = state.currentSelectedCityId;
-      if (!currentCityId) return;
+    // Liste à côté de la carte : les communes de la zone visible, par priorité (ou par distance si localisé)
+    function renderSideList() {
+      if (!map) return;
+      const bounds = map.getBounds();
+      const items = carteItems
+        .filter(x => bounds.contains(x.coords))
+        .map(x => ({ ...x, km: me ? getDistanceKm(me[0], me[1], x.coords[0], x.coords[1]) : null }))
+        .sort(me
+          ? (a, b) => a.km - b.km
+          : (a, b) => STATUS_RANK[b.city.status.cls] - STATUS_RANK[a.city.status.cls] || b.city.population - a.city.population);
+      $("#sideTitle").textContent = `${items.length} commune${items.length > 1 ? "s" : ""} dans la zone visible`;
+      $("#sideSub").textContent = me ? "Triées de la plus proche à la plus lointaine" : "Triées par priorité · déplace la carte pour filtrer";
+      $("#sideList").innerHTML = items.length ? items.slice(0, 80).map(({ city, km }) => `
+        <li><button data-focus="${escapeHtml(city.id)}">
+          <i style="background:${STATUS_COLORS[city.status.cls]}"></i>
+          <span><b>${escapeHtml(city.name)}</b><small>${escapeHtml(cityMeta(city))}</small></span>
+          <em style="color:${STATUS_COLORS[city.status.cls]}">${km != null ? `${Math.round(km)} km` : city.status.label}</em>
+        </button></li>`).join("")
+        : `<li class="empty">Aucune commune dans cette zone.</li>`;
+    }
 
-      const currentCity = state.cities.find(c => c.id === currentCityId);
-      els.nearbyCitiesContainer.innerHTML = "<i>⏳ Création de la carte en cours...</i>";
+    $("#sideList").addEventListener("click", e => {
+      const btn = e.target.closest("[data-focus]");
+      if (!btn) return;
+      const marker = carteMarkers.get(btn.dataset.focus);
+      if (!marker) return;
+      map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 11), { duration: .6 });
+      map.once("moveend", () => marker.openPopup());
+      if (window.innerWidth <= 760) $("#mapWrap").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
 
-      els.detailMapWrapper.style.display = "block";
+    $("#fitBtn").addEventListener("click", fitCarte);
 
-      if (!dMap) {
-        dMap = L.map('detailMap');
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(dMap);
-        dMarkersLayer = L.layerGroup().addTo(dMap);
+    $("#locateBtn").addEventListener("click", () => {
+      if (!navigator.geolocation) { toast("Géolocalisation indisponible", true); return; }
+      $("#locateBtn").classList.add("on");
+      navigator.geolocation.getCurrentPosition(pos => {
+        me = [pos.coords.latitude, pos.coords.longitude];
+        meLayer.clearLayers();
+        L.marker(me, { icon: L.divIcon({ html: '<div class="me-dot"></div>', className: "", iconSize: [16, 16], iconAnchor: [8, 8] }), zIndexOffset: 5000, interactive: false }).addTo(meLayer);
+        map.flyTo(me, 10, { duration: .8 });
+        renderSideList();
+      }, () => {
+        $("#locateBtn").classList.remove("on");
+        toast("Position refusée ou introuvable", true);
+      }, { enableHighAccuracy: true, timeout: 10000 });
+    });
+
+    // ---------- Vue Toulouse ----------
+    let toulouseMap = null, toulouseLayer = null, toulouseFitted = false;
+    const toulouseHidden = new Set();
+
+    function renderToulouse() {
+      const districts = state.districts.map(withAge).sort((a, b) => b.age - a.age || a.name.localeCompare(b.name, "fr"));
+      $("#districtRows").innerHTML = districts.map(d => {
+        const v = (d.visitedPlaces || []).length, n = (d.noGo || []).length;
+        const meta = v || n ? `${v} lieu${v > 1 ? "x" : ""} · ${n} No Go` : "Aucun lieu enregistré";
+        return rowHtml(d, `#/quartier/${encodeURIComponent(d.id)}`, meta);
+      }).join("");
+
+      if (!toulouseMap) {
+        toulouseMap = createMap("toulouseMap").setView([43.6047, 1.4442], 13);
+        toulouseLayer = L.layerGroup().addTo(toulouseMap);
+        // Dézoomé : on ne garde que les pastilles "x j" pour éviter que les noms se chevauchent
+        toulouseMap.on("zoomend", () => toulouseMap.getContainer().classList.toggle("compact", toulouseMap.getZoom() < 14));
       }
+      setTimeout(() => toulouseMap.invalidateSize(), 50);
+      renderLegend($("#toulouseLegend"), districts, toulouseHidden, renderToulouse);
+      toulouseLayer.clearLayers();
+      const points = [];
+      districts.forEach(d => {
+        if (!Array.isArray(d.coords) || toulouseHidden.has(d.status.cls)) return;
+        const color = STATUS_COLORS[d.status.cls];
+        // Chaque quartier = une zone colorée (rayon ~380 m) + une étiquette nom / jours
+        L.circle(d.coords, { radius: 380, color, weight: 2, opacity: .9, fillColor: color, fillOpacity: .2 })
+          .bindPopup(() => popupHtml(d, "toulouse_districts", { coords: d.coords }))
+          .addTo(toulouseLayer);
+        L.marker(d.coords, {
+          interactive: false,
+          icon: L.divIcon({
+            className: "", iconSize: [0, 0],
+            html: `<div class="district-lbl"><span>${escapeHtml(d.name)}</span><em style="background:${color}">${d.age === 9999 ? "Jamais" : `${d.age} j`}</em></div>`
+          })
+        }).addTo(toulouseLayer);
+        points.push(d.coords);
+      });
+      if (!toulouseFitted && points.length) { toulouseMap.fitBounds(points, { padding: [30, 30] }); toulouseFitted = true; }
+      toulouseMap.getContainer().classList.toggle("compact", toulouseMap.getZoom() < 14);
+    }
 
-      setTimeout(() => dMap.invalidateSize(), 100);
-      dMarkersLayer.clearLayers();
+    // ---------- Fiche commune / quartier ----------
+    const currentItem = () => {
+      if (!state.current) return null;
+      const items = state.current.table === "cities" ? state.cities : state.districts;
+      return items.find(x => String(x.id) === state.current.id) || null;
+    };
 
-      const currentCoords = await getCoordinates(currentCity.name, currentCity.department);
-      if (!currentCoords) {
-        els.nearbyCitiesContainer.innerHTML = "<span style='color: var(--accent-2)'>Impossible de localiser cette commune.</span>";
+    function renderDetail() {
+      const item = currentItem();
+      if (!item) {
+        $("#dName").textContent = state.loaded ? "Introuvable" : "Chargement…";
         return;
       }
+      const isCity = state.current.table === "cities";
+      const { status } = withAge(item);
 
-      let nearby = [];
-      await Promise.all(state.cities.map(async (otherCity) => {
-        if (otherCity.id === currentCity.id) return;
-        const coords = await getCoordinates(otherCity.name, otherCity.department);
-        if (coords) {
-          const dist = getDistanceKm(currentCoords[0], currentCoords[1], coords[0], coords[1]);
-          if (dist <= 25) nearby.push({ city: otherCity, distance: dist, coords: coords });
-        }
-      }));
+      $("#detailBack").href = isCity ? "#/communes" : "#/toulouse";
+      $("#detailBackLabel").textContent = isCity ? "Communes" : "Quartiers de Toulouse";
+      $("#dEyebrow").textContent = isCity ? `Département ${item.department}` : "Toulouse · micro-quartier";
+      $("#dName").textContent = item.name;
+      $("#dMeta").textContent = isCity
+        ? [item.minutes && `${formatMinutes(item.minutes)} depuis Toulouse`, item.population && `${formatNumber(Number(item.population))} habitants`].filter(Boolean).join(" · ")
+        : "";
+      $("#dPill").className = `pill s-${status.cls}`;
+      $("#dPill").textContent = status.label;
+      $("#dDate").value = item.lastVisit || "";
+      $("#dNearbyBtn").hidden = !isCity;
+      $("#dOpps").hidden = !isCity;
+      renderChips(item);
+    }
 
-      const currentHtml = `<div style="background-color: var(--ink); width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5);"></div>`;
-      const currentIcon = L.divIcon({ html: currentHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
-      L.marker(currentCoords, { icon: currentIcon, zIndexOffset: 1000 })
-        .bindPopup(`<b>${currentCity.name}</b><br>📍 Ville sélectionnée`)
-        .addTo(dMarkersLayer);
+    function renderChips(item) {
+      const chips = (items, kind) => items.length
+        ? items.map((t, i) => `<li class="chip ${kind}"><span>${escapeHtml(t)}</span><button data-remove="${i}" data-kind="${kind}" aria-label="Retirer ${escapeHtml(t)}">${icon("x")}</button></li>`).join("")
+        : `<li class="none">${kind === "nogo" ? "Aucune zone No Go" : "Aucun lieu enregistré"}</li>`;
+      $("#dVisited").innerHTML = chips(item.visitedPlaces || [], "visited");
+      $("#dNogo").innerHTML = chips(item.noGo || [], "nogo");
+    }
 
-      let bounds = L.latLngBounds([currentCoords]);
+    async function setLastVisit(value) {
+      const item = currentItem();
+      if (!item) return;
+      item.lastVisit = value;
+      renderDetail();
+      await save(state.current.table, item.id, { lastVisit: value });
+    }
+    $("#dDate").addEventListener("change", e => setLastVisit(e.target.value));
+    $("#dToday").addEventListener("click", () => setLastVisit(todayIso()));
 
-      nearby.forEach(item => {
-        const pClass = priorityClassByAge(item.city.age);
-        let color = "#3f9b70";
-        if (pClass === "p-hot") color = "#d13f2f";
-        if (pClass === "p-warm") color = "#e39423";
-        if (pClass === "p-mid") color = "#d0b936";
-
-        const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
-        const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
-
-        const popupDiv = document.createElement("div");
-        popupDiv.innerHTML = `<b>${item.city.name}</b><br>🚗 ~${Math.round(item.distance)} km`;
-
-        const btn = document.createElement("button");
-        btn.className = "btn-link";
-        btn.style.marginTop = "8px";
-        btn.innerText = "Voir détails →";
-
-        btn.onclick = () => {
-            closeDetails();
-            openCityDetails(item.city.id);
-        };
-
-        popupDiv.appendChild(btn);
-
-        L.marker(item.coords, { icon: customIcon })
-          .bindPopup(popupDiv)
-          .addTo(dMarkersLayer);
-
-        bounds.extend(item.coords);
+    function bindChipInput(inputSel, field) {
+      $(inputSel).addEventListener("keydown", async e => {
+        if (e.key !== "Enter" || !e.target.value.trim()) return;
+        const item = currentItem();
+        if (!item) return;
+        item[field] = [...(item[field] || []), e.target.value.trim()];
+        e.target.value = "";
+        renderChips(item);
+        await save(state.current.table, item.id, { [field]: item[field] });
       });
+    }
+    bindChipInput("#dVisitedInput", "visitedPlaces");
+    bindChipInput("#dNogoInput", "noGo");
 
-      if (nearby.length > 0) {
-        dMap.fitBounds(bounds, { padding: [40, 40] });
-        els.nearbyCitiesContainer.innerHTML = `<span style="color: var(--accent); font-weight: 800;">📍 ${nearby.length} communes à ~30 min affichées sur la carte.</span>`;
-      } else {
-        dMap.setView(currentCoords, 11);
-        els.nearbyCitiesContainer.innerHTML = "Aucune autre commune de votre liste n'est à moins de 30 min.";
+    document.querySelectorAll("#dVisited, #dNogo").forEach(ul => ul.addEventListener("click", async e => {
+      const btn = e.target.closest("[data-remove]");
+      if (!btn) return;
+      const item = currentItem();
+      const field = btn.dataset.kind === "nogo" ? "noGo" : "visitedPlaces";
+      item[field] = (item[field] || []).filter((_, i) => i !== Number(btn.dataset.remove));
+      renderChips(item);
+      await save(state.current.table, item.id, { [field]: item[field] });
+    }));
+
+    // Communes à ~30 min
+    let dMap = null, dLayer = null;
+    $("#dNearbyBtn").addEventListener("click", async () => {
+      const city = currentItem();
+      if (!city) return;
+      const card = $("#dNearbyCard"), info = $("#dNearbyInfo");
+      card.hidden = false;
+      info.textContent = "Recherche des communes proches…";
+      if (!dMap) {
+        dMap = createMap("detailMap");
+        dLayer = L.layerGroup().addTo(dMap);
+        dMap.getContainer().classList.add("show-labels"); // peu de points : les noms restent affichés
       }
+      setTimeout(() => dMap.invalidateSize(), 50);
+      dLayer.clearLayers();
+
+      const here = await getCoordinates(city.name, city.department);
+      if (!here) { info.textContent = "Impossible de localiser cette commune."; return; }
+      const others = state.cities.filter(c => c.id !== city.id).map(withAge);
+      const coords = await mapLimit(others, 6, c => getCoordinates(c.name, c.department));
+      const nearby = others
+        .map((c, i) => coords[i] && { city: c, coords: coords[i], km: getDistanceKm(here[0], here[1], coords[i][0], coords[i][1]) })
+        .filter(x => x && x.km <= 25)
+        .sort((a, b) => a.km - b.km);
+
+      const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+      L.circle(here, { radius: 25000, color: accent, weight: 1.5, dashArray: "6 8", fillColor: accent, fillOpacity: .05, interactive: false }).addTo(dLayer);
+      L.marker(here, {
+        icon: L.divIcon({ html: `<div class="marker" style="background:${accent};width:22px;height:22px;border-width:3px"></div>`, className: "", iconSize: [22, 22], iconAnchor: [11, 11] }),
+        zIndexOffset: 2000
+      })
+        .bindTooltip(escapeHtml(city.name), { permanent: true, direction: "right", offset: [13, 0], className: "lbl" })
+        .addTo(dLayer);
+      nearby.forEach(n => {
+        const size = sizeFor(n.city.population);
+        L.marker(n.coords, { icon: markerIcon(n.city.status.cls, size, "", n.city.age === 9999 ? "never" : ""), riseOnHover: true })
+          .bindPopup(() => popupHtml(n.city, "cities", { coords: n.coords, distanceKm: n.km }))
+          .bindTooltip(`${escapeHtml(n.city.name)} · ${Math.round(n.km)} km`, { permanent: true, direction: "right", offset: [size / 2 + 2, 0], className: "lbl" })
+          .addTo(dLayer);
+      });
+      dMap.fitBounds(L.latLng(here).toBounds(52000), { padding: [10, 10] });
+      const todo = nearby.filter(n => n.city.age >= 183).length;
+      info.textContent = nearby.length
+        ? `${nearby.length} commune${nearby.length > 1 ? "s" : ""} de ta liste à ~30 min (25 km), dont ${todo} à relancer. Clique sur un point pour agir.`
+        : "Aucune autre commune de ta liste à moins de 30 min.";
     });
 
-    let map = null;
-    let markersLayer = null;
-    let cityCoordinates = {};
-    let mapUpdateId = 0;
-
-    async function getCoordinates(cityName, dept) {
-      if (cityCoordinates[cityName]) return cityCoordinates[cityName];
-      try {
-        const res = await fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(cityName)}&codeDepartement=${dept}&fields=centre&format=json&geometry=centre`);
-        const data = await res.json();
-        if (data && data.length > 0 && data[0].centre) {
-          const coords = [data[0].centre.coordinates[1], data[0].centre.coordinates[0]];
-          cityCoordinates[cityName] = coords;
-          return coords;
-        }
-      } catch (e) { console.error("Erreur géolocalisation pour", cityName); }
-      return null;
-    }
-
-    async function updateMap() {
-      if (!map) {
-        map = L.map('map').setView([43.6047, 1.4442], 8);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-        markersLayer = L.layerGroup().addTo(map);
-      }
-
-      const currentUpdateId = ++mapUpdateId;
-      markersLayer.clearLayers();
-      const list = filteredCities();
-
-      for (const city of list) {
-        if (currentUpdateId !== mapUpdateId) return;
-
-        const coords = await getCoordinates(city.name, city.department);
-        if (coords) {
-          const pClass = priorityClassByAge(city.age);
-          let color = "#3f9b70";
-          if (pClass === "p-hot") color = "#d13f2f";
-          if (pClass === "p-warm") color = "#e39423";
-          if (pClass === "p-mid") color = "#d0b936";
-
-          const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
-          const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
-
-          const popupDiv = document.createElement("div");
-          popupDiv.innerHTML = `<b>${city.name}</b> (${city.department})<br>Passage : ${city.age === 9999 ? "Jamais" : city.age + " jours"}<br>`;
-
-          const detailBtn = document.createElement("button");
-          detailBtn.className = "btn-link";
-          detailBtn.style.marginTop = "8px";
-          detailBtn.innerText = "Voir détails →";
-
-          detailBtn.onclick = () => {
-             map.closePopup();
-             openCityDetails(city.id);
-          };
-
-          popupDiv.appendChild(detailBtn);
-
-          L.marker(coords, { icon: customIcon })
-            .bindPopup(popupDiv)
-            .addTo(markersLayer);
-        }
-      }
-    }
-
-    els.toggleMapBtn.addEventListener("click", () => {
-      const isHidden = els.mapWrapper.style.display === "none";
-      els.mapWrapper.style.display = isHidden ? "block" : "none";
-      if (isHidden) {
-        if (!map) updateMap();
-        else {
-          updateMap();
-          setTimeout(() => map.invalidateSize(), 100);
-        }
-      }
-    });
-
-    async function initApp() {
-      els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Chargement depuis Supabase...</td></tr>';
-      [state.cities, state.districts] = await Promise.all([loadCitiesFromDB(), loadDistrictsFromDB()]);
-
-      if (state.cities.length === 0) {
-          els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">La base de données est vide.</td></tr>';
-      } else {
-          render();
-      }
-    }
-
-    // #giiiveyouwings : Google Places via la Edge Function Supabase "places-nearby"
-    // (la clé Google reste côté serveur, voir supabase/functions/places-nearby).
+    // ---------- #giiiveyouwings ----------
+    // Edge Function Supabase "places-nearby" (voir supabase/functions/places-nearby)
     const SUGGESTION_LISTS = { work: "workSuggestionsList", sport: "sportSuggestionsList", study: "studySuggestionsList" };
     const SUGGESTIONS_PER_LIST = 8;
     const SEARCH_RADIUS_M = 3000;
+    const note = text => `<li class="note">${text}</li>`;
+
+    function resetSuggestions() {
+      Object.values(SUGGESTION_LISTS).forEach(id => $("#" + id).innerHTML = note("Clique sur #giiiveyouwings"));
+    }
 
     function renderSuggestions(listId, places, city) {
-      const el = document.getElementById(listId);
+      const el = $("#" + listId);
       const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
       const visited = new Set((city.visitedPlaces || []).map(norm));
       const noGo = (city.noGo || []).map(norm);
-
-      const shown = places
-        .filter(p => !noGo.some(n => n && norm(p.name).includes(n)))
-        .slice(0, SUGGESTIONS_PER_LIST);
+      const shown = places.filter(p => !noGo.some(n => n && norm(p.name).includes(n))).slice(0, SUGGESTIONS_PER_LIST);
 
       if (!shown.length) {
-        el.innerHTML = listId === SUGGESTION_LISTS.work
-          ? `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucune zone de commerces dense dans cette commune</li>`
-          : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Rien trouvé dans un rayon de ${SEARCH_RADIUS_M / 1000} km</li>`;
+        el.innerHTML = note(listId === SUGGESTION_LISTS.work ? "Aucune zone de commerces dense dans cette commune" : `Rien trouvé dans un rayon de ${SEARCH_RADIUS_M / 1000} km`);
         return;
       }
-
       el.innerHTML = shown.map(p => {
         const done = visited.has(norm(p.name));
-        const name = p.mapsUrl
-          ? `<a href="${escapeHtml(p.mapsUrl)}" target="_blank" rel="noopener">${escapeHtml(p.name)}</a>`
-          : escapeHtml(p.name);
-        const rating = p.rating ? `★ ${p.rating.toFixed(1)} (${formatNumber(p.ratingCount)})` : (p.meta || "");
-        const details = p.details ? `<span class="sub">${escapeHtml(p.address)}</span><span class="sub">${escapeHtml(p.details)}</span>` : "";
-        return `
-          <li class="place-item${done ? " done" : ""}" title="${escapeHtml(p.address)}">
-            <span>${done ? "✓ " : ""}${name}<span class="sub">${escapeHtml(p.type)}</span>${details}</span>
-            <span class="place-meta">${escapeHtml(rating)}</span>
+        const name = p.mapsUrl ? `<a href="${escapeHtml(p.mapsUrl)}" target="_blank" rel="noopener">${escapeHtml(p.name)}</a>` : escapeHtml(p.name);
+        const meta = p.rating ? `★ ${p.rating.toFixed(1)} (${formatNumber(p.ratingCount)})` : (p.meta || "");
+        return `<li class="${done ? "done" : ""}" title="${escapeHtml(p.address)}">
+            <span>${done ? "✓ " : ""}${name}<span class="sub">${escapeHtml(p.type)}</span></span>
+            <span class="meta">${escapeHtml(meta)}</span>
           </li>`;
       }).join("");
     }
 
-    els.generateAiTargetsBtn.addEventListener("click", async () => {
-      const currentCity = state.cities.find(c => c.id === state.currentSelectedCityId);
-      if (!currentCity) return;
-
-      const setAll = html => Object.values(SUGGESTION_LISTS).forEach(id => document.getElementById(id).innerHTML = html);
-      setAll(`<li style="color: var(--muted); font-style: italic;">Recherche...</li>`);
-      document.getElementById(SUGGESTION_LISTS.work).innerHTML =
-        `<li style="color: var(--muted); font-style: italic;">Analyse des commerces de la commune… (jusqu'à 1 min la 1re fois pour une grande ville)</li>`;
-      els.generateAiTargetsBtn.disabled = true;
-
+    $("#generateAiTargetsBtn").addEventListener("click", async () => {
+      const city = currentItem();
+      if (!city || state.current.table !== "cities") return;
+      const btn = $("#generateAiTargetsBtn");
+      Object.values(SUGGESTION_LISTS).forEach(id => $("#" + id).innerHTML = note("Recherche…"));
+      $("#" + SUGGESTION_LISTS.work).innerHTML = note("Analyse des commerces de la commune… (jusqu'à 1 min la 1re fois pour une grande ville)");
+      btn.disabled = true;
       try {
-        const coords = await getCoordinates(currentCity.name, currentCity.department);
+        const coords = await getCoordinates(city.name, city.department);
         if (!coords) throw new Error("Position de la commune introuvable");
-
-        const { data, error } = await db.functions.invoke("places-nearby", {
-          body: { lat: coords[0], lng: coords[1], radius: SEARCH_RADIUS_M }
-        });
+        const { data, error } = await db.functions.invoke("places-nearby", { body: { lat: coords[0], lng: coords[1], radius: SEARCH_RADIUS_M } });
         if (error) {
-          // supabase-js ne donne que "non-2xx status code" : on lit le vrai message renvoyé par la fonction
           let detail = error.message;
           try { detail = (await error.context.json()).error || detail; } catch {}
           throw new Error(detail);
         }
-
         for (const [cat, listId] of Object.entries(SUGGESTION_LISTS)) {
           const catError = data.errors?.[cat];
-          if (catError) {
-            document.getElementById(listId).innerHTML = `<li style="color: var(--accent-2);">Erreur : ${escapeHtml(catError)}</li>`;
-          } else {
-            renderSuggestions(listId, data[cat] || [], currentCity);
-          }
+          if (catError) $("#" + listId).innerHTML = `<li class="err">Erreur : ${escapeHtml(catError)}</li>`;
+          else renderSuggestions(listId, data[cat] || [], city);
         }
       } catch (e) {
         console.error("#giiiveyouwings", e);
-        setAll(`<li style="color: var(--accent-2);">Erreur : ${escapeHtml(e.message || e)}</li>`);
+        Object.values(SUGGESTION_LISTS).forEach(id => $("#" + id).innerHTML = `<li class="err">Erreur : ${escapeHtml(e.message || e)}</li>`);
       } finally {
-        els.generateAiTargetsBtn.disabled = false;
+        btn.disabled = false;
       }
     });
+
+    // ---------- Navigation ----------
+    function route() {
+      const [, view = "communes", rawId] = (location.hash.slice(1) || "/communes").split("/");
+      const id = rawId ? decodeURIComponent(rawId) : null;
+      const isDetail = view === "commune" || view === "quartier";
+      const viewId = isDetail ? "detail" : (["communes", "carte", "toulouse"].includes(view) ? view : "communes");
+      state.view = viewId;
+
+      // Un lien "Fiche" cliqué depuis une carte en plein écran : on sort du plein écran
+      document.querySelectorAll(".map-wrap.full").forEach(w => w.classList.remove("full"));
+      document.querySelectorAll("[data-full].on").forEach(b => b.classList.remove("on"));
+      document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === `view-${viewId}`));
+      const activeTab = isDetail ? (view === "quartier" ? "toulouse" : "communes") : viewId;
+      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === activeTab));
+
+      if (viewId === "communes") renderCommunes();
+      if (viewId === "carte" && state.loaded) renderCarte();
+      if (viewId === "toulouse" && state.loaded) renderToulouse();
+      if (viewId === "detail") {
+        const changed = !state.current || state.current.id !== id;
+        state.current = { table: view === "commune" ? "cities" : "toulouse_districts", id };
+        $("#dNearbyCard").hidden = true; // la carte est recalculée à la demande, jamais affichée périmée
+        if (changed) {
+          resetSuggestions();
+          window.scrollTo(0, 0);
+        }
+        renderDetail();
+      }
+    }
+    window.addEventListener("hashchange", route);
+
+    function refreshCurrentView() {
+      if (state.view === "carte") renderCarte();
+      if (state.view === "toulouse") renderToulouse();
+      if (state.view === "detail") {
+        renderDetail();
+        if (!$("#dNearbyCard").hidden) $("#dNearbyBtn").click();
+      }
+    }
+
+    async function initApp() {
+      route();
+      [state.cities, state.districts] = await Promise.all([loadCities(), loadDistricts()]);
+      state.loaded = true;
+      route();
+    }
 
     initApp();
   </script>
