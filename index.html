@@ -2,13 +2,13 @@
 <html lang="fr">
 <head>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Aide pour RM</title>
-  
+
   <style>
     :root {
       --bg: #f5f6f4;
@@ -430,6 +430,27 @@
       color: var(--accent-2);
     }
 
+    .place-item {
+      gap: 10px;
+    }
+    .place-item a {
+      color: var(--ink);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .place-item a:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+    .place-item.done {
+      opacity: .55;
+    }
+    .place-meta {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
     @media (max-width: 980px) {
       .app { padding: 14px; }
       .topbar, .grid, .detail-grid { grid-template-columns: 1fr; }
@@ -442,7 +463,7 @@
 <body>
   <main class="app">
     <div class="shell">
-      
+
       <!-- ÉCRAN PRINCIPAL -->
       <div id="mainScreen" class="screen active">
         <header class="topbar">
@@ -588,7 +609,7 @@
               <h2>🎯 Opportunités de consommation</h2>
               <button id="generateAiTargetsBtn" class="btn">#giiiveyouwings</button>
             </div>
-            
+
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
               <div class="list-box">
                 <h3 style="color: #2c3e50;">💼 @work </h3>
@@ -696,9 +717,9 @@
   </main>
 
   <script>
-    const supabaseUrl = 'https://teeuganjefwegazhoubj.supabase.co'; 
+    const supabaseUrl = 'https://teeuganjefwegazhoubj.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlZXVnYW5qZWZ3ZWdhemhvdWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMjA4MjEsImV4cCI6MjA5ODU5NjgyMX0.bLlpaeGA39NA3FWpQrsCSo1xHjxQG1Yv_5gbEgVdWZU';
-    
+
     const db = window.supabase.createClient(supabaseUrl, supabaseKey);
     const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -728,7 +749,7 @@
       avgAge: document.querySelector("#avgAge"),
       resultTitle: document.querySelector("#resultTitle"),
       addForm: document.querySelector("#addForm"),
-      
+
       detailCityName: document.querySelector("#detailCityName"),
       detailDept: document.querySelector("#detailDept"),
       visitedList: document.querySelector("#visitedList"),
@@ -741,7 +762,7 @@
       nearbyCitiesContainer: document.querySelector("#nearbyCitiesContainer"),
       detailMapWrapper: document.querySelector("#detailMapWrapper"),
       generateAiTargetsBtn: document.querySelector("#generateAiTargetsBtn"),
-      
+
       openToulouseDistrictsBtn: document.querySelector("#openToulouseDistrictsBtn"),
       backFromToulouseDistrictsBtn: document.querySelector("#backFromToulouseDistrictsBtn"),
       backToToulouseDistrictsBtn: document.querySelector("#backToToulouseDistrictsBtn"),
@@ -827,6 +848,10 @@
       return new Intl.NumberFormat("fr-FR").format(value);
     }
 
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+
     function enrichedCities() {
       const maxAge = Math.max(...state.cities.map(city => daysSince(city.lastVisit)), 1);
       const maxPop = Math.max(...state.cities.map(city => Number(city.population)), 1);
@@ -863,7 +888,7 @@
         time: (a, b) => a.minutes - b.minutes || byName(a, b),
         name: byName
       };
-      
+
       return list.sort(sorters[state.sortMode]);
     }
 
@@ -890,12 +915,12 @@
       els.avgAge.textContent = `${avg} j`;
       els.resultTitle.textContent = `${list.length} commune${list.length > 1 ? "s" : ""}`;
       els.emptyState.hidden = list.length !== 0;
-      
+
       els.rows.innerHTML = list.map((city, index) => {
         const countVisited = (city.visitedPlaces || []).length;
         const countNogo = (city.noGo || []).length;
-        const labelContent = (countVisited || countNogo) 
-          ? `${countVisited} Fait / ${countNogo} No Go` 
+        const labelContent = (countVisited || countNogo)
+          ? `${countVisited} Fait / ${countNogo} No Go`
           : "Vide";
 
         return `
@@ -945,13 +970,13 @@
     async function openCityDetails(cityId) {
       const city = state.cities.find(c => c.id === cityId);
       if (!city) return;
-      
+
       state.currentSelectedCityId = cityId;
       els.detailCityName.textContent = city.name;
       els.detailDept.textContent = `Département ${city.department}`;
 
       els.nearbyCitiesContainer.innerHTML = "<i>💡 Cliquez sur le nom de la ville pour voir les communes à ~30 min.</i>";
-      
+
       renderDetailLists(city);
       switchScreen('detail');
     }
@@ -960,7 +985,7 @@
       const vp = city.visitedPlaces || [];
       const ng = city.noGo || [];
 
-      els.visitedList.innerHTML = vp.length 
+      els.visitedList.innerHTML = vp.length
         ? vp.map((place, i) => `
             <li>
               <span>${place}</span>
@@ -968,7 +993,7 @@
             </li>`).join("")
         : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucun lieu enregistré</li>`;
 
-      els.nogoList.innerHTML = ng.length 
+      els.nogoList.innerHTML = ng.length
         ? ng.map((item, i) => `
             <li>
               <span>${item}</span>
@@ -979,9 +1004,9 @@
 
     function closeDetails() {
       state.currentSelectedCityId = null;
-      els.detailMapWrapper.style.display = "none"; 
+      els.detailMapWrapper.style.display = "none";
       els.nearbyCitiesContainer.innerHTML = "";
-      
+
       document.getElementById("workSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
       document.getElementById("sportSuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
       document.getElementById("studySuggestionsList").innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">En attente d'analyse...</li>`;
@@ -1016,7 +1041,7 @@
         if (!d.coords) return;
         const age = daysSince(d.lastVisit);
         const pClass = priorityClassByAge(age);
-        
+
         let color = "#3f9b70";
         if (pClass === "p-hot") color = "#d13f2f";
         if (pClass === "p-warm") color = "#e39423";
@@ -1027,7 +1052,7 @@
 
         const popupDiv = document.createElement("div");
         popupDiv.innerHTML = `<b>${d.name}</b><br>Dernier passage : ${d.lastVisit || 'Jamais'}<br>`;
-        
+
         const btn = document.createElement("button");
         btn.className = "btn-link";
         btn.style.marginTop = "8px";
@@ -1149,7 +1174,7 @@
       const cityId = event.target.dataset.id;
       const city = state.cities.find(item => item.id === cityId);
       if (!city) return;
-      
+
       const newDate = event.target.value;
       city.lastVisit = newDate;
       render();
@@ -1211,7 +1236,7 @@
         const index = parseInt(btn.dataset.index, 10);
         const listType = btn.dataset.list;
         const city = state.cities.find(c => c.id === state.currentSelectedCityId);
-        
+
         if (city) {
           if (listType === "visited") {
             city.visitedPlaces.splice(index, 1);
@@ -1234,7 +1259,7 @@
         const index = parseInt(btn.dataset.index, 10);
         const listType = btn.dataset.list;
         const district = state.districts.find(d => d.id === state.currentSelectedDistrictId);
-        
+
         if (district) {
           if (listType === "d-visited") {
             district.visitedPlaces.splice(index, 1);
@@ -1261,9 +1286,9 @@
         visitedPlaces: [],
         noGo: []
       };
-      
+
       event.currentTarget.reset();
-      
+
       const savedCity = await addCityToDB(newCity);
       if (savedCity) {
         state.cities.push(savedCity);
@@ -1272,7 +1297,7 @@
     });
 
     function getDistanceKm(lat1, lon1, lat2, lon2) {
-      const R = 6371; 
+      const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -1290,7 +1315,7 @@
 
       const currentCity = state.cities.find(c => c.id === currentCityId);
       els.nearbyCitiesContainer.innerHTML = "<i>⏳ Création de la carte en cours...</i>";
-      
+
       els.detailMapWrapper.style.display = "block";
 
       if (!dMap) {
@@ -1300,7 +1325,7 @@
         }).addTo(dMap);
         dMarkersLayer = L.layerGroup().addTo(dMap);
       }
-      
+
       setTimeout(() => dMap.invalidateSize(), 100);
       dMarkersLayer.clearLayers();
 
@@ -1330,33 +1355,33 @@
 
       nearby.forEach(item => {
         const pClass = priorityClassByAge(item.city.age);
-        let color = "#3f9b70"; 
-        if (pClass === "p-hot") color = "#d13f2f"; 
-        if (pClass === "p-warm") color = "#e39423"; 
-        if (pClass === "p-mid") color = "#d0b936"; 
+        let color = "#3f9b70";
+        if (pClass === "p-hot") color = "#d13f2f";
+        if (pClass === "p-warm") color = "#e39423";
+        if (pClass === "p-mid") color = "#d0b936";
 
         const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
         const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
 
         const popupDiv = document.createElement("div");
         popupDiv.innerHTML = `<b>${item.city.name}</b><br>🚗 ~${Math.round(item.distance)} km`;
-        
+
         const btn = document.createElement("button");
         btn.className = "btn-link";
         btn.style.marginTop = "8px";
         btn.innerText = "Voir détails →";
-        
+
         btn.onclick = () => {
-            closeDetails();            
-            openCityDetails(item.city.id); 
+            closeDetails();
+            openCityDetails(item.city.id);
         };
-        
+
         popupDiv.appendChild(btn);
 
         L.marker(item.coords, { icon: customIcon })
           .bindPopup(popupDiv)
           .addTo(dMarkersLayer);
-        
+
         bounds.extend(item.coords);
       });
 
@@ -1371,7 +1396,7 @@
 
     let map = null;
     let markersLayer = null;
-    let cityCoordinates = {}; 
+    let cityCoordinates = {};
     let mapUpdateId = 0;
 
     async function getCoordinates(cityName, dept) {
@@ -1396,38 +1421,38 @@
         }).addTo(map);
         markersLayer = L.layerGroup().addTo(map);
       }
-      
-      const currentUpdateId = ++mapUpdateId; 
+
+      const currentUpdateId = ++mapUpdateId;
       markersLayer.clearLayers();
-      const list = filteredCities(); 
+      const list = filteredCities();
 
       for (const city of list) {
-        if (currentUpdateId !== mapUpdateId) return; 
-        
+        if (currentUpdateId !== mapUpdateId) return;
+
         const coords = await getCoordinates(city.name, city.department);
         if (coords) {
           const pClass = priorityClassByAge(city.age);
-          let color = "#3f9b70"; 
-          if (pClass === "p-hot") color = "#d13f2f"; 
-          if (pClass === "p-warm") color = "#e39423"; 
-          if (pClass === "p-mid") color = "#d0b936"; 
+          let color = "#3f9b70";
+          if (pClass === "p-hot") color = "#d13f2f";
+          if (pClass === "p-warm") color = "#e39423";
+          if (pClass === "p-mid") color = "#d0b936";
 
           const markerHtml = `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`;
           const customIcon = L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
 
           const popupDiv = document.createElement("div");
           popupDiv.innerHTML = `<b>${city.name}</b> (${city.department})<br>Passage : ${city.age === 9999 ? "Jamais" : city.age + " jours"}<br>`;
-          
+
           const detailBtn = document.createElement("button");
           detailBtn.className = "btn-link";
           detailBtn.style.marginTop = "8px";
           detailBtn.innerText = "Voir détails →";
-          
+
           detailBtn.onclick = () => {
-             map.closePopup(); 
-             openCityDetails(city.id); 
+             map.closePopup();
+             openCityDetails(city.id);
           };
-          
+
           popupDiv.appendChild(detailBtn);
 
           L.marker(coords, { icon: customIcon })
@@ -1444,7 +1469,7 @@
         if (!map) updateMap();
         else {
           updateMap();
-          setTimeout(() => map.invalidateSize(), 100); 
+          setTimeout(() => map.invalidateSize(), 100);
         }
       }
     });
@@ -1452,7 +1477,7 @@
     async function initApp() {
       els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Chargement depuis Supabase...</td></tr>';
       [state.cities, state.districts] = await Promise.all([loadCitiesFromDB(), loadDistrictsFromDB()]);
-      
+
       if (state.cities.length === 0) {
           els.rows.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">La base de données est vide.</td></tr>';
       } else {
@@ -1460,41 +1485,68 @@
       }
     }
 
+    // #giiiveyouwings : Google Places via la Edge Function Supabase "places-nearby"
+    // (la clé Google reste côté serveur, voir supabase/functions/places-nearby).
+    const SUGGESTION_LISTS = { work: "workSuggestionsList", sport: "sportSuggestionsList", study: "studySuggestionsList" };
+    const SUGGESTIONS_PER_LIST = 8;
+    const SEARCH_RADIUS_M = 3000;
+
+    function renderSuggestions(listId, places, city) {
+      const el = document.getElementById(listId);
+      const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+      const visited = new Set((city.visitedPlaces || []).map(norm));
+      const noGo = (city.noGo || []).map(norm);
+
+      const shown = places
+        .filter(p => !noGo.some(n => n && norm(p.name).includes(n)))
+        .slice(0, SUGGESTIONS_PER_LIST);
+
+      if (!shown.length) {
+        el.innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Rien trouvé dans un rayon de ${SEARCH_RADIUS_M / 1000} km</li>`;
+        return;
+      }
+
+      el.innerHTML = shown.map(p => {
+        const done = visited.has(norm(p.name));
+        const name = p.mapsUrl
+          ? `<a href="${escapeHtml(p.mapsUrl)}" target="_blank" rel="noopener">${escapeHtml(p.name)}</a>`
+          : escapeHtml(p.name);
+        const rating = p.rating ? `★ ${p.rating.toFixed(1)} (${formatNumber(p.ratingCount)})` : "";
+        return `
+          <li class="place-item${done ? " done" : ""}" title="${escapeHtml(p.address)}">
+            <span>${done ? "✓ " : ""}${name}<span class="sub">${escapeHtml(p.type)}</span></span>
+            <span class="place-meta">${rating}</span>
+          </li>`;
+      }).join("");
+    }
+
     els.generateAiTargetsBtn.addEventListener("click", async () => {
       const currentCity = state.cities.find(c => c.id === state.currentSelectedCityId);
       if (!currentCity) return;
 
-      const lists = { work: "workSuggestionsList", sport: "sportSuggestionsList", study: "studySuggestionsList" };
-      Object.values(lists).forEach(id => document.getElementById(id).innerHTML = "<li>Recherche...</li>");
-
-      const coords = await getCoordinates(currentCity.name, currentCity.department);
-      if (!coords) return alert("Position introuvable");
-
-      const query = `[out:json][timeout:15];(
-        node["shop"](around:3000,${coords[0]},${coords[1]});
-        node["craft"](around:3000,${coords[0]},${coords[1]});
-        node["leisure"~"fitness_centre|sports_centre|pitch|dance"](around:3000,${coords[0]},${coords[1]});
-        node["sport"="wakeboarding"](around:3000,${coords[0]},${coords[1]});
-        node["amenity"~"university|college"](around:3000,${coords[0]},${coords[1]});
-        );out center 100;`;
+      const setAll = html => Object.values(SUGGESTION_LISTS).forEach(id => document.getElementById(id).innerHTML = html);
+      setAll(`<li style="color: var(--muted); font-style: italic;">Recherche...</li>`);
+      els.generateAiTargetsBtn.disabled = true;
 
       try {
-        const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
-        const data = await res.json();
-        const all = data.elements.filter(e => e.tags?.name);
+        const coords = await getCoordinates(currentCity.name, currentCity.department);
+        if (!coords) throw new Error("Position de la commune introuvable");
 
-        document.getElementById(lists.work).innerHTML = all.filter(e => e.tags.shop || e.tags.craft).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
+        const { data, error } = await db.functions.invoke("places-nearby", {
+          body: { lat: coords[0], lng: coords[1], radius: SEARCH_RADIUS_M }
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
 
-        document.getElementById(lists.sport).innerHTML = all.filter(e => 
-            (["fitness_centre", "sports_centre", "pitch", "dance"].includes(e.tags.leisure) || e.tags.sport === "wakeboarding") 
-            && !e.tags.name.toLowerCase().includes("basic")
-        ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
-
-        document.getElementById(lists.study).innerHTML = all.filter(e => 
-            ["university", "college"].includes(e.tags.amenity)
-        ).slice(0, 5).map(e => `<li>${e.tags.name}</li>`).join("");
-
-      } catch (e) { alert("Erreur lors de la recherche"); }
+        for (const [cat, listId] of Object.entries(SUGGESTION_LISTS)) {
+          renderSuggestions(listId, data[cat] || [], currentCity);
+        }
+      } catch (e) {
+        console.error("#giiiveyouwings", e);
+        setAll(`<li style="color: var(--accent-2);">Erreur : ${escapeHtml(e.message || e)}</li>`);
+      } finally {
+        els.generateAiTargetsBtn.disabled = false;
+      }
     });
 
     initApp();
