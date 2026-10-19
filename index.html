@@ -1502,7 +1502,9 @@
         .slice(0, SUGGESTIONS_PER_LIST);
 
       if (!shown.length) {
-        el.innerHTML = `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Rien trouvé dans un rayon de ${SEARCH_RADIUS_M / 1000} km</li>`;
+        el.innerHTML = listId === SUGGESTION_LISTS.work
+          ? `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Aucune zone de commerces dense dans cette commune</li>`
+          : `<li style="color: var(--muted); font-style: italic; border-style: dashed;">Rien trouvé dans un rayon de ${SEARCH_RADIUS_M / 1000} km</li>`;
         return;
       }
 
@@ -1511,11 +1513,12 @@
         const name = p.mapsUrl
           ? `<a href="${escapeHtml(p.mapsUrl)}" target="_blank" rel="noopener">${escapeHtml(p.name)}</a>`
           : escapeHtml(p.name);
-        const rating = p.rating ? `★ ${p.rating.toFixed(1)} (${formatNumber(p.ratingCount)})` : "";
+        const rating = p.rating ? `★ ${p.rating.toFixed(1)} (${formatNumber(p.ratingCount)})` : (p.meta || "");
+        const details = p.details ? `<span class="sub">${escapeHtml(p.address)}</span><span class="sub">${escapeHtml(p.details)}</span>` : "";
         return `
           <li class="place-item${done ? " done" : ""}" title="${escapeHtml(p.address)}">
-            <span>${done ? "✓ " : ""}${name}<span class="sub">${escapeHtml(p.type)}</span></span>
-            <span class="place-meta">${rating}</span>
+            <span>${done ? "✓ " : ""}${name}<span class="sub">${escapeHtml(p.type)}</span>${details}</span>
+            <span class="place-meta">${escapeHtml(rating)}</span>
           </li>`;
       }).join("");
     }
@@ -1526,6 +1529,8 @@
 
       const setAll = html => Object.values(SUGGESTION_LISTS).forEach(id => document.getElementById(id).innerHTML = html);
       setAll(`<li style="color: var(--muted); font-style: italic;">Recherche...</li>`);
+      document.getElementById(SUGGESTION_LISTS.work).innerHTML =
+        `<li style="color: var(--muted); font-style: italic;">Analyse des commerces de la commune… (jusqu'à 1 min la 1re fois pour une grande ville)</li>`;
       els.generateAiTargetsBtn.disabled = true;
 
       try {
