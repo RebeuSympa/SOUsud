@@ -1535,11 +1535,20 @@
         const { data, error } = await db.functions.invoke("places-nearby", {
           body: { lat: coords[0], lng: coords[1], radius: SEARCH_RADIUS_M }
         });
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
+        if (error) {
+          // supabase-js ne donne que "non-2xx status code" : on lit le vrai message renvoyé par la fonction
+          let detail = error.message;
+          try { detail = (await error.context.json()).error || detail; } catch {}
+          throw new Error(detail);
+        }
 
         for (const [cat, listId] of Object.entries(SUGGESTION_LISTS)) {
-          renderSuggestions(listId, data[cat] || [], currentCity);
+          const catError = data.errors?.[cat];
+          if (catError) {
+            document.getElementById(listId).innerHTML = `<li style="color: var(--accent-2);">Erreur : ${escapeHtml(catError)}</li>`;
+          } else {
+            renderSuggestions(listId, data[cat] || [], currentCity);
+          }
         }
       } catch (e) {
         console.error("#giiiveyouwings", e);
